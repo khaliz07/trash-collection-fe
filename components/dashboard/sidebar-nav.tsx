@@ -10,7 +10,7 @@ import { DivideIcon as LucideIcon, Home, Calendar, CreditCard, Bell, Clock, Sett
 interface NavItem {
   title: string
   href: string
-  icon: LucideIcon
+  icon: any
 }
 
 interface UserNavItems {
@@ -45,16 +45,6 @@ const navItems: UserNavItems = {
       title: "Notifications",
       href: "/dashboard/user/notifications",
       icon: Bell,
-    },
-    {
-      title: "History",
-      href: "/dashboard/user/history",
-      icon: FileText,
-    },
-    {
-      title: "Rating & Feedback",
-      href: "/dashboard/user/feedback",
-      icon: Star,
     },
     {
       title: "Support",
