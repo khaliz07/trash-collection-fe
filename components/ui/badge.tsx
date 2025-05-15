@@ -1,36 +1,33 @@
 import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
-
 import { cn } from '@/lib/utils';
 
-const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-  {
-    variants: {
-      variant: {
-        default:
-          'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
-        secondary:
-          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        destructive:
-          'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
-        outline: 'text-foreground',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-    },
-  }
-);
-
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
-  );
+export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: 'success' | 'warning' | 'error' | 'info' | 'default' | 'primary';
 }
 
-export { Badge, badgeVariants };
+const badgeVariantStyles = {
+  success: 'inline-flex h-6 items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 text-xs font-medium text-emerald-700 dark:text-emerald-400',
+  warning: 'inline-flex h-6 items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-2 text-xs font-medium text-amber-700 dark:text-amber-400',
+  error:   'inline-flex h-6 items-center rounded-full border border-red-500/30 bg-red-500/10 px-2 text-xs font-medium text-red-700 dark:text-red-400',
+  info:    'inline-flex h-6 items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-2 text-xs font-medium text-blue-700 dark:text-blue-400',
+  default: 'inline-flex h-6 items-center rounded-full border border-gray-300 bg-gray-50 px-2 text-xs font-medium text-gray-700 dark:text-gray-300',
+  primary: 'inline-flex h-6 items-center rounded-full border border-primary/30 bg-primary/10 px-2 text-xs font-medium text-primary dark:text-primary-400',
+};
+
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+  ({ className, variant = 'default', ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          badgeVariantStyles[variant],
+          className
+        )}
+        {...props}
+      />
+    );
+  }
+);
+Badge.displayName = 'Badge';
+
+export { Badge };

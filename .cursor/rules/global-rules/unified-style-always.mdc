@@ -1,5 +1,56 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Unified Style and Component Usage
+
+## Critical Rules
+
+- Always use existing shared UI components (from `components/ui/`, `components/common/`, etc.) when building new pages, sections, or features.
+- Follow the established Tailwind CSS utility classes, color variables, and border radius conventions as defined in `globals.css` and `tailwind.config.ts`.
+- Maintain consistent use of card, button, form, and section patterns for layout and interaction.
+- Use the same spacing, typography, and iconography patterns as existing components and pages.
+- Do not introduce new style patterns, color schemes, or component structures unless extending the current system.
+- All new components and pages must visually and structurally match the existing design language.
+- If a new style or pattern is needed, document and discuss before implementation.
+- Khi muốn custom style cho 1 loại trạng thái hoặc use-case đặc biệt, phải update trực tiếp vào component custom (ví dụ Badge), không được custom lẻ tẻ ở từng nơi sử dụng. Mọi style mở rộng phải thành props hoặc variant của component chung.
+- Khi tạo component custom (ví dụ Badge, Alert, Tag, ...), phải thiết kế variant tổng quát (success, warning, error, info, default, primary, ...) để dùng lại cho nhiều use-case. Không tạo variant đặc thù cho từng business logic nhỏ lẻ.
+- Khi sử dụng component custom có variant (ví dụ Badge), chỉ truyền prop variant (success, warning, error, ...) thay vì truyền className style trạng thái. Không custom style trực tiếp ở nơi sử dụng.
+
+## Examples
+
+<example>
+// Good: New feature page uses Card, Button, and Form from components/ui, and follows spacing/typography conventions
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
+<Card>
+  <CardHeader>...</CardHeader>
+  <CardContent>
+    <Button variant="primary">Submit</Button>
+  </CardContent>
+</Card>
+
+// Good: Muốn custom style cho trạng thái badge, update vào component Badge và dùng prop variant tổng quát
+<Badge variant="success">Đã thu</Badge>
+<Badge variant="warning">Chưa thu</Badge>
+<Badge variant="error">Quá hạn</Badge>
+</example>
+
+<example type="invalid">
+// Bad: New page uses custom card markup and colors, ignores shared Button, and has inconsistent spacing
+<div style={{ borderRadius: '12px', background: '#fafafa' }}>
+  <h2>Header</h2>
+  <button style={{ background: 'red' }}>Submit</button>
+</div>
+
+// Bad: Custom style badge lẻ tẻ ở từng nơi sử dụng
+<Badge className="bg-red-100 text-red-700">Quá hạn</Badge>
+
+// Bad: Tạo variant đặc thù cho từng business logic
+<Badge variant="collected">Đã thu</Badge>
+
+// Bad: Truyền className style trạng thái thay vì dùng variant
+<Badge className="border border-emerald-400 bg-emerald-50 text-emerald-700">Đã thu</Badge>
+</example>
