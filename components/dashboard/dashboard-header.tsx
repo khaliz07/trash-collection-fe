@@ -1,3 +1,6 @@
+'use client';
+import '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { Bell, Search } from "lucide-react"
 import { UserNav } from "@/components/dashboard/user-nav"
 import { Button } from "@/components/ui/button"
@@ -13,6 +16,7 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ title, userInfo }: DashboardHeaderProps) {
+  const { t } = useTranslation('common');
   return (
     <div className="border-b">
       <div className="flex h-16 items-center px-4 gap-4">
@@ -20,7 +24,7 @@ export function DashboardHeader({ title, userInfo }: DashboardHeaderProps) {
         <div className="ml-auto flex items-center space-x-4">
           <div className="hidden md:flex relative w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search..." className="pl-8" />
+            <Input placeholder={t('search')} className="pl-8" />
           </div>
           <Button variant="outline" size="icon" className="relative">
             <Bell className="h-5 w-5" />

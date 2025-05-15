@@ -5,8 +5,11 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Recycle, Menu, X } from 'lucide-react'
 import { ModeToggle } from '@/components/mode-toggle'
+import '../../i18n'
+import { useTranslation } from 'react-i18next'
 
 export function SiteHeader() {
+  const { t } = useTranslation('common')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -14,31 +17,31 @@ export function SiteHeader() {
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2 font-bold">
           <Recycle className="h-6 w-6 text-primary" />
-          <span>EcoCollect</span>
+          <span>{t('ecocollect')}</span>
         </Link>
         
         <nav className="hidden md:flex items-center gap-6">
           <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-            Features
+            {t('features')}
           </Link>
           <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
-            How It Works
+            {t('how_it_works')}
           </Link>
           <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-            Pricing
+            {t('pricing')}
           </Link>
           <Link href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
-            Contact
+            {t('contact')}
           </Link>
         </nav>
         
         <div className="hidden md:flex items-center gap-4">
           <ModeToggle />
           <Link href="/login">
-            <Button variant="outline">Log In</Button>
+            <Button variant="outline">{t('login')}</Button>
           </Link>
           <Link href="/register">
-            <Button>Sign Up</Button>
+            <Button>{t('signup')}</Button>
           </Link>
         </div>
         
@@ -63,35 +66,35 @@ export function SiteHeader() {
               className="px-4 py-2 text-sm hover:bg-accent rounded-md"
               onClick={() => setIsMenuOpen(false)}
             >
-              Features
+              {t('features')}
             </Link>
             <Link 
               href="#how-it-works" 
               className="px-4 py-2 text-sm hover:bg-accent rounded-md"
               onClick={() => setIsMenuOpen(false)}
             >
-              How It Works
+              {t('how_it_works')}
             </Link>
             <Link 
               href="#pricing" 
               className="px-4 py-2 text-sm hover:bg-accent rounded-md"
               onClick={() => setIsMenuOpen(false)}
             >
-              Pricing
+              {t('pricing')}
             </Link>
             <Link 
               href="#contact" 
               className="px-4 py-2 text-sm hover:bg-accent rounded-md"
               onClick={() => setIsMenuOpen(false)}
             >
-              Contact
+              {t('contact')}
             </Link>
             <div className="grid gap-2 pt-2 border-t">
               <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="outline" className="w-full">Log In</Button>
+                <Button variant="outline" className="w-full">{t('login')}</Button>
               </Link>
               <Link href="/register" onClick={() => setIsMenuOpen(false)}>
-                <Button className="w-full">Sign Up</Button>
+                <Button className="w-full">{t('signup')}</Button>
               </Link>
             </div>
           </div>

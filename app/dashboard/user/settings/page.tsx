@@ -1,4 +1,5 @@
 'use client';
+import '../../../../i18n';
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,9 +9,12 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { mockUserInfo, mockNotificationSettings, mockLanguage, mockDevices, UserInfo, NotificationSettings, Language, DeviceSession } from './mockData';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export default function UserSettingsPage() {
+  const { t } = useTranslation('common');
   // Thông tin cá nhân
   const [user, setUser] = React.useState<UserInfo>({...mockUserInfo});
   const [editUser, setEditUser] = React.useState(user);
@@ -58,81 +62,84 @@ export default function UserSettingsPage() {
 
   return (
     <div className="container py-8 md:py-12 max-w-3xl">
-      <h1 className="text-2xl md:text-3xl font-bold mb-6">Cài đặt tài khoản</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mb-6">{t('account_settings')}</h1>
       {/* Thông tin cá nhân */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Thông tin cá nhân</CardTitle>
+          <CardTitle>{t('personal_info')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
-            <Avatar src={user.avatarUrl} alt={user.name} size={56} />
+            <Avatar>
+              <AvatarImage src={user.avatarUrl} alt={user.name} />
+              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            </Avatar>
             <div>
               <div className="font-medium text-lg">{user.name}</div>
-              <div className="text-xs text-muted-foreground">{user.status === 'active' ? 'Đang hoạt động' : 'Đã vô hiệu hóa'}</div>
+              <div className="text-xs text-muted-foreground">{user.status === 'active' ? t('active') : t('disabled')}</div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Họ tên" value={editUser.name} disabled={!editMode} onChange={e => setEditUser(u => ({...u, name: e.target.value}))} />
-            <Input label="Số điện thoại" value={editUser.phone} disabled={!editMode} onChange={e => setEditUser(u => ({...u, phone: e.target.value}))} />
-            <Input label="Email" value={editUser.email ?? ''} disabled={!editMode} onChange={e => setEditUser(u => ({...u, email: e.target.value}))} />
-            <Input label="Địa chỉ" value={editUser.address} disabled={!editMode} onChange={e => setEditUser(u => ({...u, address: e.target.value}))} />
+            <Input placeholder={t('name')} value={editUser.name} disabled={!editMode} onChange={e => setEditUser(u => ({...u, name: e.target.value}))} />
+            <Input placeholder={t('phone')} value={editUser.phone} disabled={!editMode} onChange={e => setEditUser(u => ({...u, phone: e.target.value}))} />
+            <Input placeholder={t('email')} value={editUser.email ?? ''} disabled={!editMode} onChange={e => setEditUser(u => ({...u, email: e.target.value}))} />
+            <Input placeholder={t('address')} value={editUser.address} disabled={!editMode} onChange={e => setEditUser(u => ({...u, address: e.target.value}))} />
           </div>
         </CardContent>
         <CardFooter className="flex gap-3">
           {editMode ? (
             <>
-              <Button variant="default" onClick={handleSaveUser}>Lưu</Button>
-              <Button variant="secondary" onClick={() => {setEditUser(user); setEditMode(false);}}>Hủy</Button>
+              <Button variant="default" onClick={handleSaveUser}>{t('save')}</Button>
+              <Button variant="secondary" onClick={() => {setEditUser(user); setEditMode(false);}}>{t('cancel')}</Button>
             </>
           ) : (
-            <Button variant="secondary" onClick={() => setEditMode(true)}>Chỉnh sửa</Button>
+            <Button variant="secondary" onClick={() => setEditMode(true)}>{t('edit')}</Button>
           )}
         </CardFooter>
       </Card>
       {/* Đổi mật khẩu */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Đổi mật khẩu</CardTitle>
+          <CardTitle>{t('change_password')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input type="password" label="Mật khẩu cũ" value={oldPw} onChange={e => setOldPw(e.target.value)} />
-            <Input type="password" label="Mật khẩu mới" value={newPw} onChange={e => setNewPw(e.target.value)} />
-            <Input type="password" label="Xác nhận mật khẩu mới" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
+            <Input type="password" placeholder={t('old_password')} value={oldPw} onChange={e => setOldPw(e.target.value)} />
+            <Input type="password" placeholder={t('new_password')} value={newPw} onChange={e => setNewPw(e.target.value)} />
+            <Input type="password" placeholder={t('confirm_new_password')} value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
           </div>
         </CardContent>
         <CardFooter>
-          <Button variant="default" onClick={handleChangePw} disabled={!oldPw || !newPw || newPw !== confirmPw}>Đổi mật khẩu</Button>
+          <Button variant="default" onClick={handleChangePw} disabled={!oldPw || !newPw || newPw !== confirmPw}>{t('update_password')}</Button>
         </CardFooter>
       </Card>
       {/* Cài đặt thông báo */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Cài đặt thông báo</CardTitle>
+          <CardTitle>{t('notification_settings')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
               <Switch checked={noti.schedule} onCheckedChange={v => setNoti(n => ({...n, schedule: v}))} />
-              <span>Nhận thông báo lịch thu gom</span>
+              <span>{t('receive_schedule')}</span>
             </div>
             <div className="flex items-center gap-3">
               <Switch checked={noti.policy} onCheckedChange={v => setNoti(n => ({...n, policy: v}))} />
-              <span>Nhận thông báo chính sách</span>
+              <span>{t('receive_policy')}</span>
             </div>
             <div className="flex items-center gap-3">
               <Switch checked={noti.system} onCheckedChange={v => setNoti(n => ({...n, system: v}))} />
-              <span>Nhận thông báo hệ thống</span>
+              <span>{t('receive_system')}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span>Kênh nhận thông báo:</span>
+              <span>{t('notification_channel')}</span>
               <Select value={noti.channel} onValueChange={v => setNoti(n => ({...n, channel: v as any}))}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="in-app">Trong ứng dụng</SelectItem>
+                  <SelectItem value="in-app">{t('in_app')}</SelectItem>
                   <SelectItem value="email">Email</SelectItem>
                   <SelectItem value="sms">SMS</SelectItem>
                 </SelectContent>
@@ -144,7 +151,7 @@ export default function UserSettingsPage() {
       {/* Ngôn ngữ */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Cài đặt ngôn ngữ</CardTitle>
+          <CardTitle>{t('language_settings')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Select value={lang} onValueChange={v => setLang(v as Language)}>
@@ -152,8 +159,8 @@ export default function UserSettingsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="vi">Tiếng Việt</SelectItem>
-              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="vi">{t('vietnamese')}</SelectItem>
+              <SelectItem value="en">{t('english')}</SelectItem>
             </SelectContent>
           </Select>
         </CardContent>
@@ -161,17 +168,17 @@ export default function UserSettingsPage() {
       {/* Thiết bị đăng nhập */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Thiết bị đăng nhập gần đây</CardTitle>
+          <CardTitle>{t('recent_devices')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             {devices.map(dev => (
               <div key={dev.id} className="flex items-center gap-3 p-2 border rounded">
-                <Badge variant={dev.current ? 'primary' : 'default'}>{dev.current ? 'Thiết bị hiện tại' : 'Thiết bị khác'}</Badge>
+                <Badge variant={dev.current ? 'primary' : 'default'}>{dev.current ? t('current_device') : t('other_device')}</Badge>
                 <span className="font-medium">{dev.device}</span>
                 <span className="text-xs text-muted-foreground">{dev.location}</span>
                 <span className="text-xs text-muted-foreground">{new Date(dev.lastActive).toLocaleString()}</span>
-                {!dev.current && <Button size="sm" variant="secondary" onClick={() => handleLogoutDevice(dev.id)}>Đăng xuất</Button>}
+                {!dev.current && <Button size="sm" variant="secondary" onClick={() => handleLogoutDevice(dev.id)}>{t('logout')}</Button>}
               </div>
             ))}
           </div>
@@ -180,24 +187,24 @@ export default function UserSettingsPage() {
       {/* Xóa tài khoản */}
       <Card>
         <CardHeader>
-          <CardTitle>Xóa tài khoản</CardTitle>
+          <CardTitle>{t('delete_account')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground mb-2">Sau khi xóa, tài khoản sẽ bị vô hiệu hóa và không thể khôi phục. Vui lòng xác nhận OTP và lý do xóa.</div>
+          <div className="text-sm text-muted-foreground mb-2">{t('delete_account_desc')}</div>
         </CardContent>
         <CardFooter>
-          <Button variant="destructive" onClick={handleDeleteAccount}>Xóa tài khoản</Button>
+          <Button variant="destructive" onClick={handleDeleteAccount}>{t('delete_account')}</Button>
         </CardFooter>
       </Card>
       {/* Dialog xác thực OTP đổi số điện thoại */}
       <Dialog open={otpDialog} onOpenChange={setOtpDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xác thực số điện thoại mới</DialogTitle>
+            <DialogTitle>{t('otp_verify_phone')}</DialogTitle>
           </DialogHeader>
-          <Input placeholder="Nhập mã OTP" value={otp} onChange={e => setOtp(e.target.value)} />
+          <Input placeholder={t('otp_placeholder')} value={otp} onChange={e => setOtp(e.target.value)} />
           <DialogFooter>
-            <Button onClick={() => setOtpDialog(false)} disabled={!otp}>Xác nhận</Button>
+            <Button onClick={() => setOtpDialog(false)} disabled={!otp}>{t('otp_confirm')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -205,11 +212,11 @@ export default function UserSettingsPage() {
       <Dialog open={pwDialog} onOpenChange={setPwDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xác thực đổi mật khẩu</DialogTitle>
+            <DialogTitle>{t('otp_verify_password')}</DialogTitle>
           </DialogHeader>
-          <Input placeholder="Nhập mã OTP" value={pwOtp} onChange={e => setPwOtp(e.target.value)} />
+          <Input placeholder={t('otp_placeholder')} value={pwOtp} onChange={e => setPwOtp(e.target.value)} />
           <DialogFooter>
-            <Button onClick={() => setPwDialog(false)} disabled={!pwOtp}>Xác nhận</Button>
+            <Button onClick={() => setPwDialog(false)} disabled={!pwOtp}>{t('otp_confirm')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -217,12 +224,12 @@ export default function UserSettingsPage() {
       <Dialog open={delDialog} onOpenChange={setDelDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xác nhận xóa tài khoản</DialogTitle>
+            <DialogTitle>{t('delete_account_confirm')}</DialogTitle>
           </DialogHeader>
-          <Input placeholder="Nhập mã OTP" value={delOtp} onChange={e => setDelOtp(e.target.value)} />
-          <Input placeholder="Lý do xóa tài khoản" value={delReason} onChange={e => setDelReason(e.target.value)} />
+          <Input placeholder={t('otp_placeholder')} value={delOtp} onChange={e => setDelOtp(e.target.value)} />
+          <Input placeholder={t('delete_reason_placeholder')} value={delReason} onChange={e => setDelReason(e.target.value)} />
           <DialogFooter>
-            <Button variant="destructive" onClick={() => setDelDialog(false)} disabled={!delOtp || !delReason}>Xác nhận xóa</Button>
+            <Button variant="destructive" onClick={() => setDelDialog(false)} disabled={!delOtp || !delReason}>{t('delete_confirm')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

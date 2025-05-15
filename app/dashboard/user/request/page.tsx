@@ -39,6 +39,8 @@ import {
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import '../../../../i18n'
+import { useTranslation } from 'react-i18next'
 
 const formSchema = z.object({
   type: z.enum(["urgent", "special", "regular"]),
@@ -53,6 +55,7 @@ const formSchema = z.object({
 })
 
 export default function RequestPage() {
+  const { t } = useTranslation('common')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   
@@ -77,18 +80,14 @@ export default function RequestPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Request Collection</h2>
-        <p className="text-muted-foreground">
-          Submit a request for waste collection service
-        </p>
+        <h2 className="text-3xl font-bold tracking-tight">{t('requestCollection')}</h2>
+        <p className="text-muted-foreground">{t('submitRequestDescription')}</p>
       </div>
       
       <Card>
         <CardHeader>
-          <CardTitle>Collection Request Form</CardTitle>
-          <CardDescription>
-            Fill out the details for your collection request
-          </CardDescription>
+          <CardTitle>{t('collectionRequestForm')}</CardTitle>
+          <CardDescription>{t('fillRequestDetails')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -98,22 +97,20 @@ export default function RequestPage() {
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Request Type</FormLabel>
+                    <FormLabel>{t('requestType')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select request type" />
+                          <SelectValue placeholder={t('selectRequestType')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="regular">Regular Collection</SelectItem>
-                        <SelectItem value="urgent">Urgent Collection</SelectItem>
-                        <SelectItem value="special">Special Waste</SelectItem>
+                        <SelectItem value="regular">{t('regularCollection')}</SelectItem>
+                        <SelectItem value="urgent">{t('urgentCollection')}</SelectItem>
+                        <SelectItem value="special">{t('specialWaste')}</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormDescription>
-                      Choose the type of collection service you need
-                    </FormDescription>
+                    <FormDescription>{t('chooseCollectionType')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -124,7 +121,7 @@ export default function RequestPage() {
                 name="date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Collection Date</FormLabel>
+                    <FormLabel>{t('collectionDate')}</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -138,7 +135,7 @@ export default function RequestPage() {
                             {field.value ? (
                               format(field.value, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>{t('pickADate')}</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -156,9 +153,7 @@ export default function RequestPage() {
                         />
                       </PopoverContent>
                     </Popover>
-                    <FormDescription>
-                      Select your preferred collection date
-                    </FormDescription>
+                    <FormDescription>{t('selectPreferredDate')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -169,24 +164,22 @@ export default function RequestPage() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Additional Notes</FormLabel>
+                    <FormLabel>{t('additionalNotes')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Enter any special instructions or details about your collection request"
+                        placeholder={t('specialInstructionsPlaceholder')}
                         className="resize-none"
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Provide any relevant details about your collection request
-                    </FormDescription>
+                    <FormDescription>{t('provideDetails')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Submitting..." : "Submit Request"}
+                {isLoading ? t('submitting') : t('submitRequest')}
               </Button>
             </form>
           </Form>

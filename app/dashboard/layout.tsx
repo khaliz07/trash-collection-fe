@@ -8,15 +8,18 @@ import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Recycle as Recycling, Menu, X } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import '../../i18n'
+import { useTranslation } from 'react-i18next'
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation('common')
   const pathname = usePathname()
   const [role, setRole] = useState<"user" | "collector" | "admin">("user")
-  const [title, setTitle] = useState("Dashboard")
+  const [title, setTitle] = useState(t('dashboard'))
   const [mounted, setMounted] = useState(false)
   
   // Set role based on URL path
@@ -32,13 +35,13 @@ export default function DashboardLayout({
     // Set title based on the current path
     const path = pathname.split("/").pop()
     if (path && path !== role) {
-      setTitle(path.charAt(0).toUpperCase() + path.slice(1))
+      setTitle(t(path))
     } else {
-      setTitle("Dashboard")
+      setTitle(t('dashboard'))
     }
     
     setMounted(true)
-  }, [pathname])
+  }, [pathname, t, role])
   
   // Get user info based on role
   const getUserInfo = () => {
@@ -60,7 +63,7 @@ export default function DashboardLayout({
         <div className="flex h-16 items-center px-4 justify-between">
           <Link href="/" className="flex items-center space-x-2 font-bold">
             <Recycling className="h-6 w-6 text-primary" />
-            <span>EcoCollect</span>
+            <span>{t('ecocollect')}</span>
           </Link>
           
           <Sheet>
@@ -73,7 +76,7 @@ export default function DashboardLayout({
               <div className="border-b px-4 py-3">
                 <Link href="/" className="flex items-center space-x-2 font-bold">
                   <Recycling className="h-6 w-6 text-primary" />
-                  <span>EcoCollect</span>
+                  <span>{t('ecocollect')}</span>
                 </Link>
               </div>
               <SidebarNav role={role} />
@@ -87,7 +90,7 @@ export default function DashboardLayout({
           <div className="flex h-16 items-center px-4 border-b">
             <Link href="/" className="flex items-center space-x-2 font-bold">
               <Recycling className="h-6 w-6 text-primary" />
-              <span>EcoCollect</span>
+              <span>{t('ecocollect')}</span>
             </Link>
           </div>
           <SidebarNav role={role} />
