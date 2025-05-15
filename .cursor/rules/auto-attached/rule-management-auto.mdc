@@ -1,0 +1,43 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Rule Management
+
+## Context
+- When managing project rules and documentation
+- When creating or updating rule files
+- When organizing project structure and guidelines
+
+## Critical Rules
+- All project rules must be documented in MEMORY_BANK.md
+- Do not create separate rule files for different features
+- Update rules continuously as project evolves
+- Keep all rules in a single, centralized location
+- Ensure rules are always in sync with current project structure
+- Remove outdated or redundant rules
+- Follow the rule file naming convention: `{rule-name}-{type}.mdc`
+- Place rule files in appropriate organizational folders:
+  - `.cursor/rules/always/` - Rules applied to every chat
+  - `.cursor/rules/auto-attached/` - Rules applied when file pattern matches
+  - `.cursor/rules/agent-requested/` - Rules loaded by agent when needed
+  - `.cursor/rules/manual/` - Rules that need to be explicitly mentioned
+
+## Examples
+
+<example>
+✅ Correct Rule Management:
+- Update MEMORY_BANK.md when project structure changes
+- Keep all rules centralized in MEMORY_BANK.md
+- Follow proper file naming conventions
+- Place rules in correct organizational folders
+</example>
+
+<example type="invalid">
+❌ Incorrect Rule Management:
+- Creating separate rule files for each feature
+- Duplicating rules across different files
+- Not updating MEMORY_BANK.md with structure changes
+- Using inconsistent naming conventions
+</example>

@@ -1,0 +1,98 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Access Control and Authentication
+
+## Context
+- When implementing user authentication
+- When protecting routes and resources
+- When managing user roles and permissions
+- When handling authenticated state
+
+## Critical Rules
+
+### Authentication
+- Implement proper user authentication flow
+- Handle authentication errors gracefully
+- Maintain secure session management
+- Use proper token storage and refresh mechanisms
+
+### Role-Based Access Control
+- Define clear user roles (User/Admin)
+- Implement role-based route protection
+- Check permissions before rendering sensitive content
+- Handle unauthorized access properly
+
+### Route Protection
+- Protect all admin routes
+- Protect sensitive user routes
+- Use authentication middleware
+- Implement proper redirects for unauthenticated users
+
+### State Management
+- Maintain authentication state in Redux
+- Handle loading and error states
+- Proper type safety for user data
+- Clear authentication status indicators
+
+## Examples
+
+<example>
+// Good: Protected route with role check
+// components/ProtectedRoute.tsx
+export function ProtectedRoute({ 
+   children, 
+   requiredRole 
+}: ProtectedRouteProps) {
+   const { user, isLoading } = useAuth();
+   
+   if (isLoading) {
+      return <LoadingSpinner />;
+   }
+   
+   if (!user) {
+      return <Navigate to="/login" />;
+   }
+   
+   if (requiredRole && user.role !== requiredRole) {
+      return <AccessDenied />;
+   }
+   
+   return <>{children}</>;
+}
+
+// Good: Auth state management
+// store/auth/authSlice.ts
+interface AuthState {
+   user: User | null;
+   isAuthenticated: boolean;
+   role: 'user' | 'admin' | null;
+   isLoading: boolean;
+   error: string | null;
+}
+</example>
+
+<example type="invalid">
+// Bad: Unprotected sensitive route
+export default function AdminPage() {
+   return <AdminDashboard />;  // Missing auth check
+}
+
+// Bad: Inline role check
+function UserProfile() {
+   if (user.role === 'admin') {  // Should use proper auth hook
+      return <AdminContent />;
+   }
+   return <UserContent />;
+}
+
+// Bad: Direct localStorage access
+const token = localStorage.getItem('token');  // Should use auth service
+
+// Bad: Missing error handling
+async function login() {
+   const response = await api.login();  // Missing try/catch
+   return response.data;
+}</example>

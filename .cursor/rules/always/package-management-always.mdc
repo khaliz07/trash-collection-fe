@@ -1,0 +1,57 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Package Management Standards
+
+## Context
+- When installing new dependencies
+- When updating existing packages
+- When managing project dependencies
+- When working with package.json
+
+## Critical Rules
+- Use Yarn as the primary package manager
+- Never mix npm and yarn in the same project
+- Keep yarn.lock in version control
+- Use exact versions for critical dependencies
+- Document all dependency changes
+- Run yarn install after pulling changes
+- Use proper Yarn commands:
+  - yarn add [package] for dependencies
+  - yarn add -D [package] for dev dependencies
+  - yarn remove [package] to remove
+  - yarn install to install all dependencies
+  - yarn upgrade [package] to upgrade
+
+## Examples
+
+<example>
+// Good: Using Yarn commands
+$ yarn add react-hook-form @hookform/resolvers yup
+$ yarn add -D @types/yup
+$ yarn install
+
+// Good: package.json
+{
+  "dependencies": {
+    "react-hook-form": "^7.0.0",
+    "@hookform/resolvers": "^2.0.0"
+  }
+}
+</example>
+
+<example type="invalid">
+// Bad: Using npm commands
+$ npm install react-hook-form
+$ npm i @types/yup
+
+// Bad: Mixed package managers
+$ yarn add react-hook-form
+$ npm install @types/yup
+
+// Bad: No yarn.lock in git
+.gitignore
+yarn.lock  # Don't ignore this file!
+</example>

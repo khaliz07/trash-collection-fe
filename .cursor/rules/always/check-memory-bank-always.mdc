@@ -1,0 +1,78 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Check Memory Bank Before Implementation
+
+## Context
+- When starting work on any new feature/component
+- When implementing new functionality
+- When modifying existing features
+- When planning component structure
+
+## Critical Rules
+- ALWAYS check MEMORY_BANK.md first before starting any implementation
+- Look for existing components/features that match or relate to your task
+- If component exists:
+  - Review what's already implemented (UI, styles, types, etc.)
+  - Identify what's missing (events, processes, etc.)
+  - Reuse existing code/structure where possible
+  - Update MEMORY_BANK after changes
+- If component doesn't exist:
+  - Check if similar components exist to follow patterns
+  - Follow project structure defined in MEMORY_BANK
+  - Add new component to MEMORY_BANK after implementation
+- For UI components:
+  - Check if design/styles already exist
+  - Reuse existing styles and patterns
+  - Only implement missing functionality
+- Update MEMORY_BANK with any new additions or changes
+
+## Examples
+
+<example>
+// Good: Implementing Login functionality
+// 1. Check MEMORY_BANK - found existing Login UI
+// 2. Reuse existing styles and structure
+// src/components/auth/Login/index.tsx
+import { LoginUI } from '@/components/pages/login';
+
+export function Login() {
+  // Reuse existing UI component
+  return (
+    <LoginUI 
+      onSubmit={handleLogin}
+      onValidate={validateForm}
+      onError={handleError}
+    />
+  );
+}
+
+// 3. Add new functionality
+const handleLogin = async (credentials) => {
+  // Implement login logic
+};
+
+// 4. Update MEMORY_BANK with new functionality
+</example>
+
+<example type="invalid">
+// Bad: Creating duplicate implementation
+// Didn't check MEMORY_BANK, created duplicate styles
+// src/components/auth/Login/index.tsx
+export function Login() {
+  return (
+    <Box sx={{ /* Duplicate styles */ }}>
+      <TextField /* Duplicate UI components */ />
+      <Button /* Duplicate UI components */ />
+    </Box>
+  );
+}
+
+// Bad: Not following existing patterns
+const handleLogin = () => {
+  // Different error handling pattern
+  // Different state management pattern
+  // Different validation pattern
+}</example>

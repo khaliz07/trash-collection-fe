@@ -1,0 +1,80 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Global State Management
+
+## Context
+- When managing global application state
+- When handling user authentication state
+- When sharing data between components
+- When maintaining consistent state access patterns
+
+## Critical Rules
+- Use Redux for global state management
+- Create separate slices for different domains
+- Use TypeScript for type safety
+- Implement proper error and loading states
+- Use custom hooks for type-safe Redux access
+- Initialize development state with mock data
+- Handle unauthenticated states properly
+- Follow consistent state access patterns
+- Document state structure and actions
+- Maintain proper state organization
+
+## Examples
+
+<example>
+// Good: Proper slice organization and type safety
+// userSlice.ts
+import type { Author } from '@/types/blog';
+
+interface UserState {
+   currentUser: Author | null;
+   isLoading: boolean;
+   error: string | null;
+}
+
+export const userSlice = createSlice({
+   name: 'user',
+   initialState,
+   reducers: {
+      setCurrentUser: (state, action: PayloadAction<Author | null>) => {
+         state.currentUser = action.payload;
+      },
+   },
+});
+
+// Good: Type-safe state access
+function MyComponent() {
+   const currentUser = useAppSelector((state) => state.user.currentUser);
+   const dispatch = useAppDispatch();
+   
+   if (!currentUser) {
+      return <Typography>Please log in</Typography>;
+   }
+}
+</example>
+
+<example type="invalid">
+// Bad: Direct Redux store access
+const store = useStore();
+const user = store.getState().user;
+
+// Bad: No type safety
+const user = useSelector(state => state.user);
+
+// Bad: No error handling
+function MyComponent() {
+   const user = useAppSelector(state => state.user.currentUser);
+   return <div>{user.name}</div>; // Might crash if user is null
+}
+
+// Bad: Mixing concerns in a single slice
+interface BadState {
+   user: Author;
+   posts: Post[];
+   comments: Comment[];
+}
+</example>

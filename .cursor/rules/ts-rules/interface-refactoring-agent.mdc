@@ -1,0 +1,116 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Interface Refactoring Standards
+
+## Context
+- When modifying any TypeScript interface or type
+- When updating data models or API response types
+- When changing component prop types
+- When refactoring shared types
+
+## Critical Rules
+
+### Interface Update Process
+1. First identify ALL references:
+   - Use grep or semantic search for interface name
+   - Check component props and state types
+   - Check API service types
+   - Check Redux state and action types
+   - Look for extended interfaces
+
+2. For each interface change:
+   - Update the base interface
+   - Update all extending interfaces
+   - Update component prop types
+   - Update default values
+   - Update mock data types
+   - Update API service types
+   - Update state management types
+
+3. Verify and test:
+   - Run TypeScript compiler
+   - Check for type errors
+   - Test affected components
+   - Update unit tests
+   - Update integration tests
+
+4. Documentation:
+   - Update MEMORY_BANK with new type structure
+   - Document breaking changes
+   - Update API documentation
+   - Update component documentation
+
+### Type Safety Requirements
+- Never use `any` type as a temporary fix
+- Keep interfaces minimal but complete
+- Use proper TypeScript utility types
+- Maintain backwards compatibility when possible
+- Add proper JSDoc comments for complex types
+
+## Examples
+
+<example>
+// Good: Systematic interface update
+// 1. Update base interface
+interface User {
+  id: string;
+  name: string;
+  role: UserRole;
+}
+
+// 2. Update all related interfaces
+interface UserFormProps {
+  user: User;
+  onSubmit: (data: User) => void;
+}
+
+// 3. Update default values
+const defaultUser: User = {
+  id: '',
+  name: '',
+  role: 'USER'
+};
+
+// 4. Update API types
+interface UserResponse extends User {
+  createdAt: string;
+}
+
+// 5. Update MEMORY_BANK
+/**
+ * User Interface Changes:
+ * - Removed unused fields
+ * - Added required role field
+ * - Updated all related components
+ */
+</example>
+
+<example type="invalid">
+// Bad: Incomplete interface update
+// Only updating the base interface
+interface User {
+  id: string;
+  name: string;
+  role: UserRole;
+}
+
+// Leaving related interfaces unchanged
+interface UserFormProps {
+  user: {  // Should use User interface
+    id: string;
+    name: string;
+  };
+}
+
+// Not updating default values
+const defaultUser = {
+  id: '',
+  name: ''
+  // Missing role field
+};
+
+// Not documenting changes in MEMORY_BANK
+</example>

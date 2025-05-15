@@ -1,0 +1,84 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Sidebar Menu UI Implementation Standards
+
+## Context
+
+- When implementing nested sidebar menu components
+- When visual hierarchy and precise styling are required
+- When tree-like connector lines are needed for sub-items
+
+## Critical Rules
+
+- Menu Item Base Structure:
+  - Height: 36px
+  - Icon size: 20px
+  - Padding-left: level > 0 ? 24px : 20px
+  - Hover effect must not overlap connector lines
+
+- Tree Line Specifications:
+  - Main vertical line: 1px width, rgba(145, 158, 171, 0.16)
+  - Position: left: 10px
+  - Z-index: below menu items
+  - No double lines allowed
+
+- Horizontal Branches:
+  - Width: 8px
+  - Thickness: 1px
+  - Color: rgba(145, 158, 171, 0.16)
+  - Must align perfectly with parent item
+
+- Visual Hierarchy:
+  - Parent items: bold text
+  - Child items: regular text
+  - Consistent spacing between menu levels
+  - Clear visual distinction between active and inactive states
+
+## Examples
+
+<example>
+{
+  const MenuItem = styled('div')`
+    height: 36px;
+    padding-left: ${props => props.level > 0 ? '24px' : '20px'};
+    
+    .icon {
+      width: 20px;
+      height: 20px;
+    }
+    
+    &::before {
+      content: '';
+      width: 1px;
+      height: 100%;
+      left: 10px;
+      background: rgba(145, 158, 171, 0.16);
+      position: absolute;
+    }
+  `;
+}
+</example>
+
+<example type="invalid">
+{
+  const MenuItem = styled('div')`
+    // Invalid: Double tree lines and incorrect spacing
+    &::before, &::after {
+      content: '';
+      width: 2px;
+      height: 100%;
+      left: 15px;
+      background: #919eab;
+    }
+    
+    // Invalid: Hover effect covering connector lines
+    &:hover {
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 2;
+    }
+  `;
+}
+</example>

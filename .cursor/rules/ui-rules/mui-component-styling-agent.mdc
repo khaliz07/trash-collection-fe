@@ -1,0 +1,134 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# MUI Component Styling Standards
+
+## Context
+- When implementing UI components using MUI
+- When converting existing components to MUI
+- When maintaining consistent styling across the application
+- When customizing MUI components
+
+## Critical Rules
+
+### Component Structure
+- Use MUI's Box component for layout and containers
+- Use MUI's Typography for all text elements
+- Use MUI's Grid or Box with flex for layouts
+- Prefer direct styling over styled-components when possible
+
+### Styling Approach
+- Use sx prop for component-specific styles
+- Define styles inline with the component for better maintainability
+- Use theme colors and spacing when possible
+- Follow the established color scheme:
+  - Primary actions: #3ed6be
+  - Hover states: Slightly darker (#2fcbb0)
+  - Text colors: #2d3748 for main, #b0b7c3 for secondary
+  - Backgrounds: #f8f9fa for page, #fafdfe for cards
+
+### Layout Standards
+- Use Box with flex for centering and alignment
+- Maintain consistent spacing using MUI's spacing system
+- Use proper breakpoints for responsive design
+- Follow established border radius (borderRadius: 3)
+- Use consistent shadows (boxShadow: '0 4px 24px 0 rgba(0,0,0,0.04)')
+
+### Form Components
+- Use MUI TextField with custom styling
+- Maintain consistent input heights (48px)
+- Use consistent font sizes (15.5px for inputs)
+- Apply proper spacing between form elements
+- Include proper error states and messages
+
+### Button Standards
+- Use MUI Button component
+- Apply consistent padding (py: 1.5)
+- Use uppercase for button text
+- Maintain consistent border radius (borderRadius: 3)
+- Include hover states
+- Show loading states when needed
+
+## Examples
+
+<example>
+// Good: Proper MUI component styling
+<Box
+   sx={{
+      width: 370,
+      bgcolor: '#fafdfe',
+      borderRadius: 3,
+      boxShadow: '0 4px 24px 0 rgba(0,0,0,0.04)',
+      p: 4,
+   }}
+>
+   <Typography
+      variant="h5"
+      sx={{
+         color: '#3ed6be',
+         fontSize: 36,
+         fontWeight: 700,
+         mb: 1,
+      }}
+   >
+      Title
+   </Typography>
+   <TextField
+      fullWidth
+      sx={{
+         bgcolor: '#fff',
+         borderRadius: 3,
+         '& .MuiOutlinedInput-root': {
+            height: 48,
+            fontSize: 15.5,
+            color: '#2d3748',
+            fontWeight: 500,
+            '& fieldset': {
+               borderColor: 'rgb(240, 240, 240)',
+            },
+         },
+      }}
+   />
+   <Button
+      fullWidth
+      sx={{
+         bgcolor: '#3ed6be',
+         borderRadius: 3,
+         fontWeight: 700,
+         fontSize: 16,
+         py: 1.5,
+         textTransform: 'uppercase',
+         '&:hover': { bgcolor: '#2fcbb0' },
+      }}
+   >
+      Submit
+   </Button>
+</Box>
+</example>
+
+<example type="invalid">
+// Bad: Not using MUI components or inconsistent styling
+<div className="container">
+   <h1 className="title">Title</h1>
+   <input className="input" />
+   <button className="button">Submit</button>
+</div>
+
+// Bad: Mixing styling approaches
+<Box className="container" style={{ width: '370px' }}>
+   <Typography className="title">Title</Typography>
+</Box>
+
+// Bad: Not following color scheme
+<Button
+   sx={{
+      bgcolor: 'blue',
+      borderRadius: '20px',
+      padding: '10px',
+   }}
+>
+   Submit
+</Button>
+</example>

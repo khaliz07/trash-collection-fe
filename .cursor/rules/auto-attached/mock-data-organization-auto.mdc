@@ -1,0 +1,79 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Mock Data Organization
+
+## Context
+- When working with mock data in components
+- When setting up test data
+- When developing features without backend
+- When maintaining consistent data structure
+- When adding new features or entities
+
+## Critical Rules
+- All mock data MUST be centralized in `src/components/{feature}/mockData.ts`
+- Follow consistent naming convention: `mock{Entity}` (e.g., `mockCurrentUser`, `mockComments`)
+- NEVER define mock data inline in components
+- Export mock data as named constants
+- Use `as const` assertion for better type inference
+- Mock data MUST follow the same interface as real data
+- Mock data should be comprehensive for development and testing
+- Keep mock data organized by feature/domain
+- Update mock data when interfaces change
+- Use TypeScript interfaces from global types
+- Include realistic sample data
+- Maintain relationships between mock entities
+
+## Examples
+
+<example>
+// Good: Centralized and organized mock data
+// src/components/blog/mockData.ts
+import type { Author, BlogPost, Comment } from '@/types/blog';
+
+export const mockCurrentUser: Author = {
+   id: 'current-user',
+   name: 'Current User',
+   avatar: '/avatars/avatar_default.jpg',
+   role: 'Member',
+} as const;
+
+export const mockComments: Comment[] = [
+   {
+      id: '1',
+      content: 'Great post!',
+      author: mockCurrentUser,
+      // ... other fields
+   },
+];
+
+// Good: Using centralized mock data
+import { mockCurrentUser } from './mockData';
+<BlogComments currentUser={mockCurrentUser} />
+</example>
+
+<example type="invalid">
+// Bad: Inline mock data
+<BlogComments
+   currentUser={{
+      id: 'current-user',
+      name: 'Current User',
+      // ... other fields
+   }}
+/>
+
+// Bad: Mock data in component file
+const mockUser = {
+   id: 'current-user',
+   name: 'Current User',
+};
+
+// Bad: Inconsistent naming
+export const testUser = { ... }; // Should be mockUser
+export const dummyComments = [ ... ]; // Should be mockComments
+
+// Bad: Missing type information
+export const mockPosts = [ ... ]; // Should include type annotation
+</example>

@@ -1,0 +1,66 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# State Management Standards
+
+## Context
+- When working with Redux state
+- When managing application data
+- When implementing new features
+- When handling component state
+
+## Critical Rules
+- Use Redux Toolkit for global state management
+- Use custom hooks for type-safe Redux usage:
+  - useAppDispatch for dispatching actions
+  - useAppSelector for selecting state
+- Centralize mock data in feature directories
+- Define proper TypeScript interfaces for all state
+- Use proper action creators from Redux Toolkit
+- Keep component state local when appropriate
+- Use proper loading and error states
+
+## Examples
+
+<example>
+// Good: Type-safe Redux usage
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+
+export function UserProfile() {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(state => state.user.current);
+  const isLoading = useAppSelector(state => state.user.loading);
+
+  return isLoading ? <Loading /> : <ProfileDisplay user={user} />;
+}
+
+// Good: Centralized mock data
+// src/features/user/mockData.ts
+export const mockUser = {
+  id: '1',
+  name: 'John Doe',
+  role: 'USER'
+};
+</example>
+
+<example type="invalid">
+// Bad: No type safety
+const dispatch = useDispatch();
+const user = useSelector(state => state.user);
+
+// Bad: Inline mock data
+function UserList() {
+  const users = [
+    { id: 1, name: 'John' },
+    { id: 2, name: 'Jane' }
+  ];
+}
+
+// Bad: No loading state
+function DataComponent() {
+  const data = useAppSelector(state => state.data);
+  return <Display data={data} />; // No loading check
+}
+</example>

@@ -1,0 +1,105 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Component and Data Move Rules
+
+## Context
+
+- When consolidating mock data into a centralized location
+- When moving components between directories
+- When refactoring component structure
+- When updating import paths after moves
+- When cleaning up old files/data after moves
+
+## Critical Rules
+
+### Mock Data Consolidation
+1. First identify ALL mock data locations:
+   - Search in component files (index.tsx, etc.)
+   - Search in page files (page.tsx, etc.)
+   - Search in test files
+   - Look for patterns like `mock`, `const.*=.*[`, `const.*=.*{`
+
+2. For each piece of mock data:
+   - Move to centralized location (e.g., mockData.ts) in relevant feature folder
+   - Keep mock data organized by feature/domain
+   - Update types if needed (check linter errors)
+   - Add proper exports
+
+3. Update all references:
+   - Use grep or semantic search to find ALL usages
+   - Update imports to use new centralized location
+   - Remove old mock data definitions
+   - Keep component logic intact
+
+4. Verify and test:
+   - Run linter to catch type mismatches
+   - Test components using the moved mock data
+   - Ensure no duplicate mock data remains
+
+### Component Moves
+1. First analyze the component:
+   - Check all imports and dependencies
+   - Note any mock data usage
+   - Check for any shared types/interfaces
+
+2. Create new structure:
+   - Create target directory with proper structure
+   - Move component files maintaining folder structure
+   - Update internal imports to match new location
+
+3. Update all references:
+   - Find all imports of the moved component
+   - Update import paths in all files
+   - Update any relative paths within the component
+
+4. Clean up:
+   - Only remove old files after verifying all moves
+   - Keep shared utilities/types if needed by others
+   - Remove empty directories
+
+## Examples
+
+<example>
+// Good: Systematic mock data consolidation
+// 1. Find all mock data
+$ grep -r "mock" src/components/blog/
+$ grep -r "const.*=" src/components/blog/
+
+// 2. Move to centralized location
+// src/components/blog/mockData.ts
+export const mockComments = [...];
+export const mockBlogPosts = [...];
+export const mockPost = {...};
+
+// 3. Update imports
+import { mockComments, mockPost } from '../mockData';
+
+// 4. Remove old definitions
+- const mockPost = {...}  // Remove
+export function BlogPage() {
+  // Keep component logic
+}
+</example>
+
+<example type="invalid">
+// Bad: Incomplete mock data move
+// Don't partially move mock data
+// src/components/blog/mockData.ts
+export const mockComments = [...];  // Only moved some data
+
+// src/components/blog/page.tsx
+const mockPost = {...}  // Left some mock data behind
+
+// Bad: Breaking references
+// Don't delete files before updating all imports
+rm src/components/blog/mockData.ts  // Wrong! Check references first
+
+// Bad: Mixing concerns
+// Don't mix mock data from different features
+// src/mockData.ts
+export const mockComments = [...];  // Blog feature
+export const mockUsers = [...];     // User feature
+</example>

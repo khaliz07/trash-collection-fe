@@ -1,0 +1,91 @@
+# Project Structure Rules
+
+## Directory Structure
+```
+src/
+├── app/                    # Next.js app directory
+│   ├── (auth)/            # Authentication routes
+│   │   ├── layout.tsx     # Auth layout
+│   │   ├── login/         # Login page
+│   │   └── signup/        # Signup page
+│   ├── (user)/            # User routes
+│   │   ├── dashboard/     # User dashboard
+│   │   ├── payment/       # Payment management
+│   │   ├── history/       # Payment history
+│   │   ├── support/       # Support tickets
+│   │   └── profile/       # User profile
+│   └── (admin)/           # Admin routes
+│       ├── dashboard/     # Admin dashboard
+│       ├── users/         # User management
+│       ├── payments/      # Payment management
+│       ├── invoices/      # Invoice management
+│       └── support/       # Support management
+├── components/            # Reusable components
+│   ├── common/           # Common components
+│   ├── layouts/          # Layout components
+│   └── features/         # Feature-specific components
+├── store/                # Redux store
+│   ├── auth/            # Authentication module
+│   │   ├── authSlice.ts    # Auth reducer
+│   │   ├── authActions.ts  # Auth actions
+│   │   └── authSelectors.ts # Auth selectors
+│   ├── user/            # User module
+│   │   ├── userSlice.ts    # User reducer
+│   │   ├── userActions.ts  # User actions
+│   │   └── userSelectors.ts # User selectors
+│   └── blog/            # Blog module
+│       ├── blogSlice.ts    # Blog reducer
+│       ├── blogActions.ts  # Blog actions
+│       └── blogSelectors.ts # Blog selectors
+├── services/            # API services
+│   ├── authApi.ts      # Auth API
+│   ├── userApi.ts      # User API
+│   ├── paymentApi.ts   # Payment API
+│   └── supportApi.ts   # Support API
+├── types/              # TypeScript types
+│   ├── auth.types.ts   # Auth types
+│   ├── user.types.ts   # User types
+│   ├── payment.types.ts # Payment types
+│   └── support.types.ts # Support types
+└── lib/               # Utility functions
+    └── axios.ts       # Axios client
+```
+
+## Redux Store Rules
+
+1. **Feature-based Organization**:
+   - Each feature has its own directory in `src/store/`
+   - Feature directory contains slice, actions, and selectors
+   - Related types are in `src/types/`
+
+2. **Module Structure**:
+   - `*Slice.ts`: Contains reducer and state
+   - `*Actions.ts`: Contains async thunks
+   - `*Selectors.ts`: Contains state selectors
+
+3. **Type Safety**:
+   - Use TypeScript for all files
+   - Define types in `src/types/`
+   - Use interfaces for object types
+   - Export all types used across modules
+
+4. **State Management**:
+   - Use Redux Toolkit
+   - Keep actions and selectors separate from slice
+   - Use createAsyncThunk for async actions
+   - Use createSlice for reducers
+
+5. **API Integration**:
+   - All API calls in `src/services/`
+   - One service file per feature
+   - Use axios client from `src/lib/axios.ts`
+
+6. **Component Organization**:
+   - Common components in `src/components/common/`
+   - Layout components in `src/components/layouts/`
+   - Feature-specific components in `src/components/features/`
+
+7. **Route Organization**:
+   - Group routes by feature in `src/app/`
+   - Use route groups for layout sharing
+   - Keep page components simple and focused 

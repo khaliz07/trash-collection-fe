@@ -1,0 +1,116 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Project Structure and Organization
+
+## Context
+- When organizing project files and folders
+- When creating new features or components
+- When implementing user/admin interfaces
+- When managing project architecture
+- When making any changes to project structure
+
+## Critical Rules
+
+### Memory Bank Integration
+- ALWAYS check MEMORY_BANK.md before making any structural changes
+- ALWAYS update MEMORY_BANK.md after implementing changes
+- Follow this process for EVERY change:
+  1. Check MEMORY_BANK first
+  2. Review existing structure
+  3. Implement changes
+  4. Update MEMORY_BANK
+- Never skip MEMORY_BANK check/update steps
+
+### Directory Structure
+- Follow established project structure:
+  ```
+  src/
+  ├── components/     # Reusable UI components
+  ├── features/       # Feature modules
+  ├── pages/         # Route components
+  ├── services/      # API integration
+  ├── store/         # State management
+  ├── types/         # TypeScript definitions
+  └── utils/         # Helper functions
+  ```
+
+### Feature Organization
+- Each feature module must have:
+  - Components specific to the feature
+  - Feature-specific types
+  - Feature-specific state management
+  - Feature-specific services
+  - Mock data for development
+
+### Route Organization
+- User routes under main app directory
+- Admin routes under /admin directory
+- Protected routes with proper auth checks
+- Consistent layout structure
+
+### Component Organization
+- Common components in components/common
+- Feature-specific components in features/{feature}/components
+- Follow component naming conventions
+- Maintain proper component hierarchy
+
+## Examples
+
+<example>
+// Good: Proper feature organization with MEMORY_BANK integration
+// 1. Check MEMORY_BANK first
+// 2. Review existing structure
+// 3. Implement changes
+src/features/payment/
+├── components/
+│   ├── PaymentForm.tsx
+│   └── PackageSelector.tsx
+├── types/
+│   └── payment.types.ts
+├── services/
+│   └── payment.service.ts
+├── store/
+│   └── paymentSlice.ts
+└── mockData.ts
+
+// 4. Update MEMORY_BANK with new structure
+
+// Good: Protected admin route with MEMORY_BANK check
+// 1. Check MEMORY_BANK for existing admin routes
+// 2. Follow established patterns
+// pages/admin/users.tsx
+export default function AdminUsersPage() {
+   const { isAdmin } = useAuth();
+   
+   if (!isAdmin) {
+      return <AccessDenied />;
+   }
+   
+   return <UserManagement />;
+}
+// 3. Update MEMORY_BANK with new route
+</example>
+
+<example type="invalid">
+// Bad: No MEMORY_BANK check
+// Started implementation without checking existing structure
+src/pages/
+└── payment/
+    ├── components.tsx  // All components in one file
+    ├── types.ts
+    └── utils.ts
+
+// Bad: No MEMORY_BANK update
+// Implemented changes but didn't update documentation
+// pages/admin/dashboard.tsx
+export default function AdminDashboard() {
+   return <DashboardContent />;  // Missing auth check
+}
+
+// Bad: Inconsistent structure without MEMORY_BANK review
+src/features/support/
+└── support.tsx  // Everything in one file
+</example>

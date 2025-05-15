@@ -1,0 +1,60 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# File Structure Management Rules
+
+## Context
+- When files or components are in wrong locations
+- When restructuring project directories
+- When moving files between directories
+
+## Critical Rules
+- NEVER rewrite or recreate files when they are in wrong locations
+- ALWAYS move files/folders to their correct locations using system commands
+- Use `mv` command to move files/folders to correct locations
+- Use `rm -rf` to remove old directories only after successful moves
+- Preserve all existing code, styles, and logic when moving files
+- Keep the original file content intact during moves
+- Verify file contents after moves to ensure nothing is lost
+
+## File Integrity Checklist
+- [ ] List ALL files in source directory before moving
+- [ ] Check for hidden files (starting with .)
+- [ ] Check for layout files (layout.tsx)
+- [ ] Check for configuration files (config.ts, etc.)
+- [ ] Check for component files
+- [ ] Check for style files
+- [ ] Check for test files
+- [ ] Verify ALL files are moved successfully
+- [ ] Compare file contents before and after move
+- [ ] Only delete source directory after ALL files are verified
+
+## Examples
+
+<example>
+# Correct way to move files
+# 1. List all files first
+ls -la src/app/(user)
+
+# 2. Move files one by one
+mv src/app/(user)/layout.tsx src/app/user/
+mv src/app/(user)/dashboard src/app/user/
+mv src/app/(user)/components src/app/user/
+
+# 3. Verify all files are moved
+ls -la src/app/user
+
+# 4. Only then remove old directory
+rm -rf src/app/(user)
+</example>
+
+<example type="invalid">
+# Incorrect way - recreating files
+# Creating new files in correct location
+# Copying and pasting code
+# Rewriting components
+# Moving without verification
+# Deleting source before verification
+</example>

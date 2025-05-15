@@ -1,0 +1,63 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Documentation Updates After Task Completion
+
+## Context
+- When completing any significant task or change
+- When user approves the changes or agrees with implementation
+- When maintaining project documentation
+- When ensuring knowledge transfer and maintenance
+- When user indicates approval with phrases like "tot", "ok", "good", "đồng ý", etc.
+
+## Critical Rules
+- After completing and getting approval for any significant change:
+  1. Update Memory Bank with:
+     - New components/features added
+     - Changes to existing components
+     - New patterns or best practices
+     - Updated type definitions
+     - Code organization changes
+  2. Update relevant Cursor Rules with:
+     - New conventions established
+     - Refined patterns
+     - Improved examples
+     - Updated anti-patterns
+  3. Keep documentation in sync with:
+     - Component structure
+     - Type definitions
+     - State management
+     - UI/UX patterns
+- Document both the WHAT and the WHY of changes
+- Include examples of good and bad practices
+- Keep documentation concise and organized
+- Use diagrams when helpful for understanding
+- MUST update documentation when user indicates approval with phrases like "tot", "ok", "good", "đồng ý"
+
+## Examples
+
+<example>
+// Good: After user approves Redux implementation with "tot"
+// 1. Update Memory Bank
+# MEMORY BANK: Redux Implementation
+- Store configuration with proper typing
+- Custom hooks for type safety
+- Component integration pattern
+- State management best practices
+
+// 2. Update Cursor Rules
+# Redux Integration Rule
+- Use custom hooks for type safety
+- Follow container/presentational pattern
+- Handle loading and error states
+- Maintain proper action typing
+</example>
+
+<example type="invalid">
+// Bad: No documentation updates after approval
+User: "tot"
+Assistant: "Thanks! Let's move on to the next task"
+// Missing Memory Bank and Rules updates
+</example>

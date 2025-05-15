@@ -1,0 +1,61 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Component Structure Standards
+
+## Context
+- When creating or modifying components
+- When organizing component files
+- When implementing new features
+- When maintaining consistent project structure
+
+## Critical Rules
+- All components must be in their own folder under appropriate directory:
+  - Custom components: `src/components/common/`
+  - Feature components: `src/components/{feature-name}/`
+- Each component folder must contain:
+  - `index.tsx`: Main component implementation
+  - `types.ts`: TypeScript interfaces
+  - `styles.ts`: Styled components
+- Custom components (wrapping MUI) must use "App" prefix
+- Regular components must NOT use "App" prefix
+- All exports must be named exports
+- All components must have proper TypeScript interfaces
+- Mock data must be centralized in feature directories
+
+## Examples
+
+<example>
+// Good component structure
+📁 src/components/common/AppTextField/
+├── index.tsx
+├── types.ts
+└── styles.ts
+
+// Good implementation
+import { TextFieldProps } from '@mui/material';
+
+export interface AppTextFieldProps extends TextFieldProps {
+  customProp?: string;
+}
+
+export function AppTextField(props: AppTextFieldProps) {
+  return <TextField {...props} />;
+}
+</example>
+
+<example type="invalid">
+// Bad: Missing proper structure
+📁 src/components/TextField.tsx
+
+// Bad: Using default export
+export default function AppButton() {}
+
+// Bad: Missing types
+export function UserProfile(props: any) {}
+
+// Bad: Wrong prefix usage
+export function AppUserProfile() {} // Should not have App prefix
+</example>

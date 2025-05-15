@@ -1,0 +1,54 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Component Style Preservation
+
+## Context
+- When modifying project structure or refactoring components
+- When moving components between directories
+- When updating imports or dependencies
+
+## Critical Rules
+- NEVER change existing component styles during refactoring
+- Keep all existing className strings exactly as they are
+- Preserve all Tailwind CSS classes in their original order
+- Maintain all existing style-related props (sx, style, etc.)
+- Keep all existing CSS modules imports and usage
+- Preserve all existing theme configurations
+- Do not modify or remove any existing style-related imports
+
+## Examples
+
+<example>
+// Original component
+<div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
+    {children}
+  </div>
+</div>
+
+// Correct refactoring - styles preserved
+<div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
+    {children}
+  </div>
+</div>
+</example>
+
+<example type="invalid">
+// Original component
+<div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
+    {children}
+  </div>
+</div>
+
+// Incorrect refactoring - styles changed
+<div className="h-screen flex justify-center bg-gray-100">
+  <div className="w-full max-w-lg p-6 bg-white shadow-md">
+    {children}
+  </div>
+</div>
+</example>

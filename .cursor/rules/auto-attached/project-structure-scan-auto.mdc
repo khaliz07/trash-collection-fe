@@ -1,0 +1,49 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Project Structure Scanning
+
+## Context
+- Before making any changes to imports or file structure
+- When adding new features or components
+- When refactoring existing code
+- When updating dependencies
+
+## Critical Rules
+- ALWAYS scan project structure using `list_dir` tool before making changes
+- Verify file existence before importing
+- Check for correct file paths and exports
+- Update MEMORY_BANK.md with any structural changes
+- Follow the established directory structure:
+  ```
+  src/
+  ├── app/                    # Next.js app directory
+  ├── components/            # Reusable components
+  ├── store/                # Redux store
+  ├── services/            # API services
+  ├── types/              # TypeScript types
+  └── lib/               # Utility functions
+  ```
+- Never assume file locations or exports
+- Always verify exports before importing
+- Document any new directories or files in MEMORY_BANK.md
+
+## Examples
+
+<example>
+// Correct approach
+1. First scan the directory:
+   list_dir('src/store/auth')
+2. Verify file exists and check exports
+3. Then make the import:
+   import { authSlice } from '@/store/auth/authSlice'
+</example>
+
+<example type="invalid">
+// Incorrect approach
+// Making imports without verifying structure
+import { authActions } from '@/store/auth/authSlice' // Might not exist
+import { useAppDispatch } from '@/store/rootStore' // Wrong path
+</example>

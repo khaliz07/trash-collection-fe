@@ -1,0 +1,265 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Common Components Usage
+
+## Context
+- Ensures consistent component styling and behavior across the application
+- Maintains design system consistency
+- Handles component naming conventions
+- Enforces TypeScript interfaces and proper exports
+- Maintains clear folder structure and file organization
+
+## Critical Rules
+
+### Custom Components vs Regular Components
+- Custom components are ONLY components that customize existing library components (e.g., MUI Button, TextField)
+- Regular components are components built from scratch for specific features (e.g., BlogComment, UserProfile)
+- NEVER use the "App" prefix for regular components that do not wrap library components
+
+### Custom Components Rules
+- Must use the "App" prefix for ALL custom components that wrap/customize library components
+- Check `src/components/common/` before creating any new custom component
+- Common custom components must be exported as named exports
+- All custom components must have proper TypeScript interfaces
+- Custom components must extend base component props when wrapping library components
+
+### Component Organization
+- Each component must be in its own folder under the appropriate directory:
+  - Custom components: `src/components/common/`
+  - Feature components: `src/components/{feature-name}/`
+- Folder name must match the component's purpose (e.g., BlogComment component in BlogComment folder)
+- Each component folder must contain:
+  - `index.tsx`: Main component implementation
+  - `types.ts`: TypeScript interfaces and types
+  - `styles.ts`: Styled components and style configurations
+- All exports should be done through the `index.tsx` file
+- All exports must be named exports
+- All components must have proper TypeScript interfaces
+
+### Required Custom Components
+The following components MUST use their custom "App" prefixed version:
+- AppTextField - For all text input fields
+- AppSelect - For dropdown selections
+- AppMenu - For dropdown menus with items
+- AppBadge - For status badges and counters
+- AppButton - For action buttons
+- AppCard - For card containers
+- AppDialog - For modal dialogs
+- AppTabButton - For tab navigation buttons
+- AppDataGrid - For data tables/grids
+
+### Naming Convention
+- Custom components MUST be prefixed with "App" (e.g., AppTextField)
+- Regular components should NOT have the "App" prefix
+- Base library components should not have the "App" prefix
+- Keep consistent naming across the application
+
+## Examples
+<example>
+// Good: Custom component wrapping MUI TextField
+📁 src/components/common/AppTextField/
+├── index.tsx
+├── types.ts
+└── styles.ts
+
+// types.ts
+import { TextFieldProps } from '@mui/material';
+export interface AppTextFieldProps extends TextFieldProps {
+   // Additional custom props
+}
+
+// index.tsx
+import { TextField } from '@mui/material';
+import { AppTextFieldProps } from './types';
+export function AppTextField(props: AppTextFieldProps) {
+   return <TextField {...props} />;
+}
+
+// Good: Regular component for blog feature
+📁 src/components/BlogComments/
+├── index.tsx
+├── CommentItem.tsx
+├── CommentHeader.tsx
+└── types.ts
+
+// types.ts
+export interface Comment {
+   id: string;
+   content: string;
+   // ...other props
+}
+
+// index.tsx
+export function BlogComments({ comments }: BlogCommentsProps) {
+   return <div>{/* Implementation */}</div>;
+}
+
+// Good: Using existing AppAvatar
+import { AppAvatar } from '@/components/common/AppAvatar';
+<AppAvatar src={user.avatar} alt={user.name} size={40} />
+</example>
+<example type="invalid">
+// Bad: Creating new AppAvatar when one exists
+// src/components/common/AppAvatar/index.tsx already exists
+
+// Bad: Using MUI Avatar directly
+import { Avatar } from '@mui/material';
+<Avatar src={user.avatar} />
+
+// Bad: Using App prefix for non-custom component
+export function AppBlogComment() {} // Should be BlogComment
+
+// Bad: Not using App prefix for custom component
+export function CustomTextField() {} // Should be AppTextField
+
+// Bad: Wrong folder structure for custom component
+📁 src/components/common/
+└── TextField.tsx // Should be in AppTextField folder
+
+// Bad: Direct default export
+export default function AppButton() {} // Should use named export
+
+// Bad: Missing required files
+📁 src/components/common/AppSelect/
+└── index.tsx // Missing types.ts and styles.ts
+</example>
+
+# AppAvatar Custom Component Rule
+
+## Context
+- AppAvatar is the only custom component allowed for avatars throughout the application
+- Ensures consistent avatar, supports fallback, custom size, style, and design system compliance
+
+## Critical Rules
+- Always use AppAvatar instead of the MUI Avatar everywhere an avatar is needed
+- Do not import or use the MUI Avatar directly in any feature/component
+- AppAvatar must be located at `src/components/common/AppAvatar/`
+- Must have `types.ts` (interface extends AvatarProps, adds fallback, size), `styles.ts`, `index.tsx` (named export)
+- Do not use default export
+
+## Examples
+<example>
+import { AppAvatar } from '@/components/common/AppAvatar';
+<AppAvatar src={user.avatar} alt={user.name} fallback={user.name.charAt(0)} size={40} />
+</example>
+<example type="invalid">
+import { Avatar } from '@mui/material';
+<Avatar src={user.avatar} /> // Not allowed, must use AppAvatar
+</example>
+
+# Auto-update Usage When Customizing/Refactoring Components
+
+## Context
+- When customizing, refactoring, splitting, renaming, or changing the API of a shared (common/feature) component
+- Ensure all usages of the component are updated consistently to avoid runtime or UI errors
+
+## Critical Rules
+- After customizing/splitting/renaming/changing the API of a component, you must check the entire codebase for usages of the old component
+- If found, update them to use the new component or new API
+- Do not leave any usage of the old or deprecated component/API after refactor
+- If splitting into multiple subcomponents, update all related imports/exports and usages
+- Clearly note these changes in the commit or PR description
+
+## Examples
+<example>
+// Before refactor
+import { BlogComment } from '@/components/BlogComment';
+<BlogComment ... />
+
+// After splitting into BlogComment, BlogCommentHeader, BlogCommentBody
+import { BlogComment } from '@/components/BlogComment';
+import { BlogCommentHeader } from '@/components/BlogCommentHeader';
+import { BlogCommentBody } from '@/components/BlogCommentBody';
+// ...and update usages everywhere accordingly
+</example>
+<example type="invalid">
+// Still importing or using the old component after it was split/customized
+import { BlogCommentOld } from '@/components/BlogCommentOld';
+<BlogCommentOld ... /> // Not allowed, must update to the new component
+</example>
+
+# UI Layout and Hierarchy Compliance Rule
+
+## Context
+- When implementing or reviewing UI components based on design images or mockups
+- Ensures that the layout, alignment, and hierarchy of elements match the design specification
+
+## Critical Rules
+- Always pay attention to the layout, alignment, and hierarchy (level) of elements as shown in the design
+- Action buttons (e.g., Reply) must be aligned with the relevant content (e.g., user name) on the same row if specified in the design
+- The visual structure, indentation, and grouping of components must match the design mockup
+- Do not arbitrarily change the level or alignment of elements compared to the design
+- Review all design images for correct component nesting and placement before implementation
+
+## Example
+<example>
+// Good: Reply button is on the same row as the user name, matching the design
+<Stack direction="row" alignItems="center" justifyContent="space-between">
+  <UserNameAndRole />
+  <ReplyButton />
+</Stack>
+
+// Good: Nested replies are indented according to the design hierarchy
+<Box sx={{ ml: level * 24 }}>
+  <CommentContent />
+</Box>
+</example>
+<example type="invalid">
+// Bad: Reply button is below the user name when the design shows it on the same row
+<UserNameAndRole />
+<ReplyButton /> // Not matching the design
+
+// Bad: All comments are at the same indentation level, ignoring reply hierarchy
+<CommentContent />
+<CommentContent />
+</example>
+
+# Comment Border Usage Rule
+
+## Context
+- For all comment or threaded discussion components
+- Ensures clean, modern UI and clear visual hierarchy
+
+## Critical Rules
+- Top-level (level 0) comments must NOT have any border (no border, border-bottom, or borderColor)
+- Only nested (reply) comments (level > 0) may use border-left to indicate hierarchy
+- For CommentReply (nested replies), use borderTop to separate each reply
+- For the last reply in a group, you may also use borderBottom for clear separation
+- Do not use a border around the entire comment block for top-level comments
+- Use padding, margin, and background for spacing and grouping instead of borders
+
+## Example
+<example>
+// Good: Only replies have border-left, borderTop between replies, borderBottom for last reply
+<Box sx={{ pb: 3 }}>
+  <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
+    ...top-level comment content...
+  </Box>
+  <Box sx={{ ml: 3, pl: 2, borderLeft: '2px solid #e0e0e0' }}>
+    <Box sx={{ borderTop: '1px solid #e0e0e0' }}>
+      ...reply 1 content...
+    </Box>
+    <Box sx={{ borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
+      ...last reply content...
+    </Box>
+  </Box>
+</Box>
+</example>
+<example type="invalid">
+// Bad: Top-level comment has border or borderColor
+<Box sx={{ border: '1px solid', borderColor: 'grey.200' }}>
+  ...top-level comment content...
+</Box>
+// Bad: Top-level comment has border-bottom
+<Box sx={{ borderBottom: '1px solid #e0e0e0' }}>
+  ...top-level comment content...
+</Box>
+// Bad: Replies have no borderTop separation
+<Box sx={{ ml: 3, pl: 2, borderLeft: '2px solid #e0e0e0' }}>
+  <Box>...reply 1...</Box>
+  <Box>...reply 2...</Box>
+</Box>
+</example>
