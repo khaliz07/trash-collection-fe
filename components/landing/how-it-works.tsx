@@ -1,46 +1,49 @@
 import Image from 'next/image'
 import { CheckCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import '../../i18n'
 
 export function HowItWorks() {
+  const { t } = useTranslation()
   const steps = [
     {
-      number: "01",
-      title: "Sign up for an account",
-      description: "Create your household account and verify your location and contact details.",
+      number: '01',
+      title: t('howItWorks.steps.0.title'),
+      description: t('howItWorks.steps.0.description'),
       checks: [
-        "Simple registration process",
-        "Secure account verification",
-        "Profile customization options"
+        t('howItWorks.steps.0.checks.0'),
+        t('howItWorks.steps.0.checks.1'),
+        t('howItWorks.steps.0.checks.2')
       ]
     },
     {
-      number: "02",
-      title: "Choose your service plan",
-      description: "Select from monthly, quarterly, or yearly waste collection subscription plans.",
+      number: '02',
+      title: t('howItWorks.steps.1.title'),
+      description: t('howItWorks.steps.1.description'),
       checks: [
-        "Flexible payment options",
-        "Transparent pricing",
-        "Easy plan upgrades"
+        t('howItWorks.steps.1.checks.0'),
+        t('howItWorks.steps.1.checks.1'),
+        t('howItWorks.steps.1.checks.2')
       ]
     },
     {
-      number: "03",
-      title: "Access your collection schedule",
-      description: "View your assigned collection days based on your location and service type.",
+      number: '03',
+      title: t('howItWorks.steps.2.title'),
+      description: t('howItWorks.steps.2.description'),
       checks: [
-        "Calendar integration",
-        "Email and SMS reminders",
-        "Schedule changes notifications"
+        t('howItWorks.steps.2.checks.0'),
+        t('howItWorks.steps.2.checks.1'),
+        t('howItWorks.steps.2.checks.2')
       ]
     },
     {
-      number: "04",
-      title: "Manage your collections",
-      description: "Track collection status, request special pickups, and rate your service.",
+      number: '04',
+      title: t('howItWorks.steps.3.title'),
+      description: t('howItWorks.steps.3.description'),
       checks: [
-        "Real-time collection tracking",
-        "Urgent collection requests",
-        "Service quality feedback"
+        t('howItWorks.steps.3.checks.0'),
+        t('howItWorks.steps.3.checks.1'),
+        t('howItWorks.steps.3.checks.2')
       ]
     }
   ]
@@ -51,16 +54,15 @@ export function HowItWorks() {
         <div className="flex flex-col items-center text-center space-y-4 mb-12 md:mb-16">
           <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium">
             <span className="text-primary mr-1">🔄</span>
-            <span>Simple Process</span>
+            <span>{t('howItWorks.simpleProcess')}</span>
           </div>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            How EcoCollect works
+            {t('howItWorks.heading')}
           </h2>
           <p className="max-w-[700px] text-muted-foreground md:text-lg">
-            We've simplified waste management into four easy steps to get you started quickly.
+            {t('howItWorks.description')}
           </p>
         </div>
-        
         <div className="grid gap-12 md:gap-16">
           {steps.map((step, index) => (
             <div key={index} className="grid md:grid-cols-5 gap-6 md:gap-12 items-center">
@@ -68,12 +70,11 @@ export function HowItWorks() {
                 <div className="relative aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-xl overflow-hidden border">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-4xl font-bold text-primary/30">
-                      Step {step.number}
+                      {t('howItWorks.stepLabel', { number: step.number })}
                     </div>
                   </div>
                 </div>
               </div>
-              
               <div className={`md:col-span-3 ${index % 2 === 1 ? 'md:order-1' : ''}`}>
                 <div className="space-y-4">
                   <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-medium">

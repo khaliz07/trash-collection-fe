@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { Recycle as Recycling } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import '../../i18n'
 
 export function SiteFooter() {
+  const { t } = useTranslation()
   return (
     <footer className="border-t bg-background">
       <div className="container py-12 md:py-16">
@@ -9,71 +12,71 @@ export function SiteFooter() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-2 font-bold">
               <Recycling className="h-6 w-6 text-primary" />
-              <span>EcoCollect</span>
+              <span>{t('ecocollect')}</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Modern waste collection and management system making the world cleaner, one pickup at a time.
+              {t('footer.slogan')}
             </p>
           </div>
           
           <div className="space-y-3">
-            <h3 className="font-medium">Platform</h3>
+            <h3 className="font-medium">{t('footer.platform')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/features" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Features
+                  {t('features')}
                 </Link>
               </li>
               <li>
                 <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Pricing
+                  {t('pricing')}
                 </Link>
               </li>
               <li>
                 <Link href="/faq" className="text-muted-foreground hover:text-foreground transition-colors">
-                  FAQ
+                  {t('footer.faq')}
                 </Link>
               </li>
             </ul>
           </div>
           
           <div className="space-y-3">
-            <h3 className="font-medium">Company</h3>
+            <h3 className="font-medium">{t('footer.company')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
-                  About
+                  {t('footer.about')}
                 </Link>
               </li>
               <li>
                 <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Blog
+                  {t('footer.blog')}
                 </Link>
               </li>
               <li>
                 <Link href="/careers" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Careers
+                  {t('footer.careers')}
                 </Link>
               </li>
             </ul>
           </div>
           
           <div className="space-y-3">
-            <h3 className="font-medium">Legal</h3>
+            <h3 className="font-medium">{t('footer.legal')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Privacy
+                  {t('footer.privacy')}
                 </Link>
               </li>
               <li>
                 <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Terms
+                  {t('footer.terms')}
                 </Link>
               </li>
               <li>
                 <Link href="/cookie-policy" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Cookie Policy
+                  {t('footer.cookiePolicy')}
                 </Link>
               </li>
             </ul>
@@ -81,19 +84,19 @@ export function SiteFooter() {
         </div>
         
         <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>© 2025 EcoCollect. All rights reserved.</p>
+          <p>{t('footer.copyright')}</p>
           <div className="flex items-center gap-4">
             <Link href="#" className="hover:text-foreground transition-colors">
-              Twitter
+              {t('footer.twitter')}
             </Link>
             <Link href="#" className="hover:text-foreground transition-colors">
-              Instagram
+              {t('footer.instagram')}
             </Link>
             <Link href="#" className="hover:text-foreground transition-colors">
-              LinkedIn
+              {t('footer.linkedin')}
             </Link>
             <Link href="#" className="hover:text-foreground transition-colors">
-              GitHub
+              {t('footer.github')}
             </Link>
           </div>
         </div>

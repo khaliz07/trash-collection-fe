@@ -27,7 +27,6 @@
   "recent_devices": "Recent Login Devices",
   "current_device": "Current Device",
   "other_device": "Other Device",
-  "logout": "Logout",
   "delete_account": "Delete Account",
   "delete_account_desc": "After deletion, your account will be disabled and cannot be recovered. Please confirm OTP and reason for deletion.",
   "otp_verify_phone": "Verify new phone number",
@@ -131,5 +130,196 @@
   "status_rejected": "Rejected",
   "status_unknown": "Unknown",
   "your_comment": "Your comment (optional)",
-  "send_evaluation": "Send Evaluation"
+  "send_evaluation": "Send Evaluation",
+  "footer": {
+    "slogan": "Modern waste collection and management system making the world cleaner, one pickup at a time.",
+    "platform": "Platform",
+    "faq": "FAQ",
+    "company": "Company",
+    "about": "About",
+    "blog": "Blog",
+    "careers": "Careers",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookiePolicy": "Cookie Policy",
+    "copyright": "© 2025 EcoCollect. All rights reserved.",
+    "twitter": "Twitter",
+    "instagram": "Instagram",
+    "linkedin": "LinkedIn",
+    "github": "GitHub"
+  },
+  "features": "Features",
+  "how_it_works": "How it works",
+  "pricing": "Pricing",
+  "contact": "Contact",
+  "cta": {
+    "pricingPlans": "Flexible pricing plans",
+    "simplePricing": "Simple, transparent pricing",
+    "choosePlan": "Choose the plan that fits you best",
+    "monthly": "Monthly",
+    "perMonth": "per month",
+    "billedMonthly": "Billed monthly",
+    "weeklyCollection": "Weekly waste collection",
+    "realTimeTracking": "Real-time collection tracking",
+    "popular": "Most popular",
+    "yearly": "Yearly",
+    "perYear": "per year",
+    "billedAnnually": "Billed annually",
+    "everythingInMonthly": "Everything in Monthly plan",
+    "freeUrgentCollection": "Free urgent collection",
+    "prioritySupport": "Priority support",
+    "detailedAnalytics": "Detailed analytics",
+    "getStarted": "Get Started",
+    "readyToTransform": "Ready to transform your waste management?",
+    "joinThousands": "Join thousands of households making a difference.",
+    "getStartedNow": "Get Started Now"
+  },
+  "hero": {
+    "sustainable": "Sustainable & Smart",
+    "title": "Modern Waste Collection for a Cleaner Tomorrow",
+    "description": "EcoCollect helps you manage waste efficiently, conveniently, and sustainably.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "trustedBy": "Trusted by over {{count}} households",
+    "collectionSchedule": "Your Collection Schedule",
+    "nextCollection": "Next Collection",
+    "tomorrowTime": "Tomorrow at 5:00 AM",
+    "specialCollection": "Special Collection",
+    "requestedForSaturday": "Requested for Saturday",
+    "collectionStatus": "Status: {{status}}",
+    "active": "Active",
+    "days": {
+      "mon": "Mon",
+      "wed": "Wed",
+      "fri": "Fri"
+    }
+  },
+  "testimonials": {
+    "trustedByMany": "Trusted by many",
+    "heading": "What our users say",
+    "description": "Thousands of households rely on EcoCollect for their waste management needs.",
+    "0": {
+      "quote": "EcoCollect has made waste collection so much easier!",
+      "author": "Nguyen Van A",
+      "role": "Homeowner"
+    },
+    "1": {
+      "quote": "I love the real-time notifications and flexible scheduling.",
+      "author": "Tran Thi B",
+      "role": "Resident"
+    },
+    "2": {
+      "quote": "The support team is responsive and helpful.",
+      "author": "Le Van C",
+      "role": "Apartment Manager"
+    },
+    "3": {
+      "quote": "EcoCollect is the best waste management service I've used.",
+      "author": "Pham Thi D",
+      "role": "Homeowner"
+    }
+  },
+  "login": {
+    "heading": "Welcome back",
+    "description": "Enter your credentials to sign in to your account",
+    "button": "Sign In",
+    "signingIn": "Signing in...",
+    "forgotPassword": "Forgot password?",
+    "credentialsTab": "Credentials",
+    "otpTab": "OTP Login",
+    "phoneLabel": "Phone Number",
+    "sendOtp": "Send Verification Code",
+    "noAccount": "Don't have an account?",
+    "signupLink": "Sign up",
+    "accountTypePlaceholder": "Select account type",
+    "accountTypeUser": "Household User",
+    "accountTypeCollector": "Collection Staff",
+    "accountTypeAdmin": "Administrator"
+  },
+  "signup": {
+    "heading": "Create a new account",
+    "button": "Sign Up"
+  },
+  "days": {
+    "mon": "Mon",
+    "wed": "Wed",
+    "fri": "Fri"
+  },
+  "featuresList": {
+    "smartScheduling": {
+      "title": "Smart Scheduling",
+      "description": "Automated, flexible collection schedules tailored to your needs."
+    },
+    "realTimeNotifications": {
+      "title": "Real-Time Notifications",
+      "description": "Stay updated on every collection and important service changes."
+    },
+    "flexiblePayments": {
+      "title": "Flexible Payments",
+      "description": "Multiple payment options and transparent billing."
+    },
+    "urgentPickups": {
+      "title": "Urgent Pickups",
+      "description": "Request urgent or special collections anytime."
+    },
+    "locationTracking": {
+      "title": "Location Tracking",
+      "description": "Track your collection team in real time."
+    },
+    "collectionAnalytics": {
+      "title": "Collection Analytics",
+      "description": "View your waste collection history and statistics."
+    },
+    "verifiedCollections": {
+      "title": "Verified Collections",
+      "description": "All collections are verified for your peace of mind."
+    },
+    "rateService": {
+      "title": "Rate Our Service",
+      "description": "Easily provide feedback after each collection."
+    }
+  },
+  "howItWorks": {
+    "heading": "How EcoCollect Works",
+    "description": "A simple, transparent process for modern waste management.",
+    "steps": [
+      {
+        "title": "Sign Up & Set Preferences",
+        "description": "Create your account and set your collection preferences.",
+        "checks": [
+          "Easy online registration",
+          "Flexible schedule options",
+          "Personalized notifications"
+        ]
+      },
+      {
+        "title": "Prepare Your Waste",
+        "description": "Sort and prepare your waste for collection days.",
+        "checks": [
+          "Clear sorting guidelines",
+          "Reminders before collection",
+          "Support for special waste"
+        ]
+      },
+      {
+        "title": "Collection & Tracking",
+        "description": "Our team collects your waste and you can track status in real time.",
+        "checks": [
+          "Real-time collection updates",
+          "Professional, friendly staff",
+          "Transparent process"
+        ]
+      },
+      {
+        "title": "Feedback & Improvement",
+        "description": "Rate our service and help us improve.",
+        "checks": [
+          "Easy feedback system",
+          "Continuous improvement",
+          "Community impact"
+        ]
+      }
+    ]
+  }
 } 

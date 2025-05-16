@@ -130,5 +130,198 @@
   "status_rejected": "Bị từ chối",
   "status_unknown": "Không xác định",
   "your_comment": "Nhận xét của bạn (không bắt buộc)",
-  "send_evaluation": "Gửi đánh giá"
+  "send_evaluation": "Gửi đánh giá",
+  "footer": {
+    "slogan": "Hệ thống thu gom và quản lý rác hiện đại, làm sạch thế giới từng lần thu gom.",
+    "platform": "Nền tảng",
+    "faq": "Câu hỏi thường gặp",
+    "company": "Công ty",
+    "about": "Giới thiệu",
+    "blog": "Blog",
+    "careers": "Tuyển dụng",
+    "legal": "Pháp lý",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản",
+    "cookiePolicy": "Chính sách Cookie",
+    "copyright": "© 2025 EcoCollect. Đã đăng ký bản quyền.",
+    "twitter": "Twitter",
+    "instagram": "Instagram",
+    "linkedin": "LinkedIn",
+    "github": "GitHub"
+  },
+  "features": "Tính năng",
+  "howItWorks": {
+    "heading": "Cách EcoCollect hoạt động",
+    "description": "Quy trình đơn giản, minh bạch cho quản lý rác hiện đại.",
+    "steps": [
+      {
+        "title": "Đăng ký & thiết lập ưu tiên",
+        "description": "Tạo tài khoản và thiết lập lịch thu gom theo ý bạn.",
+        "checks": [
+          "Đăng ký trực tuyến dễ dàng",
+          "Tùy chọn lịch linh hoạt",
+          "Thông báo cá nhân hóa"
+        ]
+      },
+      {
+        "title": "Chuẩn bị rác",
+        "description": "Phân loại và chuẩn bị rác cho ngày thu gom.",
+        "checks": [
+          "Hướng dẫn phân loại rõ ràng",
+          "Nhắc nhở trước ngày thu gom",
+          "Hỗ trợ rác đặc biệt"
+        ]
+      },
+      {
+        "title": "Thu gom & theo dõi",
+        "description": "Đội ngũ thu gom rác và bạn có thể theo dõi trạng thái trực tuyến.",
+        "checks": [
+          "Cập nhật thu gom thời gian thực",
+          "Nhân viên chuyên nghiệp, thân thiện",
+          "Quy trình minh bạch"
+        ]
+      },
+      {
+        "title": "Phản hồi & cải tiến",
+        "description": "Đánh giá dịch vụ và góp ý để chúng tôi ngày càng tốt hơn.",
+        "checks": [
+          "Hệ thống phản hồi dễ dàng",
+          "Liên tục cải tiến",
+          "Tác động cộng đồng"
+        ]
+      }
+    ]
+  },
+  "pricing": "Bảng giá",
+  "contact": "Liên hệ",
+  "cta": {
+    "pricingPlans": "Các gói giá linh hoạt",
+    "simplePricing": "Giá minh bạch, đơn giản",
+    "choosePlan": "Chọn gói phù hợp nhất với bạn",
+    "monthly": "Hàng tháng",
+    "perMonth": "mỗi tháng",
+    "billedMonthly": "Thanh toán hàng tháng",
+    "weeklyCollection": "Thu gom rác hàng tuần",
+    "realTimeTracking": "Theo dõi thu gom theo thời gian thực",
+    "popular": "Phổ biến nhất",
+    "yearly": "Hàng năm",
+    "perYear": "mỗi năm",
+    "billedAnnually": "Thanh toán hàng năm",
+    "everythingInMonthly": "Bao gồm tất cả trong gói tháng",
+    "freeUrgentCollection": "Thu gom khẩn miễn phí",
+    "prioritySupport": "Hỗ trợ ưu tiên",
+    "detailedAnalytics": "Phân tích chi tiết",
+    "getStarted": "Bắt đầu ngay",
+    "readyToTransform": "Sẵn sàng thay đổi cách quản lý rác của bạn?",
+    "joinThousands": "Tham gia cùng hàng ngàn hộ gia đình tạo nên sự khác biệt.",
+    "getStartedNow": "Bắt đầu ngay bây giờ"
+  },
+  "hero": {
+    "sustainable": "Bền vững & Thông minh",
+    "title": "Thu gom rác hiện đại cho tương lai sạch hơn",
+    "description": "EcoCollect giúp bạn quản lý rác hiệu quả, tiện lợi và bền vững.",
+    "getStarted": "Bắt đầu",
+    "learnMore": "Tìm hiểu thêm",
+    "trustedBy": "Được tin dùng bởi hơn {{count}} hộ gia đình",
+    "collectionSchedule": "Lịch thu gom của bạn",
+    "nextCollection": "Lần thu gom tiếp theo",
+    "tomorrowTime": "Ngày mai lúc 5:00 sáng",
+    "specialCollection": "Thu gom đặc biệt",
+    "requestedForSaturday": "Yêu cầu cho thứ Bảy",
+    "collectionStatus": "Trạng thái: {{status}}",
+    "active": "Đang hoạt động",
+    "days": {
+      "mon": "Thứ Hai",
+      "wed": "Thứ Tư",
+      "fri": "Thứ Sáu"
+    }
+  },
+  "testimonials": {
+    "trustedByMany": "Được nhiều người tin dùng",
+    "heading": "Khách hàng nói gì",
+    "description": "Hàng ngàn hộ gia đình tin tưởng EcoCollect cho nhu cầu quản lý rác của họ.",
+    "0": {
+      "quote": "EcoCollect giúp việc thu gom rác dễ dàng hơn rất nhiều!",
+      "author": "Nguyễn Văn A",
+      "role": "Chủ hộ"
+    },
+    "1": {
+      "quote": "Tôi thích thông báo thời gian thực và lịch trình linh hoạt.",
+      "author": "Trần Thị B",
+      "role": "Cư dân"
+    },
+    "2": {
+      "quote": "Đội hỗ trợ phản hồi nhanh chóng và nhiệt tình.",
+      "author": "Lê Văn C",
+      "role": "Quản lý chung cư"
+    },
+    "3": {
+      "quote": "EcoCollect là dịch vụ quản lý rác tốt nhất tôi từng dùng.",
+      "author": "Phạm Thị D",
+      "role": "Chủ hộ"
+    }
+  },
+  "login": {
+    "heading": "Chào mừng trở lại",
+    "description": "Nhập thông tin để đăng nhập vào tài khoản của bạn",
+    "button": "Đăng nhập",
+    "signingIn": "Đang đăng nhập...",
+    "forgotPassword": "Quên mật khẩu?",
+    "credentialsTab": "Tài khoản mật khẩu",
+    "otpTab": "Đăng nhập OTP",
+    "phoneLabel": "Số điện thoại",
+    "sendOtp": "Gửi mã xác thực",
+    "noAccount": "Chưa có tài khoản?",
+    "signupLink": "Đăng ký",
+    "accountTypePlaceholder": "Chọn loại tài khoản",
+    "accountTypeUser": "Người dùng hộ gia đình",
+    "accountTypeCollector": "Nhân viên thu gom",
+    "accountTypeAdmin": "Quản trị viên"
+  },
+  "signup": {
+    "heading": "Tạo tài khoản mới",
+    "button": "Đăng ký"
+  },
+  "days": {
+    "mon": "Thứ Hai",
+    "wed": "Thứ Tư",
+    "fri": "Thứ Sáu"
+  },
+  "featuresList": {
+    "heading": "Tính năng nổi bật",
+    "description": "Tất cả những gì bạn cần cho quản lý rác hiệu quả, bền vững.",
+    "powerfulFeatures": "Tính năng nổi bật",
+    "smartScheduling": {
+      "title": "Lên lịch thông minh",
+      "description": "Lịch thu gom tự động, linh hoạt theo nhu cầu của bạn."
+    },
+    "realTimeNotifications": {
+      "title": "Thông báo thời gian thực",
+      "description": "Luôn cập nhật mọi lần thu gom và thay đổi dịch vụ quan trọng."
+    },
+    "flexiblePayments": {
+      "title": "Thanh toán linh hoạt",
+      "description": "Nhiều hình thức thanh toán, minh bạch và tiện lợi."
+    },
+    "urgentPickups": {
+      "title": "Thu gom khẩn cấp",
+      "description": "Yêu cầu thu gom khẩn hoặc đặc biệt bất cứ lúc nào."
+    },
+    "locationTracking": {
+      "title": "Theo dõi vị trí",
+      "description": "Theo dõi đội thu gom của bạn theo thời gian thực."
+    },
+    "collectionAnalytics": {
+      "title": "Phân tích thu gom",
+      "description": "Xem lịch sử và thống kê thu gom rác của bạn."
+    },
+    "verifiedCollections": {
+      "title": "Thu gom xác thực",
+      "description": "Mọi lần thu gom đều được xác thực, an tâm tuyệt đối."
+    },
+    "rateService": {
+      "title": "Đánh giá dịch vụ",
+      "description": "Dễ dàng gửi phản hồi sau mỗi lần thu gom."
+    }
+  }
 } 

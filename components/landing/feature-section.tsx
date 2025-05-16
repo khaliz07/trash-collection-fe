@@ -8,48 +8,51 @@ import {
   Shield, 
   Star
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import '../../i18n'
 
 export function FeatureSection() {
+  const { t } = useTranslation()
   const features = [
     {
       icon: <Calendar className="h-6 w-6" />,
-      title: "Smart Scheduling",
-      description: "Access your collection schedule based on your location and service type."
+      title: t('featuresList.smartScheduling.title'),
+      description: t('featuresList.smartScheduling.description')
     },
     {
       icon: <Bell className="h-6 w-6" />,
-      title: "Real-time Notifications",
-      description: "Get notified before collection time and when your waste has been collected."
+      title: t('featuresList.realTimeNotifications.title'),
+      description: t('featuresList.realTimeNotifications.description')
     },
     {
       icon: <CreditCard className="h-6 w-6" />,
-      title: "Flexible Payments",
-      description: "Choose from monthly, quarterly, or yearly subscription plans with easy payment options."
+      title: t('featuresList.flexiblePayments.title'),
+      description: t('featuresList.flexiblePayments.description')
     },
     {
       icon: <Clock className="h-6 w-6" />,
-      title: "Urgent Pickups",
-      description: "Request special collection outside your regular schedule when needed."
+      title: t('featuresList.urgentPickups.title'),
+      description: t('featuresList.urgentPickups.description')
     },
     {
       icon: <Map className="h-6 w-6" />,
-      title: "Location Tracking",
-      description: "Track collection staff location and status in real-time on collection days."
+      title: t('featuresList.locationTracking.title'),
+      description: t('featuresList.locationTracking.description')
     },
     {
       icon: <BarChart className="h-6 w-6" />,
-      title: "Collection Analytics",
-      description: "View your waste collection history and environmental impact statistics."
+      title: t('featuresList.collectionAnalytics.title'),
+      description: t('featuresList.collectionAnalytics.description')
     },
     {
       icon: <Shield className="h-6 w-6" />,
-      title: "Verified Collections",
-      description: "Collection staff check-in with photo verification for quality assurance."
+      title: t('featuresList.verifiedCollections.title'),
+      description: t('featuresList.verifiedCollections.description')
     },
     {
       icon: <Star className="h-6 w-6" />,
-      title: "Rate Your Service",
-      description: "Provide feedback after each collection to help us improve."
+      title: t('featuresList.rateService.title'),
+      description: t('featuresList.rateService.description')
     }
   ]
 
@@ -59,16 +62,15 @@ export function FeatureSection() {
         <div className="flex flex-col items-center text-center space-y-4 mb-12 md:mb-16">
           <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium">
             <span className="text-primary mr-1">✨</span>
-            <span>Powerful Features</span>
+            <span>{t('featuresList.powerfulFeatures', t('features.powerfulFeatures'))}</span>
           </div>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            Everything you need for waste management
+            {t('featuresList.heading', t('features.heading'))}
           </h2>
           <p className="max-w-[700px] text-muted-foreground md:text-lg">
-            Our platform brings together households, collection staff, and administrators in one unified ecosystem.
+            {t('featuresList.description', t('features.description'))}
           </p>
         </div>
-        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {features.map((feature, index) => (
             <div 

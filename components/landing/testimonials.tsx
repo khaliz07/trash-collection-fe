@@ -1,29 +1,32 @@
 import { Quote } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import '../../i18n'
 
 export function Testimonials() {
+  const { t } = useTranslation()
   const testimonials = [
     {
-      quote: "The EcoCollect app has made managing our household waste so much easier. I love getting notifications before collection day!",
-      author: "Sarah Johnson",
-      role: "Household User",
+      quote: t('testimonials.0.quote'),
+      author: t('testimonials.0.author'),
+      role: t('testimonials.0.role'),
       rating: 5
     },
     {
-      quote: "As a waste collector, the routing and check-in features have made my job much more efficient. I can serve more households in less time.",
-      author: "Michael Torres",
-      role: "Collection Staff",
+      quote: t('testimonials.1.quote'),
+      author: t('testimonials.1.author'),
+      role: t('testimonials.1.role'),
       rating: 5
     },
     {
-      quote: "I requested an urgent pickup after a family gathering, and a collector arrived within hours. The service exceeded my expectations.",
-      author: "David Chen",
-      role: "Household User",
+      quote: t('testimonials.2.quote'),
+      author: t('testimonials.2.author'),
+      role: t('testimonials.2.role'),
       rating: 4
     },
     {
-      quote: "Managing our city's waste collection has never been easier. The analytics dashboard gives us valuable insights to improve our service.",
-      author: "Lisa Rodriguez",
-      role: "Municipal Administrator",
+      quote: t('testimonials.3.quote'),
+      author: t('testimonials.3.author'),
+      role: t('testimonials.3.role'),
       rating: 5
     }
   ]
@@ -34,13 +37,13 @@ export function Testimonials() {
         <div className="flex flex-col items-center text-center space-y-4 mb-12 md:mb-16">
           <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium">
             <span className="text-primary mr-1">❤️</span>
-            <span>Trusted By Many</span>
+            <span>{t('testimonials.trustedByMany')}</span>
           </div>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            What our users are saying
+            {t('testimonials.heading')}
           </h2>
           <p className="max-w-[700px] text-muted-foreground md:text-lg">
-            Don't take our word for it. Hear from the households and collection staff who use EcoCollect every day.
+            {t('testimonials.description')}
           </p>
         </div>
         

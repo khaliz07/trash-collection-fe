@@ -1,0 +1,62 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Auto-update Locales on Locale Change
+
+## Context
+
+- Khi thêm, sửa, xóa bất kỳ key dịch nào trong mã nguồn
+- Khi thêm ngôn ngữ mới hoặc xóa ngôn ngữ cũ
+- Khi refactor hoặc chuyển đổi text sang sử dụng i18n
+- Khi cập nhật UI/UX có liên quan đến text hiển thị
+
+## Critical Rules
+
+- Luôn kiểm tra và cập nhật tất cả các file locales (ví dụ: public/locales/vi/translation.json, public/locales/en/translation.json, ...) khi có thay đổi về key dịch
+- Nếu thêm key mới, phải thêm vào tất cả các file locale hiện có với giá trị mặc định (có thể để trống hoặc giống tiếng Anh)
+- Nếu xóa key, phải xóa ở tất cả các file locale
+- Nếu đổi tên key, phải cập nhật ở tất cả các file locale và toàn bộ codebase
+- Nếu thêm ngôn ngữ mới, phải tạo đầy đủ file locale cho ngôn ngữ đó với tất cả các key hiện có
+- Không được để thiếu key ở bất kỳ file locale nào (tránh lỗi runtime hoặc hiển thị thiếu)
+- Ghi chú rõ ràng các thay đổi về locale trong commit message và cập nhật tài liệu nếu cần
+- Khi cập nhật value cho key dịch, phải tự động nhận diện ngôn ngữ value (tiếng Anh/Việt), nếu không đúng ngôn ngữ của file locale thì phải tự động dịch sang ngôn ngữ phù hợp trước khi ghi vào file
+- Khi có bất kỳ thay đổi key hoặc value dịch, phải tự động cập nhật cho toàn bộ các file trong thư mục locales, tương ứng với từng ngôn ngữ (không chỉ 1 file)
+- Khi cập nhật file locale, tuyệt đối không xóa hoặc ghi đè key/value cũ. Chỉ bổ sung key còn thiếu. Nếu có key trùng tên (vừa là string vừa là object), phải hỏi lại user để thống nhất.
+- Khi đổi cấu trúc key trong file locale (ví dụ từ features -> featuresList), phải đồng bộ lại toàn bộ callback key trong codebase cho khớp với cấu trúc mới. Không để callback key cũ bị lỗi hoặc không tìm thấy.
+- Khi cập nhật callback key trong component sang key mới, phải kiểm tra và tự động bổ sung key đó vào file locale nếu chưa có, đảm bảo không bao giờ thiếu key dịch.
+
+## Examples
+
+<example>
+// Good: Thêm key mới "footer.contact" vào cả en và vi
+// public/locales/en/translation.json
+{
+  "footer": {
+    "contact": "Contact us"
+  }
+}
+// public/locales/vi/translation.json
+{
+  "footer": {
+    "contact": "Liên hệ"
+  }
+}
+</example>
+
+<example type="invalid">
+// Bad: Chỉ thêm key mới vào 1 file locale
+// public/locales/en/translation.json
+{
+  "footer": {
+    "contact": "Contact us"
+  }
+}
+// public/locales/vi/translation.json
+{
+  "footer": {
+    // thiếu "contact"
+  }
+}
+</example>

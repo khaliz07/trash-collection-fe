@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Recycle as Recycling, ArrowLeft } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -42,6 +43,7 @@ const formSchema = z.object({
 })
 
 export default function LoginPage() {
+  const { t } = useTranslation('common')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   
@@ -91,16 +93,16 @@ export default function LoginPage() {
                 <Recycling className="h-6 w-6" />
               </div>
             </div>
-            <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
+            <CardTitle className="text-2xl text-center">{t('login.heading')}</CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to sign in to your account
+              {t('login.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="credentials" className="mb-4">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="credentials">Credentials</TabsTrigger>
-                <TabsTrigger value="otp">OTP Login</TabsTrigger>
+                <TabsTrigger value="credentials">{t('login.credentialsTab')}</TabsTrigger>
+                <TabsTrigger value="otp">{t('login.otpTab')}</TabsTrigger>
               </TabsList>
               <TabsContent value="credentials">
                 <Form {...form}>
@@ -110,7 +112,7 @@ export default function LoginPage() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel>{t('email')}</FormLabel>
                           <FormControl>
                             <Input 
                               placeholder="example@email.com" 
@@ -128,7 +130,7 @@ export default function LoginPage() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel>{t('password')}</FormLabel>
                           <FormControl>
                             <Input 
                               placeholder="Enter your password" 
@@ -146,20 +148,20 @@ export default function LoginPage() {
                       name="role"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Account Type</FormLabel>
+                          <FormLabel>{t('accountType')}</FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select account type" />
+                                <SelectValue placeholder={t('login.accountTypePlaceholder')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="user">Household User</SelectItem>
-                              <SelectItem value="collector">Collection Staff</SelectItem>
-                              <SelectItem value="admin">Administrator</SelectItem>
+                              <SelectItem value="user">{t('login.accountTypeUser')}</SelectItem>
+                              <SelectItem value="collector">{t('login.accountTypeCollector')}</SelectItem>
+                              <SelectItem value="admin">{t('login.accountTypeAdmin')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -172,12 +174,12 @@ export default function LoginPage() {
                         href="/forgot-password"
                         className="text-sm font-medium text-primary hover:underline"
                       >
-                        Forgot password?
+                        {t('login.forgotPassword')}
                       </Link>
                     </div>
                     
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Signing in..." : "Sign In"}
+                      {isLoading ? t('login.signingIn') : t('login.button')}
                     </Button>
                   </form>
                 </Form>
@@ -185,7 +187,7 @@ export default function LoginPage() {
               <TabsContent value="otp">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone">{t('login.phoneLabel')}</Label>
                     <Input 
                       id="phone" 
                       placeholder="+1 (555) 000-0000" 
@@ -193,7 +195,7 @@ export default function LoginPage() {
                     />
                   </div>
                   <Button className="w-full">
-                    Send Verification Code
+                    {t('login.sendOtp')}
                   </Button>
                 </div>
               </TabsContent>
@@ -201,12 +203,12 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-center text-muted-foreground">
-              Don't have an account?{" "}
+              {t('login.noAccount')} {" "}
               <Link 
                 href="/register"
                 className="font-medium text-primary hover:underline"
               >
-                Sign up
+                {t('login.signupLink')}
               </Link>
             </div>
           </CardFooter>
