@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { CollectionStatus } from '@/types/collection';
-import { CollectionPointList } from '../../../../components/dashboard/collection/CollectionPointList';
-import { mockTodayCollectionPoints, mockCollector } from '../../../../components/dashboard/collection/mock-data';
+import { CollectionPointList } from '../../../../components/dashboard/collection/today/CollectionPointList';
+import { mockTodayCollectionPoints, mockCollector } from '../../../../components/dashboard/collection/today/mock-data';
 import { useToast } from '@/components/ui/use-toast';
 import { Truck } from 'lucide-react';
 

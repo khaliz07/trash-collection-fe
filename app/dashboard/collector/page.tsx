@@ -23,7 +23,7 @@ import {
   BarChart
 } from "lucide-react"
 import Link from "next/link"
-import { CollectionPointList } from "@/components/dashboard/collection/CollectionPointList"
+import { CollectionPointList } from "@/components/dashboard/collection/today/CollectionPointList"
 import { mockCollectionPoints } from "./mockData"
 
 export default function CollectorDashboard() {
