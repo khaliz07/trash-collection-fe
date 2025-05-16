@@ -131,6 +131,7 @@
   "status_unknown": "Không xác định",
   "your_comment": "Nhận xét của bạn (không bắt buộc)",
   "send_evaluation": "Gửi đánh giá",
+  "password": "Mật khẩu",
   "footer": {
     "slogan": "Hệ thống thu gom và quản lý rác hiện đại, làm sạch thế giới từng lần thu gom.",
     "platform": "Nền tảng",
@@ -150,8 +151,10 @@
     "github": "GitHub"
   },
   "features": "Tính năng",
-  "howItWorks": {
+  "how_it_works": {
+    "menu_heading":"Quy trình",
     "heading": "Cách EcoCollect hoạt động",
+    "simple_process": "Quy trình đơn giản",
     "description": "Quy trình đơn giản, minh bạch cho quản lý rác hiện đại.",
     "steps": [
       {
@@ -276,7 +279,8 @@
     "accountTypePlaceholder": "Chọn loại tài khoản",
     "accountTypeUser": "Người dùng hộ gia đình",
     "accountTypeCollector": "Nhân viên thu gom",
-    "accountTypeAdmin": "Quản trị viên"
+    "accountTypeAdmin": "Quản trị viên",
+    "accountType": "Loại tài khoản"
   },
   "signup": {
     "heading": "Tạo tài khoản mới",

@@ -25,7 +25,7 @@ export function SiteHeader() {
             {t('features')}
           </Link>
           <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
-            {t('how_it_works')}
+            {t('how_it_works.menu_heading')}
           </Link>
           <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
             {t('pricing')}
@@ -38,10 +38,10 @@ export function SiteHeader() {
         <div className="hidden md:flex items-center gap-4">
           <ModeToggle />
           <Link href="/login">
-            <Button variant="outline">{t('login')}</Button>
+            <Button variant="outline">{t('login.button')}</Button>
           </Link>
           <Link href="/register">
-            <Button>{t('signup')}</Button>
+            <Button>{t('signup.button')}</Button>
           </Link>
         </div>
         
@@ -73,7 +73,7 @@ export function SiteHeader() {
               className="px-4 py-2 text-sm hover:bg-accent rounded-md"
               onClick={() => setIsMenuOpen(false)}
             >
-              {t('how_it_works')}
+              {t('how_it_works.menu_heading')}
             </Link>
             <Link 
               href="#pricing" 

@@ -148,7 +148,7 @@ export default function LoginPage() {
                       name="role"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('accountType')}</FormLabel>
+                          <FormLabel>{t('login.accountType')}</FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
                             defaultValue={field.value}

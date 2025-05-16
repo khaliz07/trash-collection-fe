@@ -8,42 +8,42 @@ export function HowItWorks() {
   const steps = [
     {
       number: '01',
-      title: t('howItWorks.steps.0.title'),
-      description: t('howItWorks.steps.0.description'),
+      title: t('how_it_works.steps.0.title'),
+      description: t('how_it_works.steps.0.description'),
       checks: [
-        t('howItWorks.steps.0.checks.0'),
-        t('howItWorks.steps.0.checks.1'),
-        t('howItWorks.steps.0.checks.2')
+        t('how_it_works.steps.0.checks.0'),
+        t('how_it_works.steps.0.checks.1'),
+        t('how_it_works.steps.0.checks.2')
       ]
     },
     {
       number: '02',
-      title: t('howItWorks.steps.1.title'),
-      description: t('howItWorks.steps.1.description'),
+      title: t('how_it_works.steps.1.title'),
+      description: t('how_it_works.steps.1.description'),
       checks: [
-        t('howItWorks.steps.1.checks.0'),
-        t('howItWorks.steps.1.checks.1'),
-        t('howItWorks.steps.1.checks.2')
+        t('how_it_works.steps.1.checks.0'),
+        t('how_it_works.steps.1.checks.1'),
+        t('how_it_works.steps.1.checks.2')
       ]
     },
     {
       number: '03',
-      title: t('howItWorks.steps.2.title'),
-      description: t('howItWorks.steps.2.description'),
+      title: t('how_it_works.steps.2.title'),
+      description: t('how_it_works.steps.2.description'),
       checks: [
-        t('howItWorks.steps.2.checks.0'),
-        t('howItWorks.steps.2.checks.1'),
-        t('howItWorks.steps.2.checks.2')
+        t('how_it_works.steps.2.checks.0'),
+        t('how_it_works.steps.2.checks.1'),
+        t('how_it_works.steps.2.checks.2')
       ]
     },
     {
       number: '04',
-      title: t('howItWorks.steps.3.title'),
-      description: t('howItWorks.steps.3.description'),
+      title: t('how_it_works.steps.3.title'),
+      description: t('how_it_works.steps.3.description'),
       checks: [
-        t('howItWorks.steps.3.checks.0'),
-        t('howItWorks.steps.3.checks.1'),
-        t('howItWorks.steps.3.checks.2')
+        t('how_it_works.steps.3.checks.0'),
+        t('how_it_works.steps.3.checks.1'),
+        t('how_it_works.steps.3.checks.2')
       ]
     }
   ]
@@ -54,13 +54,13 @@ export function HowItWorks() {
         <div className="flex flex-col items-center text-center space-y-4 mb-12 md:mb-16">
           <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium">
             <span className="text-primary mr-1">🔄</span>
-            <span>{t('howItWorks.simpleProcess')}</span>
+            <span>{t('how_it_works.simple_process')}</span>
           </div>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            {t('howItWorks.heading')}
+            {t('how_it_works.heading')}
           </h2>
           <p className="max-w-[700px] text-muted-foreground md:text-lg">
-            {t('howItWorks.description')}
+            {t('how_it_works.description')}
           </p>
         </div>
         <div className="grid gap-12 md:gap-16">
@@ -70,7 +70,7 @@ export function HowItWorks() {
                 <div className="relative aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-xl overflow-hidden border">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-4xl font-bold text-primary/30">
-                      {t('howItWorks.stepLabel', { number: step.number })}
+                      {t('how_it_works.stepLabel', { number: step.number })}
                     </div>
                   </div>
                 </div>

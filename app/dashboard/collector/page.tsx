@@ -23,53 +23,21 @@ import {
   BarChart
 } from "lucide-react"
 import Link from "next/link"
+import { CollectionPointList } from "@/components/dashboard/collection/CollectionPointList"
+import { mockCollectionPoints } from "./mockData"
 
 export default function CollectorDashboard() {
   // Mock data
   const todaysCollections = {
-    total: 15,
-    completed: 8,
-    pending: 7
+    total: mockCollectionPoints.length,
+    completed: mockCollectionPoints.filter(cp => cp.status === "completed").length,
+    pending: mockCollectionPoints.filter(cp => cp.status === "pending").length
   }
   
-  const upcomingCollections = [
-    {
-      address: "123 Main St, Apt 4B",
-      time: "10:30 AM",
-      status: "Next",
-      distance: "0.5 miles"
-    },
-    {
-      address: "456 Oak Ave",
-      time: "11:15 AM",
-      status: "Upcoming",
-      distance: "0.8 miles"
-    },
-    {
-      address: "789 Pine St",
-      time: "12:00 PM",
-      status: "Upcoming",
-      distance: "1.2 miles"
-    }
-  ]
-  
-  const completedCollections = [
-    {
-      address: "321 Maple Rd",
-      time: "9:45 AM",
-      status: "Completed",
-    },
-    {
-      address: "654 Cedar Ln",
-      time: "9:15 AM",
-      status: "Completed",
-    },
-    {
-      address: "987 Birch Blvd",
-      time: "8:30 AM",
-      status: "Completed",
-    }
-  ]
+  const handleCheckIn = (id: string) => {
+    // In a real app, this would update the collection point status
+    console.log("Checking in to collection point:", id);
+  };
   
   return (
     <div className="space-y-6">
@@ -188,119 +156,44 @@ export default function CollectorDashboard() {
             </Card>
           </div>
           
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Upcoming Collections</CardTitle>
-                <CardDescription>Your next scheduled pickups</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {upcomingCollections.map((collection, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={`h-9 w-9 rounded-full flex items-center justify-center ${
-                          collection.status === "Next" 
-                            ? "bg-primary/20" 
-                            : "bg-muted"
-                        }`}>
-                          <MapPin className={`h-5 w-5 ${
-                            collection.status === "Next" 
-                              ? "text-primary" 
-                              : "text-muted-foreground"
-                          }`} />
-                        </div>
-                        <div>
-                          <div className="font-medium">{collection.address}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {collection.time} · {collection.distance}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className={`inline-flex h-6 items-center rounded-full px-2 text-xs font-medium ${
-                          collection.status === "Next" 
-                            ? "border border-primary/30 bg-primary/10 text-primary" 
-                            : "border bg-muted text-muted-foreground"
-                        }`}>
-                          {collection.status}
-                        </div>
-                        <Link href="/dashboard/collector/checkin">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            disabled={collection.status !== "Next"}
-                          >
-                            <ArrowRight className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4">
-                  <Link href="/dashboard/collector/today">
-                    <Button variant="outline" className="w-full">
-                      View All Collections
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Completed Collections</CardTitle>
-                <CardDescription>Collections completed today</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {completedCollections.map((collection, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="h-9 w-9 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                          <CheckCircle className="h-5 w-5 text-emerald-500" />
-                        </div>
-                        <div>
-                          <div className="font-medium">{collection.address}</div>
-                          <div className="text-sm text-muted-foreground">
-                            Completed at {collection.time}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="inline-flex h-6 items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                          {collection.status}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4">
-                  <Button variant="outline" className="w-full">
-                    View All Completed
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Collection Points</CardTitle>
+              <CardDescription>Manage your assigned collection points for today</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CollectionPointList
+                collectionPoints={mockCollectionPoints}
+                onCheckIn={handleCheckIn}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
         
-        <TabsContent value="performance" className="space-y-4">
-          <h2 className="text-xl font-semibold">Performance Analytics</h2>
+        <TabsContent value="performance">
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Analytics</CardTitle>
+              <CardDescription>Your collection performance metrics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>Performance analytics content will go here</p>
+            </CardContent>
+          </Card>
         </TabsContent>
         
-        <TabsContent value="urgent" className="space-y-4">
-          <h2 className="text-xl font-semibold">Urgent Collection Requests</h2>
+        <TabsContent value="urgent">
+          <Card>
+            <CardHeader>
+              <CardTitle>Urgent Requests</CardTitle>
+              <CardDescription>High priority collection requests</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>Urgent requests content will go here</p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

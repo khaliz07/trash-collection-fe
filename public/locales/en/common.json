@@ -88,6 +88,7 @@
   "ecocollect": "EcoCollect",
   "logout": "Log out",
   "search": "Search...",
+  "password": "Password",
   "submitRequestDescription": "Submit a request for waste collection service",
   "collectionRequestForm": "Collection Request Form",
   "fillRequestDetails": "Fill out the details for your collection request",
@@ -235,7 +236,8 @@
     "accountTypePlaceholder": "Select account type",
     "accountTypeUser": "Household User",
     "accountTypeCollector": "Collection Staff",
-    "accountTypeAdmin": "Administrator"
+    "accountTypeAdmin": "Administrator",
+    "accountType": "Account Type"
   },
   "signup": {
     "heading": "Create a new account",
