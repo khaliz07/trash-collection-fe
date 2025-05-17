@@ -7,21 +7,35 @@ import { AttendanceWidget } from './widgets/AttendanceWidget';
 import { UrgentRequestWidget } from './widgets/UrgentRequestWidget';
 import { HeatmapWidget } from './widgets/HeatmapWidget';
 import { ReportSidebar } from './ReportSidebar';
-import { mockLowPaymentHouseholds, mockLateShifts, mockNegativeFeedbacks, mockCollectorProfile, mockUrgentRequest } from './mockData';
+import { mockLateShifts, mockNegativeFeedbacks, mockCollectorProfile, mockUrgentRequest, mockPerformance, mockRating, mockUserPayment, mockHouseholds } from './mockData';
 
 const AREAS = Array.from(new Set([
   ...mockLateShifts.map(s => s.area),
-  ...mockLowPaymentHouseholds.map(h => h.address?.match(/Q\.? ?\d+/)?.[0] || ''),
+  ...mockHouseholds.map((h: any) => h.address?.match(/Q\.? ?\d+/)?.[0] || ''),
   ...mockNegativeFeedbacks.map(fb => fb.area),
 ])).filter(Boolean);
 
 // Giả lập mock chi tiết yêu cầu khẩn cấp
 const mockUrgentRequestDetails = [
-  { id: 'ur1', code: 'UR1001', area: 'Quận 1', date: '2024-06-10', time: '09:15', status: 'overdue', address: '12 Lê Lợi, Q.1', household: 'Nguyễn Văn A', collector: 'Trần Văn Bình', note: 'Rác ùn ứ, cần xử lý gấp' },
-  { id: 'ur2', code: 'UR1002', area: 'Quận 3', date: '2024-06-10', time: '10:20', status: 'handled', address: '45 Pasteur, Q.3', household: 'Trần Thị B', collector: 'Nguyễn Thị Hoa', note: 'Có mùi hôi, đã xử lý' },
-  { id: 'ur3', code: 'UR1003', area: 'Quận 7', date: '2024-06-10', time: '11:00', status: 'pending', address: '88 Nguyễn Văn Linh, Q.7', household: 'Lê Văn C', collector: 'Phạm Thị Mai', note: 'Chưa thu gom' },
-  { id: 'ur4', code: 'UR1004', area: 'Quận 1', date: '2024-06-09', time: '14:30', status: 'handled', address: '99 Trần Hưng Đạo, Q.1', household: 'Phạm Văn D', collector: 'Đỗ Văn Hùng', note: 'Đã xử lý xong' },
+  { id: 'ur1', code: 'UR1001', area: 'Quận 1', date: '2024-06-10', time: '09:15', status: 'overdue', address: '12 Lê Lợi, Quận 1', household: 'Nguyễn Văn A', collector: 'Trần Văn Bình', note: 'Rác ùn ứ, cần xử lý gấp' },
+  { id: 'ur2', code: 'UR1002', area: 'Quận 3', date: '2024-06-10', time: '10:20', status: 'handled', address: '45 Pasteur, Quận 3', household: 'Trần Thị B', collector: 'Nguyễn Thị Hoa', note: 'Có mùi hôi, đã xử lý' },
+  { id: 'ur3', code: 'UR1003', area: 'Quận 7', date: '2024-06-10', time: '11:00', status: 'pending', address: '88 Nguyễn Văn Linh, Quận 7', household: 'Lê Văn C', collector: 'Phạm Thị Mai', note: 'Chưa thu gom' },
+  { id: 'ur4', code: 'UR1004', area: 'Quận 1', date: '2024-06-09', time: '14:30', status: 'handled', address: '99 Trần Hưng Đạo, Quận 1', household: 'Phạm Văn D', collector: 'Đỗ Văn Hùng', note: 'Đã xử lý xong' },
 ];
+
+// Hàm helper đổi phương thức sang tiếng Việt và màu
+const paymentMethodLabel = (method: string) => {
+  switch (method) {
+    case 'momo':
+      return { label: 'Momo', color: 'bg-pink-100 text-pink-700 border-pink-300' };
+    case 'bank':
+      return { label: 'Chuyển khoản', color: 'bg-blue-100 text-blue-700 border-blue-300' };
+    case 'cash':
+      return { label: 'Tiền mặt', color: 'bg-green-100 text-green-700 border-green-300' };
+    default:
+      return { label: method, color: 'bg-gray-100 text-gray-700 border-gray-300' };
+  }
+};
 
 export function ReportDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -71,7 +85,7 @@ export function ReportDashboard() {
             </tr>
           </thead>
           <tbody>
-            {mockLowPaymentHouseholds.filter(h => area === 'Tất cả' || h.address?.includes(area)).map(h => (
+            {mockHouseholds.filter(h => area === 'Tất cả' || h.address?.includes(area)).map(h => (
               <tr key={h.id} className="border-t">
                 <td className="px-2 py-1 font-medium">{h.name}</td>
                 <td className="px-2 py-1">{h.address}</td>
@@ -89,32 +103,36 @@ export function ReportDashboard() {
   function handlePerformanceDrilldown(area: string = 'Tất cả') {
     setFilterArea(area);
     openSidebar(
-      'Danh sách ca thu gom trễ',
+      'Danh sách ca thu gom',
       <div>
         {renderAreaFilter(area, (a) => handlePerformanceDrilldown(a))}
-        <div className="font-semibold mb-2">Danh sách ca trễ</div>
+        <div className="font-semibold mb-2">Danh sách ca thu gom</div>
         <table className="min-w-full text-sm border">
           <thead>
             <tr className="bg-gray-50">
               <th className="px-2 py-1 text-left">Mã ca</th>
               <th className="px-2 py-1 text-left">Khu vực</th>
               <th className="px-2 py-1 text-left">Ngày</th>
-              <th className="px-2 py-1 text-left">Bắt đầu</th>
-              <th className="px-2 py-1 text-left">Kết thúc</th>
-              <th className="px-2 py-1 text-left">Lý do</th>
-              <th className="px-2 py-1 text-left">Nhân viên</th>
+              <th className="px-2 py-1 text-left">Tổng điểm</th>
+              <th className="px-2 py-1 text-left">Đã thu</th>
+              <th className="px-2 py-1 text-left">Đúng giờ</th>
+              <th className="px-2 py-1 text-left">Trễ</th>
+              <th className="px-2 py-1 text-left">Huỷ</th>
+              <th className="px-2 py-1 text-left">Thời gian TB</th>
             </tr>
           </thead>
           <tbody>
-            {mockLateShifts.filter(s => area === 'Tất cả' || s.area === area).map(s => (
-              <tr key={s.id} className="border-t">
-                <td className="px-2 py-1 font-medium">{s.code}</td>
+            {mockPerformance.filter(s => area === 'Tất cả' || s.area === area).map((s, idx) => (
+              <tr key={s.date + s.area} className="border-t">
+                <td className="px-2 py-1 font-medium">SCH{(idx + 1).toString().padStart(4, '0')}</td>
                 <td className="px-2 py-1">{s.area}</td>
                 <td className="px-2 py-1">{s.date}</td>
-                <td className="px-2 py-1">{s.start}</td>
-                <td className="px-2 py-1">{s.end}</td>
-                <td className="px-2 py-1">{s.reason}</td>
-                <td className="px-2 py-1">{s.collector.name}</td>
+                <td className="px-2 py-1">{s.totalPoints}</td>
+                <td className="px-2 py-1">{s.completedPoints}</td>
+                <td className="px-2 py-1">{s.onTimePoints}</td>
+                <td className="px-2 py-1">{s.latePoints}</td>
+                <td className="px-2 py-1">{s.canceledPoints}</td>
+                <td className="px-2 py-1">{s.avgCompletionTime} phút</td>
               </tr>
             ))}
           </tbody>
@@ -126,9 +144,32 @@ export function ReportDashboard() {
   function handleRatingDrilldown(area: string = 'Tất cả') {
     setFilterArea(area);
     openSidebar(
-      'Danh sách phản hồi tiêu cực',
+      'Danh sách đánh giá & phản hồi',
       <div>
         {renderAreaFilter(area, (a) => handleRatingDrilldown(a))}
+        <div className="font-semibold mb-2">Tổng hợp đánh giá nhân viên</div>
+        <table className="min-w-full text-sm border mb-6">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="px-2 py-1 text-left">Tên nhân viên</th>
+              <th className="px-2 py-1 text-left">Điểm TB</th>
+              <th className="px-2 py-1 text-left">Số đánh giá</th>
+              <th className="px-2 py-1 text-left">Loại</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...(mockRating.topCollectors.map(c => ({ ...c, type: 'Top' }))), ...(mockRating.lowCollectors.map(c => ({ ...c, type: 'Thấp' })))]
+              .filter(c => area === 'Tất cả' || mockRating.negativeHeatmap.some(a => a.area === area && c.name))
+              .map((c, idx) => (
+                <tr key={c.id + c.type} className="border-t">
+                  <td className="px-2 py-1 font-medium">{c.name}</td>
+                  <td className="px-2 py-1">{c.avgRating.toFixed(1)}</td>
+                  <td className="px-2 py-1">{c.totalReviews}</td>
+                  <td className="px-2 py-1">{c.type}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
         <div className="font-semibold mb-2">Phản hồi tiêu cực</div>
         <table className="min-w-full text-sm border">
           <thead>
@@ -158,8 +199,64 @@ export function ReportDashboard() {
     handlePerformanceDrilldown(); // reuse ca trễ
   }
 
-  function handleUserPaymentDrilldown() {
-    handleHeatmapAreaClick('Tất cả');
+  function handleUserPaymentDrilldown(area: string = 'Tất cả') {
+    setFilterArea(area);
+    openSidebar(
+      'Tổng hợp thanh toán từ người dân',
+      <div>
+        {renderAreaFilter(area, (a) => handleUserPaymentDrilldown(a))}
+        <div className="font-semibold mb-2">Tổng hợp phương thức thanh toán</div>
+        <table className="min-w-full text-sm border mb-6">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="px-2 py-1 text-left">Phương thức</th>
+              <th className="px-2 py-1 text-left">Số hộ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mockUserPayment.methodStats.map(m => {
+              const { label, color } = paymentMethodLabel(m.method);
+              return (
+                <tr key={m.method} className="border-t">
+                  <td className="px-2 py-1 font-medium">
+                    <span className={`inline-block px-2 py-0.5 rounded border text-xs ${color}`}>{label}</span>
+                  </td>
+                  <td className="px-2 py-1">{m.count}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <div className="font-semibold mb-2">Danh sách hộ dân thanh toán</div>
+        <table className="min-w-full text-sm border">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="px-2 py-1 text-left">Tên hộ</th>
+              <th className="px-2 py-1 text-left">Địa chỉ</th>
+              <th className="px-2 py-1 text-left">Tình trạng</th>
+              <th className="px-2 py-1 text-left">Ngày thanh toán</th>
+              <th className="px-2 py-1 text-left">Phương thức</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mockHouseholds.filter((h: any) => filterArea === 'Tất cả' || h.address?.includes(area)).map((h: any) => {
+              const { label, color } = paymentMethodLabel(h.method);
+              return (
+                <tr key={h.id} className="border-t">
+                  <td className="px-2 py-1 font-medium">{h.name}</td>
+                  <td className="px-2 py-1">{h.address}</td>
+                  <td className="px-2 py-1">{h.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</td>
+                  <td className="px-2 py-1">{h.lastPaidAt || '-'}</td>
+                  <td className="px-2 py-1">
+                    <span className={`inline-block px-2 py-0.5 rounded border text-xs ${color}`}>{label}</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
   }
 
   function handleCollectorPaymentDrilldown() {
@@ -213,7 +310,7 @@ export function ReportDashboard() {
             </tr>
           </thead>
           <tbody>
-            {mockUrgentRequestDetails.filter(r => area === 'Tất cả' || r.area === area).map(r => (
+            {mockUrgentRequestDetails.filter(r => filterArea === 'Tất cả' || r.area === area).map(r => (
               <tr key={r.id} className="border-t">
                 <td className="px-2 py-1 font-medium">{r.code}</td>
                 <td className="px-2 py-1">{r.area}</td>

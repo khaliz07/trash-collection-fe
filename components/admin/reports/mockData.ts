@@ -176,9 +176,48 @@ export const mockCollectorProfile: DrilldownCollectorProfile = {
   ],
 };
 
-export const mockLowPaymentHouseholds: DrilldownLowPaymentHousehold[] = [
-  { id: 'h1', name: 'Nguyễn Văn A', address: '123 Nguyễn Văn Linh, Q.7', status: 'unpaid', lastPaidAt: '2024-05-10', method: 'momo' },
-  { id: 'h2', name: 'Trần Thị B', address: '456 Lê Văn Lương, Q.7', status: 'unpaid' },
+export const mockHouseholds = [
+  { id: 'h1', name: 'Nguyễn Minh Quân', address: '123 Nguyễn Văn Linh, Q.7', status: 'unpaid', lastPaidAt: '2024-05-10', method: 'momo' },
+  { id: 'h2', name: 'Trần Thị Mai', address: '456 Lê Văn Lương, Q.7', status: 'unpaid', lastPaidAt: '2024-05-12', method: 'bank' },
+  { id: 'h3', name: 'Lê Hoàng Nam', address: '789 Huỳnh Tấn Phát, Q.7', status: 'paid', lastPaidAt: '2024-06-01', method: 'cash' },
+  { id: 'h4', name: 'Phạm Gia Hân', address: '12 Lê Lợi, Q.1', status: 'paid', lastPaidAt: '2024-06-02', method: 'momo' },
+  { id: 'h5', name: 'Võ Nhật Minh', address: '34 Nguyễn Trãi, Q.1', status: 'unpaid', lastPaidAt: '2024-05-15', method: 'bank' },
+  { id: 'h6', name: 'Đỗ Bảo Ngọc', address: '56 Trần Hưng Đạo, Q.1', status: 'paid', lastPaidAt: '2024-06-03', method: 'cash' },
+  { id: 'h7', name: 'Ngô Minh Khoa', address: '78 Pasteur, Q.3', status: 'paid', lastPaidAt: '2024-06-04', method: 'momo' },
+  { id: 'h8', name: 'Bùi Thị Thanh', address: '90 Cách Mạng Tháng 8, Q.3', status: 'unpaid', lastPaidAt: '2024-05-18', method: 'bank' },
+  { id: 'h9', name: 'Lý Quốc Toàn', address: '101 Lý Chính Thắng, Q.3', status: 'paid', lastPaidAt: '2024-06-05', method: 'cash' },
+  { id: 'h10', name: 'Trịnh Hồng Nhung', address: '202 Nguyễn Đình Chiểu, Q.3', status: 'paid', lastPaidAt: '2024-06-06', method: 'momo' },
+  // 40 record còn lại, sinh tự động với tên đa dạng
+  ...Array.from({ length: 40 }).map((_, i) => {
+    const idx = i + 11;
+    const names = [
+      'Phan Thanh Sơn', 'Tạ Mỹ Linh', 'Đặng Hoàng Phúc', 'Lâm Thảo Vy', 'Phùng Minh Tuấn',
+      'Trương Hải Yến', 'Lưu Đức Anh', 'Hồ Ngọc Diễm', 'Cao Minh Châu', 'Dương Quốc Bảo',
+      'Nguyễn Thị Hồng', 'Trần Văn Hùng', 'Lê Thị Kim', 'Phạm Văn Cường', 'Võ Thị Thu',
+      'Đỗ Minh Tâm', 'Ngô Thị Hạnh', 'Bùi Văn Lâm', 'Lý Thị Hoa', 'Trịnh Văn Phúc',
+      'Mai Thanh Tùng', 'Vũ Thị Lan', 'Hoàng Minh Đức', 'Đinh Thị Hòa', 'Lương Văn Sơn',
+      'Châu Thị Mỹ', 'Kiều Quốc Việt', 'Tống Thị Hằng', 'Từ Minh Quang', 'Đoàn Thị Hậu',
+      'Thái Văn Bình', 'Quách Thị Hương', 'Giang Minh Khang', 'Lữ Thị Thảo', 'Tăng Quốc Duy',
+      'Tô Thị Hạnh', 'Chu Văn Hòa', 'Đàm Thị Mai', 'La Minh Phát', 'Triệu Thị Hồng',
+      'Vương Quốc Khánh', 'Nguyễn Thị Tuyết', 'Trần Văn Phước', 'Lê Thị Bích', 'Phạm Minh Tuấn',
+      'Võ Thị Hồng', 'Đỗ Văn Hòa', 'Ngô Thị Thu', 'Bùi Minh Đức', 'Lý Thị Thanh'
+    ];
+    const areas = ['Q.1', 'Q.3', 'Q.7'];
+    const methods = ['momo', 'bank', 'cash'];
+    const status = idx % 3 === 0 ? 'unpaid' : 'paid';
+    const name = names[i % names.length] + ` ${idx}`;
+    const area = areas[i % areas.length];
+    const method = methods[i % methods.length];
+    const paidAt = status === 'paid' ? `2024-06-${(i % 28 + 1).toString().padStart(2, '0')}` : `2024-05-${(i % 28 + 1).toString().padStart(2, '0')}`;
+    return {
+      id: `h${idx}`,
+      name,
+      address: `${100 + idx} Đường Số ${idx}, ${area}`,
+      status,
+      lastPaidAt: paidAt,
+      method,
+    };
+  })
 ];
 
 export const mockNegativeFeedbacks: DrilldownNegativePointFeedback[] = [
