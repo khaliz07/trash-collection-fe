@@ -17,7 +17,7 @@ export function ReportSidebar({ open, onClose, title, children }: ReportSidebarP
       />
       {/* Sidebar */}
       <div
-        className={`absolute right-0 top-0 h-full w-full sm:w-[480px] bg-white shadow-lg transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`absolute right-0 top-0 h-full w-full sm:w-[900px] bg-white shadow-lg transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex items-center justify-between p-4 border-b">
           <div className="font-semibold text-lg">{title}</div>

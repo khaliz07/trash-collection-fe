@@ -16,7 +16,7 @@ export function AttendanceWidget({ className = '', onDrilldown }: AttendanceWidg
       <div className="flex items-center justify-between mb-2">
         <div className="font-semibold text-lg">Điểm danh nhân viên</div>
         {onDrilldown && (
-          <button className="text-xs text-primary underline hover:opacity-80" onClick={onDrilldown}>Xem ca trễ</button>
+          <button className="text-xs text-primary underline hover:opacity-80" onClick={onDrilldown}>Xem chi tiết</button>
         )}
       </div>
       <div className="flex gap-4 mb-2 text-sm">

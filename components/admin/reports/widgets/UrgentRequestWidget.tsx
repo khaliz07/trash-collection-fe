@@ -13,7 +13,7 @@ export function UrgentRequestWidget({ className = '', onDrilldown }: UrgentReque
       <div className="flex items-center justify-between mb-2">
         <div className="font-semibold text-lg">Xử lý yêu cầu khẩn cấp</div>
         {onDrilldown && (
-          <button className="text-xs text-primary underline hover:opacity-80" onClick={onDrilldown}>Xem ca trễ</button>
+          <button className="text-xs text-primary underline hover:opacity-80" onClick={onDrilldown}>Xem chi tiết</button>
         )}
       </div>
       <div className="flex gap-4 mb-2 text-sm">

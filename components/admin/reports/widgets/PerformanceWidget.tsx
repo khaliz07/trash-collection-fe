@@ -53,7 +53,7 @@ export function PerformanceWidget({ className = '', onDrilldown }: PerformanceWi
       <div className="flex items-center justify-between mb-2">
         <div className="font-semibold text-lg">Hiệu suất thu gom</div>
         {onDrilldown && (
-          <button className="text-xs text-primary underline hover:opacity-80" onClick={onDrilldown}>Xem ca trễ</button>
+          <button className="text-xs text-primary underline hover:opacity-80" onClick={onDrilldown}>Xem chi tiết</button>
         )}
       </div>
       <div className="flex flex-col gap-2 mb-2">
