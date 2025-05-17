@@ -323,5 +323,76 @@
         ]
       }
     ]
+  },
+  "feedback_dashboard": {
+    "title": "Feedback Dashboard",
+    "description": "Monitor, aggregate, and handle feedback from citizens or collectors.",
+    "stats": {
+      "total": "Total feedback this month",
+      "resolved": "Resolved feedback rate",
+      "byType": "Type breakdown",
+      "urgent": "Urgent feedback count"
+    },
+    "filters": {
+      "date": "Date",
+      "area": "Area",
+      "status": "Status",
+      "sender": "Sender",
+      "type": "Feedback type",
+      "priority": "Priority",
+      "keyword": "Search content"
+    },
+    "table": {
+      "code": "Feedback code",
+      "createdAt": "Submitted at",
+      "sender": "Sender",
+      "channel": "Channel",
+      "type": "Type",
+      "content": "Content",
+      "status": "Status",
+      "handler": "Handler",
+      "handledAt": "Handled at",
+      "priority": "Priority",
+      "actions": "Actions"
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In progress",
+      "resolved": "Resolved"
+    },
+    "type": {
+      "complaint": "Complaint",
+      "suggestion": "Suggestion",
+      "proposal": "Proposal"
+    },
+    "senderType": {
+      "citizen": "Citizen",
+      "collector": "Collector"
+    },
+    "priority": {
+      "urgent": "Urgent",
+      "normal": "Normal"
+    },
+    "actions": {
+      "add": "Add feedback",
+      "export_excel": "Export Excel",
+      "export_pdf": "Export PDF",
+      "reply": "Reply",
+      "update_status": "Update status",
+      "add_note": "Add note",
+      "attach_file": "Attach file"
+    },
+    "detail": {
+      "title": "Feedback details",
+      "notes": "Internal notes",
+      "attachments": "Attachments",
+      "related_schedule": "Related schedule",
+      "no_attachments": "No attachments",
+      "add_note_placeholder": "Enter note...",
+      "add_reply": "Add response",
+      "reply_placeholder": "Enter your response...",
+      "send": "Send"
+    },
+    "empty": "No feedback found."
   }
 } 

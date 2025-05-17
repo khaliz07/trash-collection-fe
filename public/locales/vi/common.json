@@ -327,5 +327,76 @@
       "title": "Đánh giá dịch vụ",
       "description": "Dễ dàng gửi phản hồi sau mỗi lần thu gom."
     }
+  },
+  "feedback_dashboard": {
+    "title": "Trang Phản Hồi",
+    "description": "Theo dõi, tổng hợp và xử lý các phản hồi từ người dân hoặc nhân viên thu gom.",
+    "stats": {
+      "total": "Tổng số phản hồi trong tháng",
+      "resolved": "Tỷ lệ phản hồi đã xử lý",
+      "byType": "Tỷ lệ phân loại",
+      "urgent": "Số phản hồi khẩn cấp"
+    },
+    "filters": {
+      "date": "Thời gian",
+      "area": "Khu vực",
+      "status": "Trạng thái xử lý",
+      "sender": "Người gửi",
+      "type": "Loại phản hồi",
+      "priority": "Ưu tiên",
+      "keyword": "Tìm kiếm nội dung"
+    },
+    "table": {
+      "code": "Mã phản hồi",
+      "createdAt": "Thời gian gửi",
+      "sender": "Người gửi",
+      "channel": "Kênh gửi",
+      "type": "Loại",
+      "content": "Nội dung",
+      "status": "Trạng thái",
+      "handler": "Người xử lý",
+      "handledAt": "Thời gian xử lý",
+      "priority": "Ưu tiên",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "pending": "Chưa xử lý",
+      "in_progress": "Đang xử lý",
+      "resolved": "Đã xử lý"
+    },
+    "type": {
+      "complaint": "Khiếu nại",
+      "suggestion": "Góp ý",
+      "proposal": "Đề xuất"
+    },
+    "senderType": {
+      "citizen": "Người dân",
+      "collector": "Nhân viên thu gom"
+    },
+    "priority": {
+      "urgent": "Khẩn cấp",
+      "normal": "Bình thường"
+    },
+    "actions": {
+      "add": "Thêm phản hồi",
+      "export_excel": "Xuất Excel",
+      "export_pdf": "Xuất PDF",
+      "reply": "Trả lời",
+      "update_status": "Cập nhật trạng thái",
+      "add_note": "Thêm ghi chú",
+      "attach_file": "Đính kèm file"
+    },
+    "detail": {
+      "title": "Chi tiết phản hồi",
+      "notes": "Ghi chú nội bộ",
+      "attachments": "File đính kèm",
+      "related_schedule": "Lịch trình liên quan",
+      "no_attachments": "Không có file đính kèm",
+      "add_note_placeholder": "Nhập ghi chú...",
+      "add_reply": "Thêm phản hồi",
+      "reply_placeholder": "Nhập phản hồi...",
+      "send": "Gửi"
+    },
+    "empty": "Không có phản hồi nào phù hợp."
   }
 } 
