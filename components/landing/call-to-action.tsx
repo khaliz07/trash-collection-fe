@@ -28,7 +28,7 @@ export function CallToAction() {
               <div>
                 <div className="text-lg font-medium">{t('cta.monthly')}</div>
                 <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">$19</span>
+                  <span className="text-3xl font-bold">40.000đ</span>
                   <span className="text-muted-foreground">{t('cta.perMonth')}</span>
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">{t('cta.billedMonthly')}</div>
@@ -96,7 +96,7 @@ export function CallToAction() {
               <div>
                 <div className="text-lg font-medium">{t('cta.yearly')}</div>
                 <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">$180</span>
+                  <span className="text-3xl font-bold">440.000đ</span>
                   <span className="text-muted-foreground">{t('cta.perYear')}</span>
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">

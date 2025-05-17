@@ -70,6 +70,7 @@
   "friday": "Thứ Sáu",
   "navigation": "Điều hướng",
   "dashboard": "Bảng điều khiển",
+  "Dashboard": "Tổng quan",
   "Collection Schedule": "Lịch thu gom",
   "Request Collection": "Yêu cầu thu gom",
   "Payments": "Thanh toán",
@@ -144,7 +145,7 @@
     "privacy": "Chính sách bảo mật",
     "terms": "Điều khoản",
     "cookiePolicy": "Chính sách Cookie",
-    "copyright": "© 2025 EcoCollect. Đã đăng ký bản quyền.",
+    "copyright": "© 2025 LeQuocSonGiang. Đã đăng ký bản quyền.",
     "twitter": "Twitter",
     "instagram": "Instagram",
     "linkedin": "LinkedIn",
@@ -448,5 +449,65 @@
     "monthly": "Hàng tháng",
     "quarterly": "Hàng quý",
     "yearly": "Hàng năm"
+  },
+  "admin_dashboard": {
+    "title": "Bảng điều khiển quản trị",
+    "desc": "Tổng quan hiệu suất hệ thống thu gom rác",
+    "generate_reports": "Tạo báo cáo",
+    "total_users": "Tổng số người dùng",
+    "active_collectors": "Người thu gom hoạt động",
+    "total_revenue": "Tổng doanh thu",
+    "collections_today": "Thu gom hôm nay",
+    "weekly_collections": "Thu gom tuần",
+    "collections_per_day": "Số lần thu gom mỗi ngày trong tuần",
+    "system_status": "Trạng thái hệ thống",
+    "current_system_performance": "Hiệu suất hệ thống hiện tại",
+    "server_uptime": "Thời gian hoạt động server",
+    "database_load": "Tải database",
+    "api_response_time": "Thời gian phản hồi API",
+    "notifications_delivered": "Thông báo đã gửi",
+    "view_detailed_status": "Xem trạng thái chi tiết",
+    "monthly_revenue": "Doanh thu hàng tháng",
+    "revenue_trends": "Xu hướng doanh thu trong 6 tháng qua",
+    "recent_activities": "Hoạt động gần đây",
+    "latest_system_events": "Sự kiện hệ thống gần đây",
+    "view_all_activities": "Xem tất cả hoạt động"
+  },
+  "admin_collectors": {
+    "title": "Nhân viên thu gom"
+  },
+  "admin_schedules": {
+    "title": "Lịch trình thu gom"
+  },
+  "admin_reports": {
+    "title": "Báo cáo & Thống kê"
+  },
+  "admin_payments": {
+    "title": "Quản lý thanh toán"
+  },
+  "register": {
+    "back_to_home": "Quay lại trang chủ",
+    "title": "Tạo tài khoản mới",
+    "description": "Nhập thông tin để tạo tài khoản hộ gia đình",
+    "full_name": "Họ và tên",
+    "full_name_placeholder": "Nguyễn Văn A",
+    "email": "Email",
+    "email_placeholder": "an.nguyen@example.com",
+    "phone": "Số điện thoại",
+    "phone_placeholder": "+84 912 345 678",
+    "address": "Địa chỉ",
+    "address_placeholder": "12 Nguyễn Trãi, Quận 1, TP. Hồ Chí Minh",
+    "password": "Mật khẩu",
+    "password_placeholder": "Tạo mật khẩu",
+    "confirm_password": "Xác nhận mật khẩu",
+    "confirm_password_placeholder": "Nhập lại mật khẩu",
+    "agree": "Tôi đồng ý với ",
+    "terms_of_service": "điều khoản dịch vụ",
+    "and": " và ",
+    "privacy_policy": "chính sách bảo mật",
+    "creating": "Đang tạo tài khoản...",
+    "create": "Tạo tài khoản",
+    "already_have_account": "Đã có tài khoản?",
+    "sign_in": "Đăng nhập"
   }
 } 

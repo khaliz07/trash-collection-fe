@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { mockCurrentPackage, mockInvoices } from './mockData';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 
 function getPackageStatusVariant(status: string) {
   switch (status) {
@@ -26,8 +27,17 @@ function getInvoiceStatusVariant(status: string) {
 
 export default function UserPaymentsPage() {
   const today = new Date();
+  const router = useRouter();
   const endDate = parseISO(mockCurrentPackage.endDate);
   const daysLeft = differenceInDays(endDate, today);
+
+  const handleRequestCollection = () => {
+    router.push('/dashboard/user/request');
+  }
+
+  const handleExtend = () => {
+    router.push('/dashboard/user/extend-subscription');
+  }
 
   return (
     <div className="container py-8 md:py-12">
@@ -70,12 +80,12 @@ export default function UserPaymentsPage() {
           </CardContent>
           <CardFooter className="flex gap-3">
             {(mockCurrentPackage.status === 'expired') ? (
-              <Button variant="default">Mua gói mới</Button>
+              <Button variant="default" onClick={handleExtend}>Mua gói mới</Button>
             ) : (
-              <Button variant="default" disabled={daysLeft > 10}>Gia hạn</Button>
+              <Button variant="default" onClick={handleExtend} disabled={daysLeft > 10}>Gia hạn</Button>
             )}
             {mockCurrentPackage.status !== 'expired' && (
-              <Button variant="secondary">Tạo yêu cầu thu gom gấp</Button>
+              <Button variant="secondary" onClick={handleRequestCollection}>Tạo yêu cầu thu gom gấp</Button>
             )}
           </CardFooter>
         </Card>

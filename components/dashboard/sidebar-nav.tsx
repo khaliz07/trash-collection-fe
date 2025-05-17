@@ -158,9 +158,7 @@ export function SidebarNav({ role }: SidebarNavProps) {
     <ScrollArea className="h-full py-6">
       <div className="flex flex-col h-full justify-between">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-            {t('navigation')}
-          </h2>
+
           <div className="space-y-1">
             {items.map((item) => (
               <Link

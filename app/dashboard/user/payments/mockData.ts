@@ -23,11 +23,11 @@ export interface PaymentInvoice {
 export const mockCurrentPackage: ServicePackage = {
   id: 'pkg-1',
   name: 'Gói tháng',
-  startDate: '2024-06-01',
-  endDate: '2024-06-30',
+  startDate: '2025-04-01',
+  endDate: '2025-04-30',
   status: 'active',
-  fee: 120000,
-  area: 'Phường B, Quận C',
+  fee: 40000,
+  area: 'Phường Linh Trung, Quận Thủ Đức',
 };
 
 export const mockInvoices: PaymentInvoice[] = [

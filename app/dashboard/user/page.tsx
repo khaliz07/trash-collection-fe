@@ -45,17 +45,17 @@ export default function UserDashboard() {
   
   const recentCollections = [
     {
-      date: "April 10, 2025",
+      date: "Ngày 10, Tháng 4, 2025",
       status: "Completed",
       collector: "Michael T."
     },
     {
-      date: "April 7, 2025",
+      date: "Ngày 7, Tháng 4, 2025",
       status: "Completed",
       collector: "David L."
     },
     {
-      date: "April 3, 2025",
+      date: "Ngày 3, Tháng 4, 2025",
       status: "Completed",
       collector: "Michael T."
     }
@@ -64,8 +64,10 @@ export default function UserDashboard() {
   const paymentInfo = {
     plan: t('monthly'),
     nextPayment: "May 1, 2025",
-    amount: "$19.00"
+    amount: "40.000đ"
   }
+
+  
   
   return (
     <div className="space-y-6">

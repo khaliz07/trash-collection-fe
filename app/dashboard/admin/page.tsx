@@ -39,41 +39,43 @@ import {
   Activity
 } from "lucide-react"
 import Link from "next/link"
+import { useTranslation } from 'react-i18next'
 
 // Mock data for charts
 const collectionData = [
-  { name: "Mon", collections: 180 },
-  { name: "Tue", collections: 220 },
-  { name: "Wed", collections: 192 },
-  { name: "Thu", collections: 235 },
-  { name: "Fri", collections: 245 },
-  { name: "Sat", collections: 118 },
-  { name: "Sun", collections: 95 },
+  { name: "Thứ 2", collections: 180 },
+  { name: "Thứ 3", collections: 220 },
+  { name: "Thứ 4", collections: 192 },
+  { name: "Thứ 4", collections: 235 },
+  { name: "Thứ 5", collections: 245 },
+  { name: "Thứ 6", collections: 118 },
+  { name: "Thứ 7", collections: 95 },
 ]
 
 const revenueData = [
-  { name: "Jan", revenue: 12000 },
-  { name: "Feb", revenue: 14000 },
-  { name: "Mar", revenue: 16500 },
-  { name: "Apr", revenue: 18200 },
-  { name: "May", revenue: 19800 },
-  { name: "Jun", revenue: 21500 },
+  { name: "Tháng 1", revenue: 12000 },
+  { name: "Tháng 2", revenue: 14000 },
+  { name: "Tháng 3", revenue: 16500 },
+  { name: "Tháng 4", revenue: 18200 },
+  { name: "Tháng 5", revenue: 19800 },
+  { name: "Tháng 6", revenue: 21500 },
 ]
 
 export default function AdminDashboard() {
+  const { t } = useTranslation('common')
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t('admin_dashboard.title', 'Bảng điều khiển quản trị')}</h2>
           <p className="text-muted-foreground">
-            Overview of waste collection system performance
+            {t('admin_dashboard.desc', 'Tổng quan hiệu suất hệ thống thu gom rác')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/dashboard/admin/reports">
             <Button>
-              Generate Reports
+              {t('admin_dashboard.generate_reports', 'Tạo báo cáo')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -84,7 +86,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Users
+              {t('admin_dashboard.total_users', 'Tổng số người dùng')}
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -93,7 +95,7 @@ export default function AdminDashboard() {
             <div className="flex items-center pt-1 text-xs text-emerald-500">
               <ArrowUpRight className="mr-1 h-4 w-4" />
               <span>+12.5%</span>
-              <span className="text-muted-foreground ml-1">from last month</span>
+              <span className="text-muted-foreground ml-1">so với tháng trước</span>
             </div>
           </CardContent>
         </Card>
@@ -101,7 +103,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Active Collectors
+              {t('admin_dashboard.active_collectors', 'Người thu gom hoạt động')}
             </CardTitle>
             <Truck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -110,7 +112,7 @@ export default function AdminDashboard() {
             <div className="flex items-center pt-1 text-xs text-emerald-500">
               <ArrowUpRight className="mr-1 h-4 w-4" />
               <span>+3</span>
-              <span className="text-muted-foreground ml-1">from last month</span>
+              <span className="text-muted-foreground ml-1">so với tháng trước</span>
             </div>
           </CardContent>
         </Card>
@@ -118,7 +120,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Revenue
+              {t('admin_dashboard.total_revenue', 'Tổng doanh thu')}
             </CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -127,7 +129,7 @@ export default function AdminDashboard() {
             <div className="flex items-center pt-1 text-xs text-emerald-500">
               <ArrowUpRight className="mr-1 h-4 w-4" />
               <span>+8.2%</span>
-              <span className="text-muted-foreground ml-1">from last month</span>
+              <span className="text-muted-foreground ml-1">so với tháng trước</span>
             </div>
           </CardContent>
         </Card>
@@ -135,7 +137,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Collections Today
+              {t('admin_dashboard.collections_today', 'Thu gom hôm nay')}
             </CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -144,7 +146,7 @@ export default function AdminDashboard() {
             <div className="flex items-center pt-1 text-xs text-destructive">
               <ArrowDownRight className="mr-1 h-4 w-4" />
               <span>-4.5%</span>
-              <span className="text-muted-foreground ml-1">from yesterday</span>
+              <span className="text-muted-foreground ml-1">so với hôm qua</span>
             </div>
           </CardContent>
         </Card>
@@ -152,18 +154,18 @@ export default function AdminDashboard() {
       
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="collectors">Collectors</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue</TabsTrigger>
+          <TabsTrigger value="overview">Tổng quan</TabsTrigger>
+          <TabsTrigger value="users">Người dùng</TabsTrigger>
+          <TabsTrigger value="collectors">Nhân viên thu gom</TabsTrigger>
+          <TabsTrigger value="revenue">Doanh thu</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="lg:col-span-4">
               <CardHeader>
-                <CardTitle>Weekly Collections</CardTitle>
-                <CardDescription>Number of collections per day this week</CardDescription>
+                <CardTitle>{t('admin_dashboard.weekly_collections', 'Thu gom tuần')}</CardTitle>
+                <CardDescription>{t('admin_dashboard.collections_per_day', 'Số lần thu gom mỗi ngày trong tuần')}</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -175,6 +177,7 @@ export default function AdminDashboard() {
                         backgroundColor: "hsl(var(--background))",
                         border: "1px solid hsl(var(--border))",
                       }}
+                      formatter={(value) => [ "Điểm thu gom",`${value}`]}
                     />
                     <Bar 
                       dataKey="collections" 
@@ -188,8 +191,8 @@ export default function AdminDashboard() {
             
             <Card className="lg:col-span-3">
               <CardHeader>
-                <CardTitle>System Status</CardTitle>
-                <CardDescription>Current system performance metrics</CardDescription>
+                <CardTitle>{t('admin_dashboard.system_status', 'Trạng thái hệ thống')}</CardTitle>
+                <CardDescription>{t('admin_dashboard.current_system_performance', 'Hiệu suất hệ thống hiện tại')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -197,7 +200,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center">
                         <div className="mr-2 h-3 w-3 rounded-full bg-emerald-500"></div>
-                        <span>Server Uptime</span>
+                        <span>{t('admin_dashboard.server_uptime', 'Thời gian hoạt động server')}</span>
                       </div>
                       <div className="font-medium">99.9%</div>
                     </div>
@@ -210,7 +213,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center">
                         <div className="mr-2 h-3 w-3 rounded-full bg-amber-500"></div>
-                        <span>Database Load</span>
+                        <span>{t('admin_dashboard.database_load', 'Tải database')}</span>
                       </div>
                       <div className="font-medium">68%</div>
                     </div>
@@ -223,7 +226,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center">
                         <div className="mr-2 h-3 w-3 rounded-full bg-primary"></div>
-                        <span>API Response Time</span>
+                        <span>{t('admin_dashboard.api_response_time', 'Thời gian phản hồi API')}</span>
                       </div>
                       <div className="font-medium">230ms</div>
                     </div>
@@ -236,7 +239,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center">
                         <div className="mr-2 h-3 w-3 rounded-full bg-blue-500"></div>
-                        <span>Notifications Delivered</span>
+                        <span>{t('admin_dashboard.notifications_delivered', 'Thông báo đã gửi')}</span>
                       </div>
                       <div className="font-medium">95.2%</div>
                     </div>
@@ -248,7 +251,7 @@ export default function AdminDashboard() {
                 
                 <div className="mt-6">
                   <Button variant="outline" className="w-full">
-                    View Detailed Status
+                    {t('admin_dashboard.view_detailed_status', 'Xem trạng thái chi tiết')}
                   </Button>
                 </div>
               </CardContent>
@@ -258,8 +261,8 @@ export default function AdminDashboard() {
           <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="lg:col-span-4">
               <CardHeader>
-                <CardTitle>Monthly Revenue</CardTitle>
-                <CardDescription>Revenue trends over the past 6 months</CardDescription>
+                <CardTitle>{t('admin_dashboard.monthly_revenue', 'Doanh thu hàng tháng')}</CardTitle>
+                <CardDescription>{t('admin_dashboard.revenue_trends', 'Xu hướng doanh thu trong 6 tháng qua')}</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -272,7 +275,7 @@ export default function AdminDashboard() {
                         backgroundColor: "hsl(var(--background))",
                         border: "1px solid hsl(var(--border))",
                       }}
-                      formatter={(value) => [`$${value}`, "Revenue"]}
+                      formatter={(value) => [`${value}`, "Doanh thu"]}
                     />
                     <Line 
                       type="monotone" 
@@ -287,30 +290,30 @@ export default function AdminDashboard() {
             
             <Card className="lg:col-span-3">
               <CardHeader>
-                <CardTitle>Recent Activities</CardTitle>
-                <CardDescription>Latest system events</CardDescription>
+                <CardTitle>{t('admin_dashboard.recent_activities', 'Hoạt động gần đây')}</CardTitle>
+                <CardDescription>{t('admin_dashboard.latest_system_events', 'Sự kiện hệ thống gần đây')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {[
                     {
-                      title: "New user registration",
-                      time: "10 minutes ago",
+                      title: "Đăng ký người dùng mới",
+                      time: "10 phút trước",
                       icon: Users,
                     },
                     {
-                      title: "Collection schedule updated",
-                      time: "1 hour ago",
+                      title: "Cập nhật lịch thu gom",
+                      time: "1 giờ trước",
                       icon: CalendarDays,
                     },
                     {
-                      title: "Payment received",
-                      time: "2 hours ago",
+                      title: "Nhận thanh toán",
+                      time: "2 giờ trước",
                       icon: CreditCard,
                     },
                     {
-                      title: "Collector assigned to route",
-                      time: "3 hours ago",
+                      title: "Giao nhân viên thu gom",
+                      time: "3 giờ trước",
                       icon: Truck,
                     },
                   ].map((activity, index) => (
@@ -331,7 +334,7 @@ export default function AdminDashboard() {
                 
                 <div className="mt-6">
                   <Button variant="outline" className="w-full">
-                    View All Activities
+                    {t('admin_dashboard.view_all_activities', 'Xem tất cả hoạt động')}
                   </Button>
                 </div>
               </CardContent>

@@ -23,7 +23,7 @@ export const mockSchedule: CollectionSchedule[] = [
     date: new Date().toISOString().slice(0, 10),
     type: 'regular',
     status: 'collected',
-    address: '123 Đường A, Phường B, Quận C',
+    address: '123 Đường 17, Phường Linh Trung, Quận Thủ Đức',
   },
   // Đã thu gom 3 ngày trước, đã đánh giá (được phép cập nhật)
   {

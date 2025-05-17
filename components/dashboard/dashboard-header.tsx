@@ -20,7 +20,6 @@ export function DashboardHeader({ title, userInfo }: DashboardHeaderProps) {
   return (
     <div className="border-b">
       <div className="flex h-16 items-center px-4 gap-4">
-        <div className="hidden md:block font-semibold text-lg">{title}</div>
         <div className="ml-auto flex items-center space-x-4">
           <div className="hidden md:flex relative w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />

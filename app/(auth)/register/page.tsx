@@ -27,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Recycle as Recycling, ArrowLeft } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -44,6 +45,7 @@ const formSchema = z.object({
 })
 
 export default function RegisterPage() {
+  const { t } = useTranslation('common')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   
@@ -79,7 +81,7 @@ export default function RegisterPage() {
             className="inline-flex items-center text-sm font-medium hover:underline"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to home
+            {t('register.back_to_home', 'Quay lại trang chủ')}
           </Link>
         </div>
         
@@ -90,9 +92,9 @@ export default function RegisterPage() {
                 <Recycling className="h-6 w-6" />
               </div>
             </div>
-            <CardTitle className="text-2xl text-center">Create an account</CardTitle>
+            <CardTitle className="text-2xl text-center">{t('register.title', 'Tạo tài khoản mới')}</CardTitle>
             <CardDescription className="text-center">
-              Enter your information to create a household account
+              {t('register.description', 'Nhập thông tin để tạo tài khoản hộ gia đình')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -103,10 +105,10 @@ export default function RegisterPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel>{t('register.full_name', 'Họ và tên')}</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="John Doe" 
+                          placeholder={t('register.full_name_placeholder', 'Nguyễn Văn A')} 
                           {...field} 
                         />
                       </FormControl>
@@ -120,10 +122,10 @@ export default function RegisterPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('register.email', 'Email')}</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="example@email.com" 
+                          placeholder={t('register.email_placeholder', 'an.nguyen@example.com')} 
                           type="email" 
                           {...field} 
                         />
@@ -138,10 +140,10 @@ export default function RegisterPage() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
+                      <FormLabel>{t('register.phone', 'Số điện thoại')}</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="+1 (555) 000-0000" 
+                          placeholder={t('register.phone_placeholder', '+84 912 345 678')} 
                           type="tel" 
                           {...field} 
                         />
@@ -156,10 +158,10 @@ export default function RegisterPage() {
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Address</FormLabel>
+                      <FormLabel>{t('register.address', 'Địa chỉ')}</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="123 Main St, City, State" 
+                          placeholder={t('register.address_placeholder', '12 Nguyễn Trãi, Quận 1, TP. Hồ Chí Minh')} 
                           {...field} 
                         />
                       </FormControl>
@@ -173,10 +175,10 @@ export default function RegisterPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>{t('register.password', 'Mật khẩu')}</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Create a password" 
+                          placeholder={t('register.password_placeholder', 'Tạo mật khẩu')} 
                           type="password" 
                           {...field} 
                         />
@@ -191,10 +193,10 @@ export default function RegisterPage() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>{t('register.confirm_password', 'Xác nhận mật khẩu')}</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Confirm your password" 
+                          placeholder={t('register.confirm_password_placeholder', 'Nhập lại mật khẩu')} 
                           type="password" 
                           {...field} 
                         />
@@ -217,19 +219,19 @@ export default function RegisterPage() {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm font-normal">
-                          I agree to the{" "}
+                          {t('register.agree', 'Tôi đồng ý với ')}
                           <Link 
                             href="/terms" 
                             className="text-primary hover:underline"
                           >
-                            terms of service
+                            {t('register.terms_of_service', 'điều khoản dịch vụ')}
                           </Link>
-                          {" "}and{" "}
+                          {t('register.and', ' và ')}
                           <Link 
                             href="/privacy" 
                             className="text-primary hover:underline"
                           >
-                            privacy policy
+                            {t('register.privacy_policy', 'chính sách bảo mật')}
                           </Link>
                         </FormLabel>
                         <FormMessage />
@@ -239,19 +241,20 @@ export default function RegisterPage() {
                 />
                 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating account..." : "Create Account"}
+                  {isLoading ? t('register.creating', 'Đang tạo tài khoản...') : t('register.create', 'Tạo tài khoản')}
                 </Button>
               </form>
             </Form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-center text-muted-foreground">
-              Already have an account?{" "}
+              {t('register.already_have_account', 'Đã có tài khoản?')}
+              {" "}
               <Link 
                 href="/login"
                 className="font-medium text-primary hover:underline"
               >
-                Sign in
+                {t('register.sign_in', 'Đăng nhập')}
               </Link>
             </div>
           </CardFooter>

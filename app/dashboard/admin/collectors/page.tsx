@@ -7,8 +7,10 @@ import type { Collector } from '@/components/admin/collectors/types';
 import CollectorDetailDialog from '@/components/admin/collectors/CollectorDetailDialog';
 import CollectorReviewDialog from '@/components/admin/collectors/CollectorReviewDialog';
 import CollectorFormDialog from '@/components/admin/collectors/CollectorFormDialog';
+import { useTranslation } from 'react-i18next'
 
 export default function AdminCollectorsPage() {
+  const { t } = useTranslation('common')
   // State filter/search
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('all');
@@ -56,7 +58,7 @@ export default function AdminCollectorsPage() {
 
   return (
     <div className="container py-8 max-w-6xl">
-      <h1 className="text-2xl md:text-3xl font-bold mb-6">Nhân viên thu gom</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mb-6">{t('admin_collectors.title', 'Nhân viên thu gom')}</h1>
       {/* Thống kê tổng quan */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded shadow p-4 text-center">

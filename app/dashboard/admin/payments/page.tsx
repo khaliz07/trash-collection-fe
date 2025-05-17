@@ -5,11 +5,11 @@ import { mockCollectorPayments, mockUserPayments, mockCollectorPaymentDetails, m
 import { useTranslation } from 'react-i18next';
 
 export default function AdminPaymentsPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
 
   return (
     <div className="flex flex-col h-full w-full p-6">
-      <h1 className="text-2xl font-bold mb-6">{t('admin.payments.title', 'Quản lý thanh toán')}</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('admin_payments.title', 'Quản lý thanh toán')}</h1>
       <PaymentsTabs
         collectorPayments={mockCollectorPayments}
         userPayments={mockUserPayments}

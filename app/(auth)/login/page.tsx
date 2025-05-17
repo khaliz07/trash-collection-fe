@@ -82,7 +82,7 @@ export default function LoginPage() {
             className="inline-flex items-center text-sm font-medium hover:underline"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to home
+            {t('register.back_to_home', 'Quay lại trang chủ')}
           </Link>
         </div>
         

@@ -3,7 +3,7 @@ import type { UserInfo, NotificationSettings, Language, DeviceSession } from './
 export const mockUserInfo: UserInfo = {
   name: 'Nguyễn Văn A',
   phone: '0912345678',
-  address: '123 Đường A, Phường B, Quận C',
+  address: '123 Đường 17, Phường Linh Trung, Quận Thủ Đức',
   email: 'nguyenvana@example.com',
   avatarUrl: '/avatars/user1.png',
   status: 'active',
