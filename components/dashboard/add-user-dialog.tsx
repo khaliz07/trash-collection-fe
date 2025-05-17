@@ -31,6 +31,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { UserPlus } from "lucide-react"
+import { useTranslation } from 'react-i18next'
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -43,6 +44,7 @@ const formSchema = z.object({
 export function AddUserDialog() {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { t } = useTranslation('common')
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,14 +76,14 @@ export function AddUserDialog() {
       <DialogTrigger asChild>
         <Button>
           <UserPlus className="mr-2 h-4 w-4" />
-          Add New User
+          {t('admin_users.add_dialog.open', 'Thêm người dùng mới')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New User</DialogTitle>
+          <DialogTitle>{t('admin_users.add_dialog.title', 'Thêm người dùng mới')}</DialogTitle>
           <DialogDescription>
-            Create a new household user account. They will receive an email with login instructions.
+            {t('admin_users.add_dialog.desc', 'Tạo tài khoản hộ dân mới. Người dùng sẽ nhận email hướng dẫn đăng nhập.')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -91,9 +93,9 @@ export function AddUserDialog() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>{t('admin_users.add_dialog.full_name', 'Họ và tên')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder={t('admin_users.add_dialog.full_name_placeholder', 'Nguyễn Văn A')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -105,9 +107,9 @@ export function AddUserDialog() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t('admin_users.add_dialog.email', 'Email')}</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="john@example.com" {...field} />
+                    <Input type="email" placeholder={t('admin_users.add_dialog.email_placeholder', 'an.nguyen@example.com')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,9 +121,9 @@ export function AddUserDialog() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel>{t('admin_users.add_dialog.phone', 'Số điện thoại')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 (555) 000-0000" {...field} />
+                    <Input placeholder={t('admin_users.add_dialog.phone_placeholder', '+84 912 345 678')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -133,9 +135,9 @@ export function AddUserDialog() {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address</FormLabel>
+                  <FormLabel>{t('admin_users.add_dialog.address', 'Địa chỉ')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="123 Main St, City, State" {...field} />
+                    <Input placeholder={t('admin_users.add_dialog.address_placeholder', '12 Nguyễn Trãi, Quận 1, TP. Hồ Chí Minh')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -147,17 +149,17 @@ export function AddUserDialog() {
               name="plan"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Subscription Plan</FormLabel>
+                  <FormLabel>{t('admin_users.add_dialog.plan', 'Gói đăng ký')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a plan" />
+                        <SelectValue placeholder={t('admin_users.add_dialog.plan_placeholder', 'Chọn gói')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Monthly">Monthly</SelectItem>
-                      <SelectItem value="Quarterly">Quarterly</SelectItem>
-                      <SelectItem value="Yearly">Yearly</SelectItem>
+                      <SelectItem value="Monthly">{t('user_plan.monthly', 'Hàng tháng')}</SelectItem>
+                      <SelectItem value="Quarterly">{t('user_plan.quarterly', 'Hàng quý')}</SelectItem>
+                      <SelectItem value="Yearly">{t('user_plan.yearly', 'Hàng năm')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -167,7 +169,7 @@ export function AddUserDialog() {
             
             <DialogFooter>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create User"}
+                {isLoading ? t('admin_users.add_dialog.creating', 'Đang tạo...') : t('admin_users.add_dialog.create', 'Tạo người dùng')}
               </Button>
             </DialogFooter>
           </form>

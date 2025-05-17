@@ -37,59 +37,61 @@ import {
   CheckCircle
 } from "lucide-react"
 import { AddUserDialog } from "@/components/dashboard/add-user-dialog"
+import { useTranslation } from 'react-i18next'
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const { t } = useTranslation('common')
   
   // Mock user data
   const users = [
     {
       id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.j@example.com",
-      phone: "+1 (555) 123-4567",
-      address: "123 Oak Street, Springfield",
-      joinDate: "Apr 15, 2025",
+      name: "Nguyễn Văn An",
+      email: "an.nguyen@example.com",
+      phone: "+84 912 345 678",
+      address: "12 Nguyễn Trãi, Quận 1, TP. Hồ Chí Minh",
+      joinDate: "15/04/2025",
       status: "active",
       plan: "Monthly"
     },
     {
       id: 2,
-      name: "Michael Chen",
-      email: "m.chen@example.com",
-      phone: "+1 (555) 234-5678",
-      address: "456 Maple Ave, Riverside",
-      joinDate: "Apr 12, 2025",
+      name: "Trần Thị Bích",
+      email: "bich.tran@example.com",
+      phone: "+84 913 456 789",
+      address: "45 Lê Lợi, Quận Hải Châu, Đà Nẵng",
+      joinDate: "12/04/2025",
       status: "active",
       plan: "Yearly"
     },
     {
       id: 3,
-      name: "Emily Wilson",
-      email: "emily.w@example.com",
-      phone: "+1 (555) 345-6789",
-      address: "789 Pine Road, Lakeside",
-      joinDate: "Apr 10, 2025",
+      name: "Lê Quang Dũng",
+      email: "dung.le@example.com",
+      phone: "+84 914 567 890",
+      address: "78 Phan Đình Phùng, Ba Đình, Hà Nội",
+      joinDate: "10/04/2025",
       status: "suspended",
       plan: "Monthly"
     },
     {
       id: 4,
-      name: "James Martinez",
-      email: "j.martinez@example.com",
-      phone: "+1 (555) 456-7890",
-      address: "321 Cedar Lane, Hillside",
-      joinDate: "Apr 8, 2025",
+      name: "Phạm Minh Châu",
+      email: "chau.pham@example.com",
+      phone: "+84 915 678 901",
+      address: "23 Trần Hưng Đạo, TP. Nha Trang",
+      joinDate: "08/04/2025",
       status: "active",
       plan: "Quarterly"
     },
     {
       id: 5,
-      name: "Lisa Thompson",
-      email: "lisa.t@example.com",
-      phone: "+1 (555) 567-8901",
-      address: "654 Birch Street, Mountain View",
-      joinDate: "Apr 5, 2025",
+      name: "Võ Thị Hạnh",
+      email: "hanh.vo@example.com",
+      phone: "+84 916 789 012",
+      address: "56 Nguyễn Huệ, TP. Huế",
+      joinDate: "05/04/2025",
       status: "inactive",
       plan: "Monthly"
     }
@@ -115,13 +117,39 @@ export default function UsersPage() {
     }
   }
   
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case "active":
+        return t('user_status.active', 'Đang hoạt động')
+      case "suspended":
+        return t('user_status.suspended', 'Tạm khóa')
+      case "inactive":
+        return t('user_status.inactive', 'Ngừng hoạt động')
+      default:
+        return t('user_status.unknown', 'Không xác định')
+    }
+  }
+  
+  const planLabel = (plan: string) => {
+    switch (plan) {
+      case "Monthly":
+        return t('user_plan.monthly', 'Hàng tháng')
+      case "Quarterly":
+        return t('user_plan.quarterly', 'Hàng quý')
+      case "Yearly":
+        return t('user_plan.yearly', 'Hàng năm')
+      default:
+        return plan
+    }
+  }
+  
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Users</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t('admin_users.title', 'Quản lý người dùng')}</h2>
           <p className="text-muted-foreground">
-            Manage household user accounts and permissions
+            {t('admin_users.desc', 'Quản lý tài khoản và phân quyền hộ dân')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -131,9 +159,9 @@ export default function UsersPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>User Management</CardTitle>
+          <CardTitle>{t('admin_users.card_title', 'Quản lý người dùng')}</CardTitle>
           <CardDescription>
-            View and manage all registered household users in the system
+            {t('admin_users.card_desc', 'Xem và quản lý tất cả hộ dân đã đăng ký trong hệ thống')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -141,14 +169,14 @@ export default function UsersPage() {
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search users..."
+                placeholder={t('admin_users.search_placeholder', 'Tìm kiếm người dùng...')}
                 className="pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Button variant="outline">
-              Filter
+              {t('admin_users.filter', 'Lọc')}
             </Button>
           </div>
           
@@ -156,12 +184,12 @@ export default function UsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Join Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Plan</TableHead>
+                  <TableHead>{t('admin_users.table.user', 'Người dùng')}</TableHead>
+                  <TableHead>{t('admin_users.table.contact', 'Liên hệ')}</TableHead>
+                  <TableHead>{t('admin_users.table.address', 'Địa chỉ')}</TableHead>
+                  <TableHead>{t('admin_users.table.join_date', 'Ngày tham gia')}</TableHead>
+                  <TableHead>{t('admin_users.table.status', 'Trạng thái')}</TableHead>
+                  <TableHead>{t('admin_users.table.plan', 'Gói')}</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -172,7 +200,7 @@ export default function UsersPage() {
                       <div>
                         <div className="font-medium">{user.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          ID: {String(user.id).padStart(5, '0')}
+                          {t('admin_users.table.id', 'Mã')}: {String(user.id).padStart(5, '0')}
                         </div>
                       </div>
                     </TableCell>
@@ -203,11 +231,11 @@ export default function UsersPage() {
                     <TableCell>
                       <div className={`flex items-center text-sm capitalize ${getStatusColor(user.status)}`}>
                         <CheckCircle className="mr-1 h-3 w-3" />
-                        {user.status}
+                        {statusLabel(user.status)}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">{user.plan}</div>
+                      <div className="text-sm">{planLabel(user.plan)}</div>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -219,15 +247,15 @@ export default function UsersPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>
                             <Shield className="mr-2 h-4 w-4" />
-                            Change Role
+                            {t('admin_users.action.change_role', 'Đổi vai trò')}
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Ban className="mr-2 h-4 w-4" />
-                            Suspend Account
+                            {t('admin_users.action.suspend', 'Tạm khóa tài khoản')}
                           </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive">
                             <UserX className="mr-2 h-4 w-4" />
-                            Delete Account
+                            {t('admin_users.action.delete', 'Xóa tài khoản')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

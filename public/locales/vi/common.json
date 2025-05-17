@@ -398,5 +398,55 @@
       "send": "Gửi"
     },
     "empty": "Không có phản hồi nào phù hợp."
+  },
+  "admin_users": {
+    "title": "Quản lý người dùng",
+    "desc": "Quản lý tài khoản và phân quyền hộ dân",
+    "card_title": "Quản lý người dùng",
+    "card_desc": "Xem và quản lý tất cả hộ dân đã đăng ký trong hệ thống",
+    "search_placeholder": "Tìm kiếm người dùng...",
+    "filter": "Lọc",
+    "table": {
+      "user": "Người dùng",
+      "contact": "Liên hệ",
+      "address": "Địa chỉ",
+      "join_date": "Ngày tham gia",
+      "status": "Trạng thái",
+      "plan": "Gói",
+      "id": "Mã"
+    },
+    "action": {
+      "change_role": "Đổi vai trò",
+      "suspend": "Tạm khóa tài khoản",
+      "delete": "Xóa tài khoản"
+    },
+    "add_dialog": {
+      "open": "Thêm người dùng mới",
+      "title": "Thêm người dùng mới",
+      "desc": "Tạo tài khoản hộ dân mới. Người dùng sẽ nhận email hướng dẫn đăng nhập.",
+      "full_name": "Họ và tên",
+      "full_name_placeholder": "Nguyễn Văn A",
+      "email": "Email",
+      "email_placeholder": "an.nguyen@example.com",
+      "phone": "Số điện thoại",
+      "phone_placeholder": "+84 912 345 678",
+      "address": "Địa chỉ",
+      "address_placeholder": "12 Nguyễn Trãi, Quận 1, TP. Hồ Chí Minh",
+      "plan": "Gói đăng ký",
+      "plan_placeholder": "Chọn gói",
+      "create": "Tạo người dùng",
+      "creating": "Đang tạo..."
+    }
+  },
+  "user_status": {
+    "active": "Đang hoạt động",
+    "suspended": "Tạm khóa",
+    "inactive": "Ngừng hoạt động",
+    "unknown": "Không xác định"
+  },
+  "user_plan": {
+    "monthly": "Hàng tháng",
+    "quarterly": "Hàng quý",
+    "yearly": "Hàng năm"
   }
 } 
