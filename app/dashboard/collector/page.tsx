@@ -1,3 +1,5 @@
+'use client'
+
 import { 
   Card, 
   CardContent, 
@@ -24,20 +26,48 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { CollectionPointList } from "@/components/dashboard/collection/today/CollectionPointList"
-import { mockCollectionPoints } from "./mockData"
+import { CollectionStatus } from "@/types/collection"
+import { mockCollectionPoints } from "@/components/dashboard/collection/mockCollectionPoints"
+import { useState } from 'react'
+import { CollectionPoint } from '@/types/collection'
 
 export default function CollectorDashboard() {
-  // Mock data
+  // State quản lý collection points
+  const [points, setPoints] = useState(mockCollectionPoints)
+
   const todaysCollections = {
-    total: mockCollectionPoints.length,
-    completed: mockCollectionPoints.filter(cp => cp.status === "completed").length,
-    pending: mockCollectionPoints.filter(cp => cp.status === "pending").length
+    total: points.length,
+    completed: points.filter(cp => cp.status === CollectionStatus.COMPLETED).length,
+    pending: points.filter(cp => cp.status === CollectionStatus.PENDING).length
   }
   
   const handleCheckIn = (id: string) => {
-    // In a real app, this would update the collection point status
-    console.log("Checking in to collection point:", id);
-  };
+    setPoints(prev => prev.map(cp =>
+      cp.id === id ? { ...cp, status: CollectionStatus.IN_PROGRESS, checkInTime: new Date().toLocaleTimeString() } : cp
+    ))
+  }
+  
+  const handleUpdateStatus = (id: string, status: CollectionStatus) => {
+    setPoints(prev => prev.map(cp =>
+      cp.id === id ? { ...cp, status } : cp
+    ))
+  }
+  
+  const handleOpenMap = (id: string) => {
+    const point = points.find(cp => cp.id === id)
+    if (point) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${point.location.lat},${point.location.lng}`
+      window.open(url, '_blank')
+    }
+  }
+  
+  const handleUploadPhoto = (id: string) => {
+    alert('Tính năng upload/chụp ảnh sẽ được triển khai ở dialog riêng cho điểm: ' + id)
+  }
+  
+  const handleAddNote = (id: string) => {
+    alert('Tính năng thêm ghi chú sẽ được triển khai ở dialog riêng cho điểm: ' + id)
+  }
   
   return (
     <div className="space-y-6">
@@ -163,8 +193,12 @@ export default function CollectorDashboard() {
             </CardHeader>
             <CardContent>
               <CollectionPointList
-                collectionPoints={mockCollectionPoints}
+                points={points}
                 onCheckIn={handleCheckIn}
+                onUpdateStatus={handleUpdateStatus}
+                onOpenMap={handleOpenMap}
+                onUploadPhoto={handleUploadPhoto}
+                onAddNote={handleAddNote}
               />
             </CardContent>
           </Card>

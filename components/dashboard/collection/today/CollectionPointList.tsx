@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react';
 import {
   Select,
@@ -11,10 +13,10 @@ import { CollectionPointCard } from './CollectionPointCard';
 interface CollectionPointListProps {
   points: CollectionPoint[];
   onCheckIn: (pointId: string) => void;
-  onUpdateStatus: (pointId: string, status: CollectionStatus) => void;
-  onOpenMap: (pointId: string) => void;
-  onUploadPhoto: (pointId: string) => void;
-  onAddNote: (pointId: string) => void;
+  onUpdateStatus?: (pointId: string, status: CollectionStatus) => void;
+  onOpenMap?: (pointId: string) => void;
+  onUploadPhoto?: (pointId: string) => void;
+  onAddNote?: (pointId: string) => void;
 }
 
 const SORT_OPTIONS: CollectionPointSortOption[] = [
@@ -145,10 +147,10 @@ export function CollectionPointList({
               key={point.id}
               point={point}
               onCheckIn={() => onCheckIn(point.id)}
-              onUpdateStatus={(status) => onUpdateStatus(point.id, status)}
-              onOpenMap={() => onOpenMap(point.id)}
-              onUploadPhoto={() => onUploadPhoto(point.id)}
-              onAddNote={() => onAddNote(point.id)}
+              onUpdateStatus={(status) => onUpdateStatus?.(point.id, status)}
+              onOpenMap={() => onOpenMap?.(point.id)}
+              onUploadPhoto={() => onUploadPhoto?.(point.id)}
+              onAddNote={() => onAddNote?.(point.id)}
             />
           ))}
         </div>
