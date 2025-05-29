@@ -509,5 +509,56 @@
     "create": "Tạo tài khoản",
     "already_have_account": "Đã có tài khoản?",
     "sign_in": "Đăng nhập"
+  },
+  "collector_dashboard": {
+    "welcome_back": "Chào mừng trở lại",
+    "overview_description": "Đây là tổng quan về các nhiệm vụ thu gom của bạn hôm nay",
+    "view_route_map": "Xem tuyến đường",
+    "tabs": {
+      "today": "Nhiệm vụ hôm nay",
+      "performance": "Hiệu suất",
+      "urgent": "Yêu cầu khẩn cấp"
+    },
+    "stats": {
+      "todays_collections": {
+        "title": "Thu gom hôm nay",
+        "description": "Tổng số điểm thu gom được phân công hôm nay",
+        "completed": "đã hoàn thành",
+        "remaining": "còn lại"
+      },
+      "route_progress": {
+        "title": "Tiến độ tuyến đường",
+        "description": "Tuyến đường hôm nay đã hoàn thành",
+        "est_completion": "Dự kiến hoàn thành"
+      },
+      "efficiency_rate": {
+        "title": "Tỷ lệ hiệu quả",
+        "description": "Thời gian trung bình mỗi điểm thu gom",
+        "from_last_week": "so với tuần trước"
+      },
+      "urgent_requests": {
+        "title": "Yêu cầu khẩn cấp",
+        "description": "Yêu cầu thu gom khẩn cấp mới",
+        "view_requests": "Xem yêu cầu"
+      }
+    },
+    "collection_points": {
+      "title": "Điểm thu gom",
+      "description": "Quản lý các điểm thu gom được phân công hôm nay"
+    },
+    "performance_analytics": {
+      "title": "Phân tích hiệu suất",
+      "description": "Các chỉ số hiệu suất thu gom của bạn",
+      "content": "Nội dung phân tích hiệu suất sẽ được hiển thị ở đây"
+    },
+    "urgent_requests": {
+      "title": "Yêu cầu khẩn cấp",
+      "description": "Các yêu cầu thu gom ưu tiên cao",
+      "content": "Nội dung yêu cầu khẩn cấp sẽ được hiển thị ở đây"
+    },
+    "alerts": {
+      "photo_upload": "Tính năng upload/chụp ảnh sẽ được triển khai ở dialog riêng cho điểm: {{id}}",
+      "add_note": "Tính năng thêm ghi chú sẽ được triển khai ở dialog riêng cho điểm: {{id}}"
+    }
   }
 } 

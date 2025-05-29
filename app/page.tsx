@@ -1,16 +1,12 @@
 "use client"
 
-import { Button } from '@/components/ui/button';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, Truck, Calendar, CreditCard, Bell } from 'lucide-react';
-import { HeroSection } from '@/components/landing/hero-section';
-import { FeatureSection } from '@/components/landing/feature-section';
-import { HowItWorks } from '@/components/landing/how-it-works';
-import { Testimonials } from '@/components/landing/testimonials';
 import { CallToAction } from '@/components/landing/call-to-action';
-import { SiteHeader } from '@/components/landing/site-header';
+import { FeatureSection } from '@/components/landing/feature-section';
+import { HeroSection } from '@/components/landing/hero-section';
+import { HowItWorks } from '@/components/landing/how-it-works';
 import { SiteFooter } from '@/components/landing/site-footer';
+import { SiteHeader } from '@/components/landing/site-header';
+import { Testimonials } from '@/components/landing/testimonials';
 
 export default function Home() {
   return (

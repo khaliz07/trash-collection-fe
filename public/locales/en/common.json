@@ -394,5 +394,56 @@
       "send": "Send"
     },
     "empty": "No feedback found."
+  },
+  "collector_dashboard": {
+    "welcome_back": "Welcome back",
+    "overview_description": "Here's an overview of your collection tasks for today",
+    "view_route_map": "View Route Map",
+    "tabs": {
+      "today": "Today's Tasks",
+      "performance": "Performance",
+      "urgent": "Urgent Requests"
+    },
+    "stats": {
+      "todays_collections": {
+        "title": "Today's Collections",
+        "description": "Total collections assigned today",
+        "completed": "completed",
+        "remaining": "remaining"
+      },
+      "route_progress": {
+        "title": "Route Progress",
+        "description": "Of today's route completed",
+        "est_completion": "Est. completion"
+      },
+      "efficiency_rate": {
+        "title": "Efficiency Rate",
+        "description": "Avg. time per collection",
+        "from_last_week": "from last week"
+      },
+      "urgent_requests": {
+        "title": "Urgent Requests",
+        "description": "New urgent collection requests",
+        "view_requests": "View Requests"
+      }
+    },
+    "collection_points": {
+      "title": "Collection Points",
+      "description": "Manage your assigned collection points for today"
+    },
+    "performance_analytics": {
+      "title": "Performance Analytics",
+      "description": "Your collection performance metrics",
+      "content": "Performance analytics content will go here"
+    },
+    "urgent_requests": {
+      "title": "Urgent Requests",
+      "description": "High priority collection requests",
+      "content": "Urgent requests content will go here"
+    },
+    "alerts": {
+      "photo_upload": "Photo upload/capture feature will be implemented in a separate dialog for point: {{id}}",
+      "add_note": "Note adding feature will be implemented in a separate dialog for point: {{id}}"
+    }
   }
 } 

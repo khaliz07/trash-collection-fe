@@ -1,19 +1,19 @@
 "use client"
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Recycle, Menu, X } from 'lucide-react'
 import { ModeToggle } from '@/components/mode-toggle'
-import '../../i18n'
+import { Button } from '@/components/ui/button'
+import { Menu, Recycle, X } from 'lucide-react'
+import Link from 'next/link'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import '../../i18n'
 
 export function SiteHeader() {
   const { t } = useTranslation('common')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="flex justify-center sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2 font-bold">
           <Recycle className="h-6 w-6 text-primary" />

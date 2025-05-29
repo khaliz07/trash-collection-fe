@@ -7,7 +7,7 @@ import Link from 'next/link'
 
 export function HeroSection() {
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden">
+    <section className="relative py-20 md:py-32 overflow-hidden flex justify-center">
       {/* Background decoration */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background/80"></div>

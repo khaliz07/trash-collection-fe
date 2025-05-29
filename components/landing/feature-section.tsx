@@ -1,11 +1,11 @@
-import { 
-  Calendar, 
-  Bell, 
-  CreditCard, 
-  Clock, 
-  Map, 
-  BarChart, 
-  Shield, 
+import {
+  BarChart,
+  Bell,
+  Calendar,
+  Clock,
+  CreditCard,
+  Map,
+  Shield,
   Star
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -57,7 +57,7 @@ export function FeatureSection() {
   ]
 
   return (
-    <section id="features" className="py-16 md:py-24 bg-muted/50">
+    <section id="features" className="py-16 md:py-24 bg-muted/50 flex justify-center">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center text-center space-y-4 mb-12 md:mb-16">
           <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium">

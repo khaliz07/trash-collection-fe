@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import { CheckCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import '../../i18n'
@@ -49,7 +48,7 @@ export function HowItWorks() {
   ]
 
   return (
-    <section id="how-it-works" className="py-16 md:py-24">
+    <section id="how-it-works" className="py-16 md:py-24 flex justify-center">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center text-center space-y-4 mb-12 md:mb-16">
           <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium">

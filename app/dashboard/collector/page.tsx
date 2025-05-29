@@ -27,8 +27,10 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function CollectorDashboard() {
+  const { t } = useTranslation()
   // State quản lý collection points
   const [points, setPoints] = useState(mockCollectionPoints)
 
@@ -59,26 +61,26 @@ export default function CollectorDashboard() {
   }
   
   const handleUploadPhoto = (id: string) => {
-    alert('Tính năng upload/chụp ảnh sẽ được triển khai ở dialog riêng cho điểm: ' + id)
+    alert(t('collector_dashboard.alerts.photo_upload', { id }))
   }
   
   const handleAddNote = (id: string) => {
-    alert('Tính năng thêm ghi chú sẽ được triển khai ở dialog riêng cho điểm: ' + id)
+    alert(t('collector_dashboard.alerts.add_note', { id }))
   }
   
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t('collector_dashboard.welcome_back')}</h2>
           <p className="text-muted-foreground">
-            Here's an overview of your collection tasks for today
+            {t('collector_dashboard.overview_description')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/dashboard/collector/map">
             <Button>
-              View Route Map
+              {t('collector_dashboard.view_route_map')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -87,9 +89,9 @@ export default function CollectorDashboard() {
       
       <Tabs defaultValue="today" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="today">Today's Tasks</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="urgent">Urgent Requests</TabsTrigger>
+          <TabsTrigger value="today">{t('collector_dashboard.tabs.today')}</TabsTrigger>
+          <TabsTrigger value="performance">{t('collector_dashboard.tabs.performance')}</TabsTrigger>
+          <TabsTrigger value="urgent">{t('collector_dashboard.tabs.urgent')}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="today" className="space-y-4">
@@ -97,21 +99,21 @@ export default function CollectorDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Today's Collections
+                  {t('collector_dashboard.stats.todays_collections.title')}
                 </CardTitle>
                 <Truck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{todaysCollections.total}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Total collections assigned today
+                  {t('collector_dashboard.stats.todays_collections.description')}
                 </p>
                 <div className="mt-4">
                   {/* <Progress value={(todaysCollections.completed / todaysCollections.total) * 100} className="h-2" /> */}
                 </div>
                 <div className="mt-1 text-xs flex justify-between">
-                  <div>{todaysCollections.completed} completed</div>
-                  <div>{todaysCollections.pending} remaining</div>
+                  <div>{todaysCollections.completed} {t('collector_dashboard.stats.todays_collections.completed')}</div>
+                  <div>{todaysCollections.pending} {t('collector_dashboard.stats.todays_collections.remaining')}</div>
                 </div>
               </CardContent>
             </Card>
@@ -119,14 +121,14 @@ export default function CollectorDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Route Progress
+                  {t('collector_dashboard.stats.route_progress.title')}
                 </CardTitle>
                 <MapPin className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">53%</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Of today's route completed
+                  {t('collector_dashboard.stats.route_progress.description')}
                 </p>
                 <div className="mt-4">
                   <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
@@ -134,7 +136,7 @@ export default function CollectorDashboard() {
                   </div>
                 </div>
                 <div className="mt-2 text-xs">
-                  Est. completion: 2:30 PM
+                  {t('collector_dashboard.stats.route_progress.est_completion')}: 2:30 PM
                 </div>
               </CardContent>
             </Card>
@@ -142,14 +144,14 @@ export default function CollectorDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Efficiency Rate
+                  {t('collector_dashboard.stats.efficiency_rate.title')}
                 </CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">94%</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Avg. time per collection: 11 min
+                  {t('collector_dashboard.stats.efficiency_rate.description')}: 11 min
                 </p>
                 <div className="mt-4">
                   <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
@@ -157,7 +159,7 @@ export default function CollectorDashboard() {
                   </div>
                 </div>
                 <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
-                  +5% from last week
+                  +5% {t('collector_dashboard.stats.efficiency_rate.from_last_week')}
                 </div>
               </CardContent>
             </Card>
@@ -165,18 +167,18 @@ export default function CollectorDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Urgent Requests
+                  {t('collector_dashboard.stats.urgent_requests.title')}
                 </CardTitle>
                 <BarChart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">2</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  New urgent collection requests
+                  {t('collector_dashboard.stats.urgent_requests.description')}
                 </p>
                 <Link href="/dashboard/collector/urgent" className="mt-4 inline-block">
                   <Button variant="outline" size="sm">
-                    View Requests
+                    {t('collector_dashboard.stats.urgent_requests.view_requests')}
                   </Button>
                 </Link>
               </CardContent>
@@ -185,8 +187,8 @@ export default function CollectorDashboard() {
           
           <Card>
             <CardHeader>
-              <CardTitle>Collection Points</CardTitle>
-              <CardDescription>Manage your assigned collection points for today</CardDescription>
+              <CardTitle>{t('collector_dashboard.collection_points.title')}</CardTitle>
+              <CardDescription>{t('collector_dashboard.collection_points.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <CollectionPointList
@@ -204,11 +206,11 @@ export default function CollectorDashboard() {
         <TabsContent value="performance">
           <Card>
             <CardHeader>
-              <CardTitle>Performance Analytics</CardTitle>
-              <CardDescription>Your collection performance metrics</CardDescription>
+              <CardTitle>{t('collector_dashboard.performance_analytics.title')}</CardTitle>
+              <CardDescription>{t('collector_dashboard.performance_analytics.description')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Performance analytics content will go here</p>
+              <p>{t('collector_dashboard.performance_analytics.content')}</p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -216,11 +218,11 @@ export default function CollectorDashboard() {
         <TabsContent value="urgent">
           <Card>
             <CardHeader>
-              <CardTitle>Urgent Requests</CardTitle>
-              <CardDescription>High priority collection requests</CardDescription>
+              <CardTitle>{t('collector_dashboard.urgent_requests.title')}</CardTitle>
+              <CardDescription>{t('collector_dashboard.urgent_requests.description')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Urgent requests content will go here</p>
+              <p>{t('collector_dashboard.urgent_requests.content')}</p>
             </CardContent>
           </Card>
         </TabsContent>
