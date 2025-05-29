@@ -1,11 +1,11 @@
-import Link from 'next/link'
+'use client'
+
 import { Button } from '@/components/ui/button'
+import { t } from 'i18next'
 import { ArrowRight } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import '../../i18n'
+import Link from 'next/link'
 
 export function HeroSection() {
-  const { t } = useTranslation()
   return (
     <section className="relative py-20 md:py-32 overflow-hidden">
       {/* Background decoration */}

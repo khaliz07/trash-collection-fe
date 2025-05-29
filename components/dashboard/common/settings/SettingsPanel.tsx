@@ -13,7 +13,7 @@ import type { UserInfo, NotificationSettings, Language, DeviceSession } from "./
 import { mockUserInfo, mockNotificationSettings, mockLanguage, mockDevices } from "./mockData";
 
 export interface SettingsPanelProps {
-  role?: "user" | "collector";
+  role?: "user" | "collector" | 'admin';
 }
 
 export function SettingsPanel({ role = "user" }: SettingsPanelProps) {

@@ -1,35 +1,32 @@
 'use client'
 
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import { mockCollectionPoints } from "@/components/dashboard/collection/mockCollectionPoints"
+import { CollectionPointList } from "@/components/dashboard/collection/today/CollectionPointList"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { 
-  CalendarIcon, 
-  Clock, 
-  Truck, 
-  ArrowRight, 
-  CheckCircle, 
+import { CollectionStatus } from "@/types/collection"
+import {
+  ArrowRight,
+  BarChart,
+  Clock,
   MapPin,
-  BarChart
+  Truck
 } from "lucide-react"
 import Link from "next/link"
-import { CollectionPointList } from "@/components/dashboard/collection/today/CollectionPointList"
-import { CollectionStatus } from "@/types/collection"
-import { mockCollectionPoints } from "@/components/dashboard/collection/mockCollectionPoints"
 import { useState } from 'react'
-import { CollectionPoint } from '@/types/collection'
 
 export default function CollectorDashboard() {
   // State quản lý collection points
@@ -110,7 +107,7 @@ export default function CollectorDashboard() {
                   Total collections assigned today
                 </p>
                 <div className="mt-4">
-                  <Progress value={(todaysCollections.completed / todaysCollections.total) * 100} className="h-2" />
+                  {/* <Progress value={(todaysCollections.completed / todaysCollections.total) * 100} className="h-2" /> */}
                 </div>
                 <div className="mt-1 text-xs flex justify-between">
                   <div>{todaysCollections.completed} completed</div>
