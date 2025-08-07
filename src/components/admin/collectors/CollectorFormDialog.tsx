@@ -1,69 +1,136 @@
 import * as React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import type { Collector, CollectorArea, CollectorStatus } from './types';
+import { useCreateCollector, useUpdateCollector } from '@/hooks/use-collectors';
+import type { Collector, CollectorStatus } from './types';
 
 export interface CollectorFormDialogProps {
   open: boolean;
   onClose: () => void;
   collector?: Collector | null;
-  areas: CollectorArea[];
-  onSubmit: (data: Omit<Collector, 'id'|'rating'|'reviewCount'>) => void;
+  areas?: any[]; // Keep for backward compatibility but won't use
 }
 
 const statusOptions: { value: CollectorStatus; label: string }[] = [
-  { value: 'active', label: 'Đang hoạt động' },
-  { value: 'inactive', label: 'Tạm nghỉ' },
-  { value: 'terminated', label: 'Nghỉ việc' },
+  { value: 'ACTIVE', label: 'Đang hoạt động' },
+  { value: 'INACTIVE', label: 'Tạm nghỉ' },
+  { value: 'SUSPENDED', label: 'Tạm ngưng' },
 ];
 
-export function CollectorFormDialog({ open, onClose, collector, areas, onSubmit }: CollectorFormDialogProps) {
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  cccd: string;
+  licensePlate: string;
+  startDate: string;
+  status: CollectorStatus;
+  address: string;
+  password: string; // For new collectors only
+}
+
+export function CollectorFormDialog({ open, onClose, collector, areas }: CollectorFormDialogProps) {
   const isEdit = !!collector;
-  const [form, setForm] = React.useState<Omit<Collector, 'id'|'rating'|'reviewCount'>>({
-    name: collector?.name || '',
-    phone: collector?.phone || '',
-    area: collector?.area || areas[0],
-    status: collector?.status || 'active',
-    startDate: collector?.startDate || '',
-    cccd: collector?.cccd || '',
+  const createCollectorMutation = useCreateCollector(onClose);
+  const updateCollectorMutation = useUpdateCollector(onClose);
+  
+  const [form, setForm] = React.useState<FormData>({
+    firstName: collector?.firstName || '',
+    lastName: collector?.lastName || '',
     email: collector?.email || '',
+    phone: collector?.phone || '',
+    cccd: collector?.cccd || '',
+    licensePlate: collector?.licensePlate || '',
+    startDate: collector?.startDate ? collector.startDate.split('T')[0] : '', // Convert ISO to YYYY-MM-DD
+    status: collector?.status || 'ACTIVE',
+    address: '',
+    password: '', // Only for new collectors
   });
   const [error, setError] = React.useState('');
+  
   React.useEffect(() => {
     if (collector) {
       setForm({
-        name: collector.name,
-        phone: collector.phone,
-        area: collector.area,
-        status: collector.status,
-        startDate: collector.startDate,
-        cccd: collector.cccd,
+        firstName: collector.firstName || '',
+        lastName: collector.lastName || '',
         email: collector.email || '',
+        phone: collector.phone || '',
+        cccd: collector.cccd || '',
+        licensePlate: collector.licensePlate || '',
+        startDate: collector.startDate ? collector.startDate.split('T')[0] : '',
+        status: collector.status || 'ACTIVE',
+        address: '',
+        password: '',
       });
     } else {
       setForm({
-        name: '', phone: '', area: areas[0], status: 'active', startDate: '', cccd: '', email: ''
+        firstName: '', 
+        lastName: '', 
+        email: '', 
+        phone: '', 
+        cccd: '', 
+        licensePlate: '', 
+        startDate: '', 
+        status: 'ACTIVE',
+        address: '',
+        password: '',
       });
     }
     setError('');
-  }, [collector, open, areas]);
+  }, [collector, open]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
   }
-  function handleAreaChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const area = areas.find(a => a.id === e.target.value);
-    if (area) setForm(f => ({ ...f, area }));
-  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.name || !form.phone || !form.cccd || !form.startDate) {
-      setError('Vui lòng nhập đầy đủ thông tin bắt buộc.');
+    
+    // Validation
+    if (!form.firstName || !form.lastName || !form.phone) {
+      setError('Vui lòng nhập đầy đủ thông tin bắt buộc (Họ, Tên, SĐT).');
       return;
     }
+    
+    if (!isEdit && !form.password) {
+      setError('Vui lòng nhập mật khẩu cho nhân viên mới.');
+      return;
+    }
+    
+    if (!isEdit && !form.email) {
+      setError('Vui lòng nhập email cho nhân viên mới.');
+      return;
+    }
+    
     setError('');
-    onSubmit(form);
+    
+    const submitData = {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phone: form.phone,
+      cccd: form.cccd,
+      licensePlate: form.licensePlate,
+      startDate: form.startDate,
+      status: form.status,
+      address: form.address,
+      ...(form.password && { password: form.password }),
+    };
+    
+    console.log('Submitting data:', { isEdit, submitData }); // Debug log
+    
+    if (isEdit && collector) {
+      // For update, pass individual fields directly (not nested in data object)
+      updateCollectorMutation.mutate({
+        id: collector.id,
+        data: submitData
+      });
+    } else {
+      createCollectorMutation.mutate(submitData);
+    }
   }
+  
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
@@ -72,26 +139,63 @@ export function CollectorFormDialog({ open, onClose, collector, areas, onSubmit 
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Họ tên *</label>
-            <input className="border rounded px-3 py-2 w-full" name="name" value={form.name} onChange={handleChange} required />
+            <label className="block text-sm font-medium mb-1">Họ *</label>
+            <input className="border rounded px-3 py-2 w-full" name="lastName" value={form.lastName} onChange={handleChange} required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Tên *</label>
+            <input className="border rounded px-3 py-2 w-full" name="firstName" value={form.firstName} onChange={handleChange} required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Số điện thoại *</label>
             <input className="border rounded px-3 py-2 w-full" name="phone" value={form.phone} onChange={handleChange} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">CCCD *</label>
-            <input className="border rounded px-3 py-2 w-full" name="cccd" value={form.cccd} onChange={handleChange} required />
+            <label className="block text-sm font-medium mb-1">CCCD</label>
+            <input className="border rounded px-3 py-2 w-full" name="cccd" value={form.cccd} onChange={handleChange} />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input className="border rounded px-3 py-2 w-full" name="email" value={form.email} onChange={handleChange} />
+            <label className="block text-sm font-medium mb-1">Biển số xe</label>
+            <input className="border rounded px-3 py-2 w-full" name="licensePlate" value={form.licensePlate} onChange={handleChange} />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Khu vực *</label>
-            <select className="border rounded px-3 py-2 w-full" name="area" value={form.area.id} onChange={handleAreaChange} required>
-              {areas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </select>
+            <label className="block text-sm font-medium mb-1">Ngày bắt đầu</label>
+            <input type="date" className="border rounded px-3 py-2 w-full" name="startDate" value={form.startDate} onChange={handleChange} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Email {!isEdit && '*'}</label>
+            <input 
+              type="email" 
+              className="border rounded px-3 py-2 w-full" 
+              name="email" 
+              value={form.email} 
+              onChange={handleChange} 
+              required={!isEdit}
+            />
+          </div>
+          {!isEdit && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Mật khẩu *</label>
+              <input 
+                type="password" 
+                className="border rounded px-3 py-2 w-full" 
+                name="password" 
+                value={form.password} 
+                onChange={handleChange} 
+                required
+                placeholder="Mật khẩu cho nhân viên mới"
+              />
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium mb-1">Địa chỉ</label>
+            <input 
+              className="border rounded px-3 py-2 w-full" 
+              name="address" 
+              value={form.address} 
+              onChange={handleChange} 
+              placeholder="Địa chỉ cư trú"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Trạng thái *</label>
@@ -99,14 +203,26 @@ export function CollectorFormDialog({ open, onClose, collector, areas, onSubmit 
               {statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Ngày bắt đầu *</label>
-            <input className="border rounded px-3 py-2 w-full" name="startDate" type="date" value={form.startDate} onChange={handleChange} required />
-          </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <DialogFooter>
-            <button type="button" className="bg-gray-200 rounded px-4 py-2 mr-2" onClick={onClose}>Đóng</button>
-            <button type="submit" className="bg-primary text-white rounded px-4 py-2">{isEdit ? 'Lưu' : 'Thêm'}</button>
+            <button 
+              type="button" 
+              className="bg-gray-200 rounded px-4 py-2 mr-2" 
+              onClick={onClose}
+              disabled={createCollectorMutation.isPending || updateCollectorMutation.isPending}
+            >
+              Đóng
+            </button>
+            <button 
+              type="submit" 
+              className="bg-primary text-white rounded px-4 py-2 disabled:opacity-50" 
+              disabled={createCollectorMutation.isPending || updateCollectorMutation.isPending}
+            >
+              {createCollectorMutation.isPending || updateCollectorMutation.isPending 
+                ? 'Đang xử lý...' 
+                : (isEdit ? 'Cập nhật' : 'Thêm mới')
+              }
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

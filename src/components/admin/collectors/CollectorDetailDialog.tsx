@@ -21,17 +21,17 @@ export function CollectorDetailDialog({ open, onClose, collector, performance, h
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <div className="font-semibold text-lg mb-1">{collector.name}</div>
-            <div className="text-sm text-gray-500 mb-1">SĐT: {collector.phone}</div>
-            <div className="text-sm text-gray-500 mb-1">Khu vực: {collector.area.name}</div>
-            <div className="text-sm text-gray-500 mb-1">Ngày bắt đầu: {new Date(collector.startDate).toLocaleDateString()}</div>
-            <div className="text-sm text-gray-500 mb-1">CCCD: {collector.cccd}</div>
+            <div className="font-semibold text-lg mb-1">{collector.name || `${collector.lastName} ${collector.firstName}`}</div>
+            <div className="text-sm text-gray-500 mb-1">SĐT: {collector.phone || 'N/A'}</div>
+            <div className="text-sm text-gray-500 mb-1">CCCD: {collector.cccd || 'Chưa cập nhật'}</div>
+            <div className="text-sm text-gray-500 mb-1">Biển số xe: {collector.licensePlate || 'Chưa cập nhật'}</div>
+            <div className="text-sm text-gray-500 mb-1">Ngày bắt đầu: {collector.startDate ? new Date(collector.startDate).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</div>
             {collector.email && <div className="text-sm text-gray-500 mb-1">Email: {collector.email}</div>}
             <div className="mt-2">
               <Badge variant={
-                collector.status === 'active' ? 'success' : collector.status === 'inactive' ? 'default' : 'error'
+                collector.status === 'ACTIVE' ? 'success' : collector.status === 'INACTIVE' ? 'warning' : 'error'
               }>
-                {collector.status === 'active' ? 'Đang hoạt động' : collector.status === 'inactive' ? 'Tạm nghỉ' : 'Nghỉ việc'}
+                {collector.status === 'ACTIVE' ? 'Đang hoạt động' : collector.status === 'INACTIVE' ? 'Tạm nghỉ' : 'Tạm ngưng'}
               </Badge>
             </div>
           </div>
@@ -41,10 +41,15 @@ export function CollectorDetailDialog({ open, onClose, collector, performance, h
               <ul className="text-sm space-y-1">
                 <li>Số lượt thu gom: <span className="font-medium">{performance.totalCollections}</span></li>
                 <li>Tỉ lệ đúng giờ: <span className="font-medium">{performance.onTimeRate}%</span></li>
-                <li>Số lần được đánh giá: <span className="font-medium">{performance.reviewCount}</span></li>
-                <li>Đánh giá TB: <span className="font-medium">{performance.avgRating} ★</span></li>
+                <li>Số lần được đánh giá: <span className="font-medium">{collector.reviewCount}</span></li>
+                <li>Đánh giá TB: <span className="font-medium">{collector.rating} ★</span></li>
               </ul>
-            ) : <div className="text-gray-400">Chưa có dữ liệu</div>}
+            ) : (
+              <ul className="text-sm space-y-1">
+                <li>Số lần được đánh giá: <span className="font-medium">{collector.reviewCount}</span></li>
+                <li>Đánh giá TB: <span className="font-medium">{collector.rating} ★</span></li>
+              </ul>
+            )}
           </div>
         </div>
         <div>

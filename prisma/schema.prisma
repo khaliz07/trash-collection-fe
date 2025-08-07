@@ -97,6 +97,13 @@ model User {
   dateOfBirth            DateTime?
   address                 String?
   bio                     String?
+  licensePlate           String?   // Biển số xe (for collectors)
+  
+  // Collector specific fields
+  startDate              DateTime? // Ngày bắt đầu làm việc
+  rating                 Float?    @default(0) // Đánh giá trung bình (1-5)
+  reviewCount            Int?      @default(0) // Số lượng đánh giá
+  cccd                   String?   // Số CCCD/CMND
   
   // Email verification
   isEmailVerified         Boolean   @default(false)

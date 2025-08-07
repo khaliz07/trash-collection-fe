@@ -17,7 +17,7 @@ export function CollectorReviewDialog({ open, onClose, collector, reviews }: Col
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Đánh giá nhân viên: {collector.name}</DialogTitle>
+          <DialogTitle>Đánh giá nhân viên: {collector.name || `${collector.lastName} ${collector.firstName}`}</DialogTitle>
         </DialogHeader>
         <div className="mb-3 flex gap-2 items-center">
           <span>Lọc theo số sao:</span>

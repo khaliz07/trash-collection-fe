@@ -1,6 +1,5 @@
 import * as React from 'react';
 import type { Collector } from './types';
-import { mockCollectors } from './mockData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -14,7 +13,7 @@ export interface CollectorsTableProps {
 }
 
 export function CollectorsTable({
-  collectors = mockCollectors,
+  collectors = [],
   onViewDetail,
   onEdit,
   onSuspend,
@@ -28,10 +27,11 @@ export function CollectorsTable({
           <tr className="bg-gray-50">
             <th className="px-4 py-2 text-left">Họ tên</th>
             <th className="px-4 py-2 text-left">SĐT</th>
-            <th className="px-4 py-2 text-left">Khu vực</th>
-            <th className="px-4 py-2 text-left">Trạng thái</th>
+            <th className="px-4 py-2 text-left">CCCD</th>
+            <th className="px-4 py-2 text-left">Biển số xe</th>
             <th className="px-4 py-2 text-left">Ngày bắt đầu</th>
-            <th className="px-4 py-2 text-left">⭐ Đánh giá TB</th>
+            <th className="px-4 py-2 text-left">Đánh giá</th>
+            <th className="px-4 py-2 text-left">Trạng thái</th>
             <th className="px-4 py-2 text-left">Hành động</th>
           </tr>
         </thead>
@@ -39,16 +39,12 @@ export function CollectorsTable({
           {collectors.map((c) => (
             <tr key={c.id} className="border-t hover:bg-gray-50">
               <td className="px-4 py-2 font-medium">{c.name}</td>
-              <td className="px-4 py-2">{c.phone}</td>
-              <td className="px-4 py-2">{c.area.name}</td>
+              <td className="px-4 py-2">{c.phone || 'N/A'}</td>
+              <td className="px-4 py-2">{c.cccd || 'Chưa cập nhật'}</td>
+              <td className="px-4 py-2">{c.licensePlate || 'Chưa cập nhật'}</td>
               <td className="px-4 py-2">
-                <Badge variant={
-                  c.status === 'active' ? 'success' : c.status === 'inactive' ? 'default' : 'error'
-                }>
-                  {c.status === 'active' ? 'Đang hoạt động' : c.status === 'inactive' ? 'Tạm nghỉ' : 'Nghỉ việc'}
-                </Badge>
+                {c.startDate ? new Date(c.startDate).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}
               </td>
-              <td className="px-4 py-2">{new Date(c.startDate).toLocaleDateString()}</td>
               <td className="px-4 py-2 cursor-pointer" onClick={() => onViewReviews?.(c)}>
                 <span className="inline-flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -57,13 +53,17 @@ export function CollectorsTable({
                   <span className="ml-1 text-xs text-gray-500">({c.reviewCount})</span>
                 </span>
               </td>
+              <td className="px-4 py-2">
+                <Badge style={{textWrap:'nowrap'}} variant={
+                  c.status === 'ACTIVE' ? 'success' : c.status === 'INACTIVE' ? 'warning' : 'error'
+                }>
+                  {c.status === 'ACTIVE' ? 'Đang hoạt động' : c.status === 'INACTIVE' ? 'Tạm nghỉ' : 'Tạm ngưng'}
+                </Badge>
+              </td>
               <td className="px-4 py-2 space-x-1">
                 <Button size="sm" variant="outline" onClick={() => onViewDetail?.(c)}>Xem</Button>
                 <Button size="sm" variant="secondary" onClick={() => onEdit?.(c)}>Sửa</Button>
-                {c.status === 'active' && (
-                  <Button size="sm" variant="destructive" onClick={() => onSuspend?.(c)}>Tạm ngưng</Button>
-                )}
-                <Button size="sm" variant="ghost" onClick={() => onDelete?.(c)} disabled={c.status === 'active'}>Xóa</Button>
+                <Button size="sm" variant="ghost" onClick={() => onDelete?.(c)} disabled={c.status === 'ACTIVE'}>Xóa</Button>
               </td>
             </tr>
           ))}
@@ -73,4 +73,4 @@ export function CollectorsTable({
   );
 }
 
-export default CollectorsTable; 
+export default CollectorsTable;

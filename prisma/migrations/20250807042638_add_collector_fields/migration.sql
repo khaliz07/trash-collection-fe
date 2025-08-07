@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "users" ADD COLUMN     "cccd" TEXT,
+ADD COLUMN     "rating" DOUBLE PRECISION DEFAULT 0,
+ADD COLUMN     "reviewCount" INTEGER DEFAULT 0,
+ADD COLUMN     "startDate" TIMESTAMP(3);

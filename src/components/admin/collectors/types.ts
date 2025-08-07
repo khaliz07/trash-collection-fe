@@ -1,4 +1,4 @@
-export type CollectorStatus = 'active' | 'inactive' | 'terminated';
+export type CollectorStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 
 export interface CollectorArea {
   id: string;
@@ -7,15 +7,24 @@ export interface CollectorArea {
 
 export interface Collector {
   id: string;
-  name: string;
-  phone: string;
-  area: CollectorArea;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  address?: string | null;
+  licensePlate?: string | null; // Biển số xe
   status: CollectorStatus;
-  startDate: string; // ISO
+  role: string;
+  avatar?: string | null;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+    startDate: string; // ISO
   rating: number; // 1-5
   reviewCount: number;
   cccd: string;
-  email?: string;
+  // Computed field for display
+  name?: string;
 }
 
 export interface CollectorReview {

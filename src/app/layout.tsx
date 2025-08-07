@@ -29,7 +29,7 @@ export default function RootLayout({
               <AuthInitializer>
                 {children}
                 <Toaster />
-                <SonnerToaster />
+                <SonnerToaster position="top-right" richColors />
               </AuthInitializer>
             </ReactQueryProvider>
           </I18nProvider>
