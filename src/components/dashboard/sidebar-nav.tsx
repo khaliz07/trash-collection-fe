@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { DivideIcon as LucideIcon, Home, Calendar, CreditCard, Bell, Clock, Settings, LogOut, Users, BarChart, Map, FileText, Star, MessageSquare, Truck, CheckSquare } from "lucide-react"
-import '../../i18n'
 import { useTranslation } from 'react-i18next'
 
 interface NavItem {

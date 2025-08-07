@@ -8,7 +8,6 @@ import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Recycle as Recycling, Menu, X } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import '../../i18n'
 import { useTranslation } from 'react-i18next'
 
 export default function DashboardLayout({

@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
-import '../../i18n'
 
 export function CallToAction() {
   const { t } = useTranslation()

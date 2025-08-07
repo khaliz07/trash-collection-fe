@@ -1,11 +1,12 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { t } from 'i18next'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next'
 
 export function HeroSection() {
+  const { t } = useTranslation('common')
   return (
     <section className="relative py-20 md:py-32 overflow-hidden flex justify-center">
       {/* Background decoration */}

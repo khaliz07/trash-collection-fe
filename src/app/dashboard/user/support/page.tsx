@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Star } from 'lucide-react';
 import { mockFAQ, mockSupportRequests, FAQItem, SupportRequest } from './mockData';
-import '../../../../i18n';
 import { useTranslation } from 'react-i18next';
 
 export default function UserSupportPage() {

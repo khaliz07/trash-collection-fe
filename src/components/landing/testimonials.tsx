@@ -1,6 +1,5 @@
 import { Quote } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import '../../i18n'
 
 export function Testimonials() {
   const { t } = useTranslation()

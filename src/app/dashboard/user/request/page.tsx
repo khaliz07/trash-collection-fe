@@ -39,7 +39,6 @@ import {
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import '../../../../i18n'
 import { useTranslation } from 'react-i18next'
 
 const formSchema = z.object({

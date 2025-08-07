@@ -6,7 +6,6 @@ import { Menu, Recycle, X } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import '../../i18n'
 
 export function SiteHeader() {
   const { t } = useTranslation('common')

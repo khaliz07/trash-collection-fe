@@ -9,7 +9,6 @@ import {
   Star
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import '../../i18n'
 
 export function FeatureSection() {
   const { t } = useTranslation()

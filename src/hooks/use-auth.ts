@@ -6,7 +6,7 @@ interface User {
   id: string
   email: string
   name: string
-  role: 'user' | 'collector' | 'admin'
+  role: 'USER' | 'COLLECTOR' | 'ADMIN'
   phone?: string
   address?: string
 }
@@ -49,6 +49,8 @@ export const useAuthStore = create<AuthState>()(
 export const useAuth = () => {
   const { user, token, isAuthenticated, login, logout } = useAuthStore()
   
+console.log("isAuthenticated:", isAuthenticated, user)
+
   return {
     user,
     token,

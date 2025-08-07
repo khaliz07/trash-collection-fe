@@ -3,10 +3,9 @@
 import Link from 'next/link'
 import { Recycle as Recycling } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import '../../i18n'
 
 export function SiteFooter() {
-  const { t } = useTranslation()
+  const { t } = useTranslation('common')
   return (
     <footer className="border-t bg-background flex justify-center">
       <div className="container py-12 md:py-16">

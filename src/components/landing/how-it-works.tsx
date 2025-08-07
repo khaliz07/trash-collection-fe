@@ -1,6 +1,5 @@
 import { CheckCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import '../../i18n'
 
 export function HowItWorks() {
   const { t } = useTranslation()

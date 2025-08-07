@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 
 interface AuthGuardProps {
   children: React.ReactNode
-  requiredRole?: 'user' | 'collector' | 'admin'
+  requiredRole?: 'USER' | 'COLLECTOR' | 'ADMIN'
   redirectTo?: string
 }
 
@@ -22,11 +22,11 @@ export function AuthGuard({ children, requiredRole, redirectTo = '/login' }: Aut
 
     if (requiredRole && user?.role !== requiredRole) {
       // Redirect to appropriate dashboard based on user's actual role
-      if (user?.role === 'user') {
+      if (user?.role === 'USER') {
         router.push('/dashboard/user')
-      } else if (user?.role === 'collector') {
+      } else if (user?.role === 'COLLECTOR') {
         router.push('/dashboard/collector')
-      } else if (user?.role === 'admin') {
+      } else if (user?.role === 'ADMIN') {
         router.push('/dashboard/admin')
       }
       return
@@ -43,7 +43,7 @@ export function AuthGuard({ children, requiredRole, redirectTo = '/login' }: Aut
 // Higher order component version
 export function withAuthGuard<P extends object>(
   Component: React.ComponentType<P>,
-  requiredRole?: 'user' | 'collector' | 'admin'
+  requiredRole?: 'USER' | 'COLLECTOR' | 'ADMIN'
 ) {
   return function AuthGuardedComponent(props: P) {
     return (

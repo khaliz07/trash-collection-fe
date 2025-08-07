@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import { ReactQueryProvider } from '@/components/providers/react-query-provider';
 import { AuthInitializer } from '@/components/auth/auth-initializer';
+import { I18nProvider } from '@/components/providers/i18n-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,13 +24,15 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <ReactQueryProvider>
-            <AuthInitializer>
-              {children}
-              <Toaster />
-              <SonnerToaster />
-            </AuthInitializer>
-          </ReactQueryProvider>
+          <I18nProvider>
+            <ReactQueryProvider>
+              <AuthInitializer>
+                {children}
+                <Toaster />
+                <SonnerToaster />
+              </AuthInitializer>
+            </ReactQueryProvider>
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

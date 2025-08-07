@@ -43,7 +43,7 @@ const formSchema = z.object({
 })
 
 export default function LoginPage() {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation()
   const loginMutation = useLogin()
   
   const form = useForm<z.infer<typeof formSchema>>({
