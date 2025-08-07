@@ -1892,7 +1892,7 @@ function getStatusColor(status) {
 **Real-time Updates with WebSocket**:
 ```javascript
 // WebSocket connection for real-time updates
-const wsConnection = new WebSocket('ws://localhost:3001/tracking');
+const wsConnection = new WebSocket('ws://localhost:3000/tracking');
 
 wsConnection.onmessage = function(event) {
   const data = JSON.parse(event.data);

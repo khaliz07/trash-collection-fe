@@ -14,7 +14,8 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { QRPaymentDialog } from "@/components/payments/QRPaymentDialog";
 
 const mockExpiry = "15/06/2024";
 const mockPackages = [
@@ -63,6 +64,7 @@ export default function ExtendSubscriptionPage() {
   const [payMethod, setPayMethod] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showQRDialog, setShowQRDialog] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
 
   const selectedPkg = mockPackages.find((p) => p.id === selected);
@@ -77,17 +79,29 @@ export default function ExtendSubscriptionPage() {
   };
 
   const handlePay = () => {
-    setConfirm(true);
-    setTimeout(() => {
-      setConfirm(false);
-      setSuccess(true);
-      toast({
-        title: 'Gia hạn thành công!',
-        description: 'Cảm ơn bạn đã gia hạn dịch vụ. Hạn sử dụng mới đã được cập nhật.',
-        variant: 'success',
-      });
-      // Update expiry logic here
-    }, 1500);
+    if (payMethod === 'momo' || payMethod === 'zalopay' || payMethod === 'bank') {
+      // Use QR payment for electronic methods
+      setShowQRDialog(true);
+    } else {
+      // Old flow for credit cards
+      setConfirm(true);
+      setTimeout(() => {
+        setConfirm(false);
+        setSuccess(true);
+        toast.success('Gia hạn thành công! Cảm ơn bạn đã gia hạn dịch vụ.');
+      }, 1500);
+    }
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowQRDialog(false);
+    setSuccess(true);
+    toast.success('Gia hạn thành công! Hạn sử dụng mới đã được cập nhật.');
+  };
+
+  const handlePaymentFailure = () => {
+    setShowQRDialog(false);
+    toast.error('Thanh toán thất bại. Vui lòng thử lại.');
   };
 
   return (
@@ -196,6 +210,23 @@ export default function ExtendSubscriptionPage() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* QR Payment Dialog */}
+      {selectedPkg && (
+        <QRPaymentDialog
+          open={showQRDialog}
+          onOpenChange={setShowQRDialog}
+          paymentInfo={{
+            packageName: selectedPkg.name,
+            duration: selectedPkg.duration,
+            amount: selectedPkg.final,
+            description: `Gia hạn gói ${selectedPkg.name}`
+          }}
+          method={payMethod || 'unknown'}
+          onSuccess={handlePaymentSuccess}
+          onFailure={handlePaymentFailure}
+        />
       )}
       {/* Lịch sử gia hạn (tùy chọn) */}
       <div className="mt-10">

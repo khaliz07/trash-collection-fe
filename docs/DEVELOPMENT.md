@@ -56,7 +56,7 @@ pnpm dev
 #### Environment Variables
 ```bash
 # .env.local
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_key
 DATABASE_URL=postgresql://user:password@localhost:5432/ecocollect
