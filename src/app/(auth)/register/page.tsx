@@ -1,8 +1,6 @@
 "use client"
 
 import Link from 'next/link'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -28,6 +26,8 @@ import {
 } from "@/components/ui/form"
 import { Recycle as Recycling, ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useRegister } from '@/hooks/use-auth-mutations'
+import { RedirectIfAuthenticated } from '@/components/auth/redirect-if-authenticated'
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -46,8 +46,7 @@ const formSchema = z.object({
 
 export default function RegisterPage() {
   const { t } = useTranslation('common')
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const registerMutation = useRegister()
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,17 +62,14 @@ export default function RegisterPage() {
   })
   
   function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-    
-    // Simulating registration
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push('/dashboard/user')
-    }, 1500)
+    // Remove confirmPassword before sending to API
+    const { confirmPassword, terms, ...registerData } = values
+    registerMutation.mutate(registerData)
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
+    <RedirectIfAuthenticated>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
       <div className="w-full max-w-md">
         <div className="mb-6">
           <Link 
@@ -240,8 +236,8 @@ export default function RegisterPage() {
                   )}
                 />
                 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? t('register.creating', 'Đang tạo tài khoản...') : t('register.create', 'Tạo tài khoản')}
+                <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+                  {registerMutation.isPending ? t('register.creating', 'Đang tạo tài khoản...') : t('register.create', 'Tạo tài khoản')}
                 </Button>
               </form>
             </Form>
@@ -261,5 +257,6 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
+    </RedirectIfAuthenticated>
   )
 }

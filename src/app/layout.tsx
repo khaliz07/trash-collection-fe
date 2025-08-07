@@ -3,6 +3,9 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from 'sonner';
+import { ReactQueryProvider } from '@/components/providers/react-query-provider';
+import { AuthInitializer } from '@/components/auth/auth-initializer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,8 +23,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          {children}
-          <Toaster />
+          <ReactQueryProvider>
+            <AuthInitializer>
+              {children}
+              <Toaster />
+              <SonnerToaster />
+            </AuthInitializer>
+          </ReactQueryProvider>
         </ThemeProvider>
       </body>
     </html>

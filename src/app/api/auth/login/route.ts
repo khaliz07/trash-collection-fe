@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
         email: user.email, 
         firstName: user.firstName,
         lastName: user.lastName,
+        name: `${user.firstName} ${user.lastName}`.trim(),
         role: user.role 
       }
     })

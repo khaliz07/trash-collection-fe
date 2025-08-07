@@ -59,9 +59,15 @@ export async function POST(request: NextRequest) {
       role: user.role as any
     })
     
+    // Format user response
+    const formattedUser = {
+      ...user,
+      name: `${user.firstName} ${user.lastName}`.trim(),
+    }
+    
     return NextResponse.json({ 
       token, 
-      user,
+      user: formattedUser,
       message: 'Registration successful'
     }, { status: 201 })
     

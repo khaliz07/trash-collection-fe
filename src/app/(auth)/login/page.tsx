@@ -1,8 +1,6 @@
 "use client"
 
 import Link from 'next/link'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -35,6 +33,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Recycle as Recycling, ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useLogin } from '@/hooks/use-auth-mutations'
+import { RedirectIfAuthenticated } from '@/components/auth/redirect-if-authenticated'
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -44,8 +44,7 @@ const formSchema = z.object({
 
 export default function LoginPage() {
   const { t } = useTranslation('common')
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const loginMutation = useLogin()
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,24 +56,12 @@ export default function LoginPage() {
   })
   
   function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-    
-    // Simulating authentication
-    setTimeout(() => {
-      setIsLoading(false)
-      // Redirect based on role
-      if (values.role === 'user') {
-        router.push('/dashboard/user')
-      } else if (values.role === 'collector') {
-        router.push('/dashboard/collector')
-      } else {
-        router.push('/dashboard/admin')
-      }
-    }, 1500)
+    loginMutation.mutate(values)
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
+    <RedirectIfAuthenticated>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
       <div className="w-full max-w-md">
         <div className="mb-6">
           <Link 
@@ -178,8 +165,8 @@ export default function LoginPage() {
                       </Link>
                     </div>
                     
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? t('login.signingIn') : t('login.button')}
+                    <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                      {loginMutation.isPending ? t('login.signingIn') : t('login.button')}
                     </Button>
                   </form>
                 </Form>
@@ -215,5 +202,6 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+    </RedirectIfAuthenticated>
   )
 }
