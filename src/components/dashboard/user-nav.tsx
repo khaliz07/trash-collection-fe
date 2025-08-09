@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { Settings, User, CreditCard, LogOut } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
 
 interface UserNavProps {
   name: string
@@ -30,6 +31,8 @@ export function UserNav({ name, email }: UserNavProps) {
     .join("")
     .toUpperCase()
     .substring(0, 2)
+
+    const { logout } = useAuth()
 
   return (
     <DropdownMenu>
@@ -73,7 +76,7 @@ export function UserNav({ name, email }: UserNavProps) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <Link href="/login">
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={logout}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
           </DropdownMenuItem>

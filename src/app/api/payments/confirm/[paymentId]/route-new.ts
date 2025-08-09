@@ -19,13 +19,8 @@ export async function GET(
 
     // Get payment info from database using raw SQL
     const paymentData = await prisma.$queryRaw`
-      SELECT p.*, 
-             pkg.name as "packageName", 
-             pkg.duration, 
-             pkg.price,
-             u."firstName", 
-             u."lastName", 
-             u.email
+      SELECT p.*, pkg.name as packageName, pkg.duration, pkg.price,
+             u."firstName", u."lastName", u.email
       FROM payments p
       JOIN packages pkg ON p."packageId" = pkg.id
       JOIN users u ON p."userId" = u.id

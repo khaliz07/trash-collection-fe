@@ -23,7 +23,7 @@ interface QRPaymentDialogProps {
   onOpenChange: (open: boolean) => void
   paymentInfo: PaymentInfo
   method?: string // Payment method for QR URL
-  onSuccess?: () => void
+  onSuccess?: (transactionId?: string) => void
   onFailure?: () => void
 }
 
@@ -96,7 +96,7 @@ export function QRPaymentDialog({
             
             // Auto close after success animation
             setTimeout(() => {
-              onSuccess?.()
+              onSuccess?.(paymentData?.paymentId)
               setTimeout(() => {
                 handleClose()
               }, 1000)
@@ -210,7 +210,7 @@ export function QRPaymentDialog({
         
         // Auto close after success animation
         setTimeout(() => {
-          onSuccess?.()
+          onSuccess?.(paymentData.paymentId)
           setTimeout(() => {
             handleClose()
           }, 1000)

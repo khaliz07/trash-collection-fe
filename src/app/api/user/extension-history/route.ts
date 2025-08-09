@@ -1,0 +1,142 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient();
+
+// Simple getUserId function for this specific context
+function getUserId(request: NextRequest): string {
+  // Try to get from Authorization header
+  const authHeader = request.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    if (token === 'user-1-token') return 'user-1';
+    if (token === 'user-2-token') return 'user-2';
+    if (token === 'admin-token') return 'admin-1';
+  }
+  
+  // Try to get from query params (for demo purposes)
+  const { searchParams } = new URL(request.url);
+  const userIdParam = searchParams.get('userId');
+  if (userIdParam) {
+    return userIdParam;
+  }
+  
+  throw new Error('User not authenticated');
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const userId = getUserId(request);
+
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+
+    // Get extension history from payments with new schema - use runtime query without TypeScript types
+    const payments = await prisma.$queryRaw`
+      SELECT 
+        p.*,
+        pkg.name as packageName,
+        pkg.duration as packageDuration,
+        pkg.tier as packageTier,
+        s."queuePosition" as subscriptionQueuePosition
+      FROM payments p
+      LEFT JOIN packages pkg ON p."packageId" = pkg.id
+      LEFT JOIN subscriptions s ON p."subscriptionId" = s.id
+      WHERE p."userId" = ${userId} AND p.status = 'COMPLETED'
+      ORDER BY p."paidAt" DESC
+      LIMIT ${limit} OFFSET ${(page - 1) * limit}
+    `;
+
+    const totalResult = await prisma.$queryRaw`
+      SELECT COUNT(*) as count 
+      FROM payments 
+      WHERE "userId" = ${userId} AND status = 'COMPLETED'
+    ` as any[];
+    
+    const total = Number(totalResult[0]?.count || 0);
+
+    // Transform payments to extension history format using new schema
+    const extensions = (payments as any[]).map(payment => {
+      // Get package name with duration from package info
+      let packageDisplayName = payment.packagename || 'Gói dịch vụ';
+      let duration = '1 tháng';
+      
+      // Calculate duration display based on package duration
+      if (payment.packageduration === 3) {
+        duration = '3 tháng (Quý)';
+      } else if (payment.packageduration === 12) {
+        duration = '1 năm';
+      }
+
+      // Calculate expiry date based on covered months
+      let expiryDate = new Date();
+      if (payment.coveredMonths && payment.coveredMonths.length > 0) {
+        const lastMonth = payment.coveredMonths[payment.coveredMonths.length - 1];
+        const [year, month] = lastMonth.split('-').map(Number);
+        expiryDate = new Date(year, month, 0); // Last day of the month
+      }
+
+      // Map payment method to Vietnamese
+      let paymentMethod = 'Chuyển khoản ngân hàng';
+      switch (payment.paymentMethod) {
+        case 'E_WALLET':
+          paymentMethod = 'Ví điện tử';
+          break;
+        case 'VNPAY':
+          paymentMethod = 'VNPay';
+          break;
+        case 'CARD':
+          paymentMethod = 'Thẻ tín dụng';
+          break;
+        case 'CASH':
+          paymentMethod = 'Tiền mặt';
+          break;
+        case 'STRIPE':
+          paymentMethod = 'Stripe';
+          break;
+        default:
+          paymentMethod = 'Chuyển khoản ngân hàng';
+      }
+
+      return {
+        id: payment.id,
+        packageName: packageDisplayName,
+        price: Number(payment.amount),
+        paymentDate: payment.paidAt?.toISOString() || payment.createdAt.toISOString(),
+        expiryDate: expiryDate.toISOString(),
+        paymentMethod: paymentMethod,
+        status: 'completed',
+        duration: duration,
+        // Additional info from new schema
+        coveredMonths: payment.coveredMonths,
+        tier: payment.packagetier,
+        subscriptionActive: payment.subscriptionqueueposition === 0,
+        queuePosition: payment.subscriptionqueueposition
+      }
+    })
+
+    // Calculate pagination
+    const totalPages = Math.ceil(total / limit)
+
+    return NextResponse.json({
+      success: true,
+      extensions,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    })
+
+  } catch (error) {
+    console.error('Error fetching extension history:', error)
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

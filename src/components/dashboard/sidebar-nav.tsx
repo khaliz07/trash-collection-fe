@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { DivideIcon as LucideIcon, Home, Calendar, CreditCard, Bell, Clock, Settings, LogOut, Users, BarChart, Map, FileText, Star, MessageSquare, Truck, CheckSquare } from "lucide-react"
+import { DivideIcon as LucideIcon, Home, Calendar, CreditCard, Bell, Clock, Settings, LogOut, Users, BarChart, Map, FileText, Star, MessageSquare, Truck, CheckSquare, Package } from "lucide-react"
 import { useTranslation } from 'react-i18next'
 
 interface NavItem {
@@ -120,6 +120,11 @@ const navItems: UserNavItems = {
       title: "Schedules",
       href: "/dashboard/admin/schedules",
       icon: Calendar,
+    },
+    {
+      title: "Packages",
+      href: "/dashboard/admin/packages",
+      icon: Package,
     },
     {
       title: "Payments",

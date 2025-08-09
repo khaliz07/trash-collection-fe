@@ -1,18 +1,386 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
   extensions = [postgis]
 }
 
-// Enums
+model Package {
+  id                 String         @id @default(cuid())
+  name               String
+  description        String?
+  type               String
+  duration           Int
+  price              Decimal        @db.Decimal(10, 2)
+  monthlyEquivalent  Decimal        @db.Decimal(10, 2)
+  collectionsPerWeek Int            @default(2)
+  features           String[]
+  tier               Int            @default(1)
+  status             PackageStatus  @default(ACTIVE)
+  isPopular          Boolean        @default(false)
+  displayOrder       Int            @default(0)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  payments           Payment[]
+  subscriptions      Subscription[]
+
+  @@map("packages")
+}
+
+model User {
+  id                     String              @id @default(cuid())
+  email                  String              @unique
+  password               String
+  firstName              String
+  lastName               String
+  phone                  String?
+  role                   UserRole            @default(USER)
+  status                 UserStatus          @default(ACTIVE)
+  avatar                 String?
+  dateOfBirth            DateTime?
+  address                String?
+  bio                    String?
+  licensePlate           String?
+  startDate              DateTime?
+  rating                 Float?              @default(0)
+  reviewCount            Int?                @default(0)
+  cccd                   String?
+  isEmailVerified        Boolean             @default(false)
+  emailVerificationToken String?             @unique
+  resetToken             String?             @unique
+  resetTokenExpiry       DateTime?
+  lastLoginAt            DateTime?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  latitude               Float?
+  longitude              Float?
+  totalDebt              Decimal             @default(0) @db.Decimal(10, 2)
+  debtMonths             String[]
+  collectorCollections   Collection[]        @relation("CollectorCollections")
+  collections            Collection[]        @relation("CustomerCollections")
+  collectorLocation      CollectorLocation[]
+  debtRecords            DebtRecord[]
+  feedback               Feedback[]
+  notifications          Notification[]
+  payments               Payment[]
+  refreshTokens          RefreshToken[]
+  routeAssignments       RouteAssignment[]
+  schedules              Schedule[]
+  subscriptions          Subscription[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id            String             @id @default(cuid())
+  userId        String
+  packageId     String
+  startMonth    String
+  endMonth      String
+  queuePosition Int                @default(0)
+  status        SubscriptionStatus @default(PENDING)
+  activatedAt   DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  collections   Collection[]
+  payments      Payment[]
+  package       Package            @relation(fields: [packageId], references: [id])
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Schedule {
+  id             String        @id @default(cuid())
+  customerId     String
+  subscriptionId String?
+  frequency      FrequencyType
+  dayOfWeek      Int?
+  timeSlot       String
+  specificTime   DateTime?
+  isActive       Boolean       @default(true)
+  nextCollection DateTime?
+  pickupAddress  String
+  latitude       Float
+  longitude      Float
+  instructions   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  collections    Collection[]
+  customer       User          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("schedules")
+}
+
+model Collection {
+  id                String           @id @default(cuid())
+  customerId        String
+  collectorId       String?
+  subscriptionId    String?
+  scheduleId        String?
+  status            CollectionStatus @default(SCHEDULED)
+  scheduledDate     DateTime
+  startedAt         DateTime?
+  completedAt       DateTime?
+  estimatedDuration Int?
+  actualDuration    Int?
+  pickupAddress     String
+  latitude          Float
+  longitude         Float
+  wasteTypes        String[]
+  estimatedWeight   Float?
+  actualWeight      Float?
+  itemsCount        Int?
+  notes             String?
+  collectorNotes    String?
+  beforePhotos      String[]         @default([])
+  afterPhotos       String[]         @default([])
+  basePrice         Decimal?         @db.Decimal(10, 2)
+  additionalFees    Decimal?         @db.Decimal(10, 2)
+  totalAmount       Decimal?         @db.Decimal(10, 2)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  collector         User?            @relation("CollectorCollections", fields: [collectorId], references: [id])
+  customer          User             @relation("CustomerCollections", fields: [customerId], references: [id], onDelete: Cascade)
+  schedule          Schedule?        @relation(fields: [scheduleId], references: [id])
+  subscription      Subscription?    @relation(fields: [subscriptionId], references: [id])
+  feedback          Feedback[]
+  payment           Payment?
+  routeProgress     RouteProgress?
+
+  @@index([customerId])
+  @@index([collectorId])
+  @@index([status])
+  @@index([scheduledDate])
+  @@index([createdAt])
+  @@map("collections")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  userId         String
+  packageId      String
+  subscriptionId String
+  collectionId   String?       @unique
+  amount         Decimal       @db.Decimal(10, 2)
+  currency       String        @default("VND")
+  status         PaymentStatus @default(PENDING)
+  paymentMethod  PaymentMethod
+  coveredMonths  String[]
+  paidAt         DateTime      @default(now())
+  transactionId  String?       @unique
+  externalId     String?
+  receiptUrl     String?
+  failureReason  String?
+  refundedAt     DateTime?
+  refundAmount   Decimal?      @db.Decimal(10, 2)
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  collection     Collection?   @relation(fields: [collectionId], references: [id])
+  package        Package       @relation(fields: [packageId], references: [id])
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([transactionId])
+  @@map("payments")
+}
+
+model DebtRecord {
+  id        String     @id @default(cuid())
+  userId    String
+  month     String
+  amount    Decimal    @db.Decimal(10, 2)
+  dueDate   DateTime
+  status    DebtStatus @default(UNPAID)
+  paidAt    DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@index([userId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("debt_records")
+}
+
+model Notification {
+  id          String             @id @default(cuid())
+  userId      String
+  title       String
+  message     String
+  type        NotificationType
+  status      NotificationStatus @default(PENDING)
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  readAt      DateTime?
+  emailData   Json?
+  pushData    Json?
+  smsData     Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Feedback {
+  id            String         @id @default(cuid())
+  customerId    String
+  collectionId  String
+  rating        Int
+  comment       String?
+  status        FeedbackStatus @default(PENDING)
+  adminResponse String?
+  respondedAt   DateTime?
+  respondedBy   String?
+  categories    String[]       @default([])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  collection    Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  customer      User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("feedback")
+}
+
+model CollectionRoute {
+  id                String            @id @default(cuid())
+  name              String
+  description       String?
+  isActive          Boolean           @default(true)
+  routeGeometry     Json
+  waypoints         Json
+  estimatedDuration Int
+  estimatedDistance Float
+  difficultyLevel   Int               @default(1)
+  scheduledDays     String[]          @default([])
+  startTime         String?
+  endTime           String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  assignments       RouteAssignment[]
+  progress          RouteProgress[]
+
+  @@map("collection_routes")
+}
+
+model RouteAssignment {
+  id            String          @id @default(cuid())
+  routeId       String
+  collectorId   String
+  assignedDate  DateTime
+  isCompleted   Boolean         @default(false)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  totalDistance Float?
+  totalDuration Int?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  collector     User            @relation(fields: [collectorId], references: [id], onDelete: Cascade)
+  route         CollectionRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  progress      RouteProgress[]
+
+  @@unique([routeId, collectorId, assignedDate])
+  @@map("route_assignments")
+}
+
+model RouteProgress {
+  id            String           @id @default(cuid())
+  routeId       String
+  assignmentId  String
+  collectionId  String           @unique
+  sequenceOrder Int
+  status        CollectionStatus @default(SCHEDULED)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  latitude      Float?
+  longitude     Float?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  assignment    RouteAssignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  collection    Collection       @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  route         CollectionRoute  @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@map("route_progress")
+}
+
+model CollectorLocation {
+  id          String   @id @default(cuid())
+  collectorId String
+  latitude    Float
+  longitude   Float
+  accuracy    Float?
+  heading     Float?
+  speed       Float?
+  isOnDuty    Boolean  @default(false)
+  routeId     String?
+  timestamp   DateTime @default(now())
+  collector   User     @relation(fields: [collectorId], references: [id], onDelete: Cascade)
+
+  @@index([collectorId])
+  @@index([timestamp])
+  @@index([isOnDuty])
+  @@map("collector_locations")
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  dataType    String   @default("string")
+  description String?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  userAgent  String?
+  timestamp  DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
 enum UserRole {
   ADMIN
   USER
@@ -51,17 +419,31 @@ enum PaymentMethod {
 }
 
 enum SubscriptionStatus {
+  PENDING
   ACTIVE
-  INACTIVE
-  CANCELLED
   EXPIRED
+  CANCELLED
 }
 
 enum FrequencyType {
   WEEKLY
   BI_WEEKLY
   MONTHLY
+  QUARTERLY
+  YEARLY
   ONE_TIME
+}
+
+enum PackageStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum DebtStatus {
+  UNPAID
+  PAID
+  OVERDUE
 }
 
 enum NotificationType {
@@ -81,414 +463,4 @@ enum FeedbackStatus {
   PENDING
   REVIEWED
   RESOLVED
-}
-
-// Core Models
-model User {
-  id                      String    @id @default(cuid())
-  email                   String    @unique
-  password                String
-  firstName               String
-  lastName                String
-  phone                   String?
-  role                    UserRole  @default(USER)
-  status                  UserStatus @default(ACTIVE)
-  avatar                  String?
-  dateOfBirth            DateTime?
-  address                 String?
-  bio                     String?
-  licensePlate           String?   // Biển số xe (for collectors)
-  
-  // Collector specific fields
-  startDate              DateTime? // Ngày bắt đầu làm việc
-  rating                 Float?    @default(0) // Đánh giá trung bình (1-5)
-  reviewCount            Int?      @default(0) // Số lượng đánh giá
-  cccd                   String?   // Số CCCD/CMND
-  
-  // Email verification
-  isEmailVerified         Boolean   @default(false)
-  emailVerificationToken  String?   @unique
-  
-  // Password reset
-  resetToken             String?   @unique
-  resetTokenExpiry       DateTime?
-  
-  // Account tracking
-  lastLoginAt            DateTime?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
-  
-  // Location (for users - pickup address)
-  latitude               Float?
-  longitude              Float?
-  
-  // Relations
-  subscriptions          Subscription[]
-  collections            Collection[] @relation("CustomerCollections")
-  collectorCollections   Collection[] @relation("CollectorCollections")
-  payments               Payment[]
-  schedules              Schedule[]
-  notifications          Notification[]
-  feedback               Feedback[]
-  collectorLocation      CollectorLocation[]
-  routeAssignments       RouteAssignment[]
-  refreshTokens          RefreshToken[]
-  
-  @@map("users")
-}
-
-model Subscription {
-  id            String             @id @default(cuid())
-  customerId    String
-  planName      String
-  description   String?
-  frequency     FrequencyType
-  price         Decimal            @db.Decimal(10,2)
-  status        SubscriptionStatus @default(ACTIVE)
-  startDate     DateTime
-  endDate       DateTime?
-  nextBillingDate DateTime
-  
-  // Relations
-  customer      User               @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  collections   Collection[]
-  payments      Payment[]
-  
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  
-  @@map("subscriptions")
-}
-
-model Schedule {
-  id            String        @id @default(cuid())
-  customerId    String
-  subscriptionId String?
-  frequency     FrequencyType
-  dayOfWeek     Int?          // 0-6, Sunday=0
-  timeSlot      String        // "morning", "afternoon", "evening"
-  specificTime  DateTime?     // For one-time or specific scheduling
-  isActive      Boolean       @default(true)
-  nextCollection DateTime?
-  
-  // Location
-  pickupAddress String
-  latitude      Float
-  longitude     Float
-  
-  // Special instructions
-  instructions  String?
-  
-  // Relations
-  customer      User          @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  collections   Collection[]
-  
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
-  @@map("schedules")
-}
-
-model Collection {
-  id              String           @id @default(cuid())
-  customerId      String
-  collectorId     String?
-  subscriptionId  String?
-  scheduleId      String?
-  status          CollectionStatus @default(SCHEDULED)
-  
-  // Timing
-  scheduledDate   DateTime
-  startedAt       DateTime?
-  completedAt     DateTime?
-  estimatedDuration Int?           // in minutes
-  actualDuration  Int?             // in minutes
-  
-  // Location
-  pickupAddress   String
-  latitude        Float
-  longitude       Float
-  
-  // Collection details
-  wasteTypes      String[]         // ["organic", "recyclable", "general"]
-  estimatedWeight Float?           // in kg
-  actualWeight    Float?           // in kg
-  itemsCount      Int?
-  
-  // Notes and photos
-  notes           String?
-  collectorNotes  String?
-  beforePhotos    String[]         @default([])
-  afterPhotos     String[]         @default([])
-  
-  // Pricing
-  basePrice       Decimal?         @db.Decimal(10,2)
-  additionalFees  Decimal?         @db.Decimal(10,2)
-  totalAmount     Decimal?         @db.Decimal(10,2)
-  
-  // Relations
-  customer        User             @relation("CustomerCollections", fields: [customerId], references: [id], onDelete: Cascade)
-  collector       User?            @relation("CollectorCollections", fields: [collectorId], references: [id])
-  subscription    Subscription?    @relation(fields: [subscriptionId], references: [id])
-  schedule        Schedule?        @relation(fields: [scheduleId], references: [id])
-  payment         Payment?
-  feedback        Feedback[]
-  routeProgress   RouteProgress?
-  
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  
-  @@index([customerId])
-  @@index([collectorId])
-  @@index([status])
-  @@index([scheduledDate])
-  @@index([createdAt])
-  @@map("collections")
-}
-
-model Payment {
-  id              String        @id @default(cuid())
-  customerId      String
-  collectionId    String?       @unique
-  subscriptionId  String?
-  
-  amount          Decimal       @db.Decimal(10,2)
-  currency        String        @default("VND")
-  status          PaymentStatus @default(PENDING)
-  paymentMethod   PaymentMethod
-  
-  // External payment data
-  transactionId   String?       @unique
-  externalId      String?       // Stripe payment_intent_id, VNPay transaction_id, etc.
-  receiptUrl      String?
-  
-  // Payment processing
-  paidAt          DateTime?
-  failureReason   String?
-  refundedAt      DateTime?
-  refundAmount    Decimal?      @db.Decimal(10,2)
-  
-  // Metadata
-  metadata        Json?
-  
-  // Relations
-  customer        User          @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  collection      Collection?   @relation(fields: [collectionId], references: [id])
-  subscription    Subscription? @relation(fields: [subscriptionId], references: [id])
-  
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  
-  @@index([customerId])
-  @@index([status])
-  @@index([createdAt])
-  @@index([transactionId])
-  @@map("payments")
-}
-
-model Notification {
-  id          String             @id @default(cuid())
-  userId      String
-  title       String
-  message     String
-  type        NotificationType
-  status      NotificationStatus @default(PENDING)
-  
-  // Delivery tracking
-  sentAt      DateTime?
-  deliveredAt DateTime?
-  readAt      DateTime?
-  
-  // Channel specific data
-  emailData   Json?              // Email specific data
-  pushData    Json?              // Push notification specific data
-  smsData     Json?              // SMS specific data
-  
-  // Relations
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  
-  @@map("notifications")
-}
-
-model Feedback {
-  id           String         @id @default(cuid())
-  customerId   String
-  collectionId String
-  rating       Int            // 1-5 stars
-  comment      String?
-  status       FeedbackStatus @default(PENDING)
-  
-  // Admin response
-  adminResponse String?
-  respondedAt   DateTime?
-  respondedBy   String?        // Admin user ID
-  
-  // Categories
-  categories    String[]       @default([]) // ["service_quality", "timeliness", "cleanliness"]
-  
-  // Relations
-  customer     User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  collection   Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  
-  @@map("feedback")
-}
-
-// GPS and Route Management Models
-model CollectionRoute {
-  id          String            @id @default(cuid())
-  name        String
-  description String?
-  isActive    Boolean           @default(true)
-  
-  // Route geometry - stored as GeoJSON
-  routeGeometry Json            // LineString GeoJSON
-  waypoints     Json            // Array of coordinates
-  
-  // Route metadata
-  estimatedDuration Int         // in minutes
-  estimatedDistance Float       // in kilometers
-  difficultyLevel   Int         @default(1) // 1-5 scale
-  
-  // Schedule
-  scheduledDays String[]        @default([]) // ["monday", "tuesday", ...]
-  startTime     String?         // "08:00"
-  endTime       String?         // "17:00"
-  
-  // Relations
-  assignments   RouteAssignment[]
-  progress      RouteProgress[]
-  
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  
-  @@map("collection_routes")
-}
-
-model RouteAssignment {
-  id         String         @id @default(cuid())
-  routeId    String
-  collectorId String
-  assignedDate DateTime
-  isCompleted Boolean       @default(false)
-  
-  // Performance tracking
-  startedAt   DateTime?
-  completedAt DateTime?
-  totalDistance Float?       // actual distance covered
-  totalDuration Int?         // actual duration in minutes
-  
-  // Relations
-  route      CollectionRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  collector  User           @relation(fields: [collectorId], references: [id], onDelete: Cascade)
-  progress   RouteProgress[]
-  
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-  
-  @@unique([routeId, collectorId, assignedDate])
-  @@map("route_assignments")
-}
-
-model RouteProgress {
-  id            String          @id @default(cuid())
-  routeId       String
-  assignmentId  String
-  collectionId  String          @unique
-  sequenceOrder Int             // Order in the route
-  
-  status        CollectionStatus @default(SCHEDULED)
-  startedAt     DateTime?
-  completedAt   DateTime?
-  
-  // Location when status changed
-  latitude      Float?
-  longitude     Float?
-  
-  // Relations
-  route         CollectionRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  assignment    RouteAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  collection    Collection      @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  
-  @@map("route_progress")
-}
-
-model CollectorLocation {
-  id          String   @id @default(cuid())
-  collectorId String
-  latitude    Float
-  longitude   Float
-  accuracy    Float?   // GPS accuracy in meters
-  heading     Float?   // Direction in degrees (0-360)
-  speed       Float?   // Speed in km/h
-  
-  // Tracking context
-  isOnDuty    Boolean  @default(false)
-  routeId     String?  // If following a specific route
-  
-  // Relations
-  collector   User     @relation(fields: [collectorId], references: [id], onDelete: Cascade)
-  
-  timestamp   DateTime @default(now())
-  
-  @@index([collectorId])
-  @@index([timestamp])
-  @@index([isOnDuty])
-  @@map("collector_locations")
-}
-
-// System Models
-model SystemSetting {
-  id          String   @id @default(cuid())
-  key         String   @unique
-  value       String
-  dataType    String   @default("string") // "string", "number", "boolean", "json"
-  description String?
-  isPublic    Boolean  @default(false)    // Whether setting can be accessed by clients
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("system_settings")
-}
-
-model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String?  // Who performed the action
-  action      String   // "CREATE", "UPDATE", "DELETE", etc.
-  resource    String   // "User", "Collection", etc.
-  resourceId  String?  // ID of the affected resource
-  oldValues   Json?    // Previous values (for updates)
-  newValues   Json?    // New values
-  ipAddress   String?
-  userAgent   String?
-  
-  timestamp   DateTime @default(now())
-  
-  @@map("audit_logs")
-}
-
-// RefreshToken model for JWT authentication
-model RefreshToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  userId    String
-  expiresAt DateTime
-  
-  // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime @default(now())
-  
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("refresh_tokens")
 }
