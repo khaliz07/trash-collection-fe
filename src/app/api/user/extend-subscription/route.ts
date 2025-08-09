@@ -1,39 +1,45 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { addMonths, format } from 'date-fns';
-import { getUserId, validateUser } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { addMonths, format } from "date-fns";
+import { getUserId, validateUser } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
     const userId = getUserId(request);
-    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     // Validate user exists
     const isValidUser = await validateUser(userId, prisma);
     if (!isValidUser) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'User không tồn tại' 
+        {
+          success: false,
+          error: "User không tồn tại",
         },
         { status: 401 }
       );
     }
 
     const body = await request.json();
-    const { 
+    const {
       packageId,
       duration, // in months
       price,
       paymentMethod,
-      transactionId
+      transactionId,
     } = body;
 
     // Validate required fields
     if (!packageId || !duration || !price || !paymentMethod) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Thiếu thông tin cần thiết' 
+        {
+          success: false,
+          error: "Thiếu thông tin cần thiết",
         },
         { status: 400 }
       );
@@ -43,15 +49,15 @@ export async function POST(request: NextRequest) {
     const currentSubscription = await prisma.subscription.findFirst({
       where: {
         customerId: userId,
-        status: 'ACTIVE'
-      }
+        status: "ACTIVE",
+      },
     });
 
     if (!currentSubscription) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Không tìm thấy gói dịch vụ hiện tại' 
+        {
+          success: false,
+          error: "Không tìm thấy gói dịch vụ hiện tại",
         },
         { status: 404 }
       );
@@ -70,8 +76,8 @@ export async function POST(request: NextRequest) {
           customerId: userId,
           subscriptionId: currentSubscription.id,
           amount: price,
-          currency: 'VND',
-          status: 'COMPLETED',
+          currency: "VND",
+          status: "COMPLETED",
           paymentMethod: mapPaymentMethod(paymentMethod),
           transactionId: transactionId || `ext-${Date.now()}`,
           paidAt: new Date(),
@@ -79,9 +85,9 @@ export async function POST(request: NextRequest) {
             extensionDuration: duration,
             oldEndDate: currentSubscription.endDate,
             newEndDate: newEndDate,
-            packageId: packageId
-          }
-        }
+            packageId: packageId,
+          },
+        },
       });
 
       // Update subscription with new end date
@@ -90,8 +96,8 @@ export async function POST(request: NextRequest) {
         data: {
           endDate: newEndDate,
           nextBillingDate: newNextBillingDate,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
 
       return { payment, subscription: updatedSubscription };
@@ -100,31 +106,30 @@ export async function POST(request: NextRequest) {
     // Return success response
     return NextResponse.json({
       success: true,
-      message: 'Gia hạn thành công',
+      message: "Gia hạn thành công",
       payment: {
         id: result.payment.id,
         amount: result.payment.amount,
         paidAt: result.payment.paidAt,
-        transactionId: result.payment.transactionId
+        transactionId: result.payment.transactionId,
       },
       subscription: {
         id: result.subscription.id,
         endDate: result.subscription.endDate,
-        nextBillingDate: result.subscription.nextBillingDate
+        nextBillingDate: result.subscription.nextBillingDate,
       },
       extension: {
         duration: duration,
-        newEndDate: format(newEndDate, 'dd/MM/yyyy'),
-        daysExtended: duration * 30 // Approximate
-      }
+        newEndDate: format(newEndDate, "dd/MM/yyyy"),
+        daysExtended: duration * 30, // Approximate
+      },
     });
-
   } catch (error) {
-    console.error('Error processing extension:', error);
+    console.error("Error processing extension:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Lỗi xử lý gia hạn dịch vụ' 
+      {
+        success: false,
+        error: "Lỗi xử lý gia hạn dịch vụ",
       },
       { status: 500 }
     );
@@ -132,14 +137,19 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to map payment method strings to enum values
-function mapPaymentMethod(method: string): 'E_WALLET' | 'BANK_TRANSFER' | 'CARD' | 'CASH' | 'VNPAY' | 'STRIPE' {
-  const methodMap: Record<string, 'E_WALLET' | 'BANK_TRANSFER' | 'CARD' | 'CASH' | 'VNPAY' | 'STRIPE'> = {
-    'momo': 'E_WALLET',
-    'zalopay': 'E_WALLET', 
-    'bank': 'BANK_TRANSFER',
-    'credit': 'CARD',
-    'cash': 'CASH'
+function mapPaymentMethod(
+  method: string
+): "E_WALLET" | "BANK_TRANSFER" | "CARD" | "CASH" | "VNPAY" | "STRIPE" {
+  const methodMap: Record<
+    string,
+    "E_WALLET" | "BANK_TRANSFER" | "CARD" | "CASH" | "VNPAY" | "STRIPE"
+  > = {
+    momo: "E_WALLET",
+    zalopay: "E_WALLET",
+    bank: "BANK_TRANSFER",
+    credit: "CARD",
+    cash: "CASH",
   };
-  
-  return methodMap[method] || 'E_WALLET';
+
+  return methodMap[method] || "E_WALLET";
 }

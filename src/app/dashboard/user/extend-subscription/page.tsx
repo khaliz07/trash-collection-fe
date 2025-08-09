@@ -12,13 +12,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { UserSwitcher, fetchWithUser } from "@/components/user-switcher";
+import { UserSwitcher } from "@/components/user-switcher";
 import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import { ArrowLeft, CheckCircle, Loader2, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 
 const paymentMethods = [
   { id: "momo", name: "Ví MoMo" },
@@ -48,8 +49,8 @@ export default function ExtendSubscriptionPage() {
   useEffect(() => {
     const fetchCurrentPackage = async () => {
       try {
-        const response = await fetchWithUser("/api/user/current-package");
-        const result = await response.json();
+        const response = await api.get("/user/current-package");
+        const result = await response.data;
 
         if (result.success) {
           setCurrentPackage(result.package);
@@ -66,8 +67,8 @@ export default function ExtendSubscriptionPage() {
 
     const fetchAvailablePackages = async () => {
       try {
-        const response = await fetchWithUser("/api/user/extension-packages");
-        const result = await response.json();
+        const response = await api.get("/user/extension-packages");
+        const result = await response.data;
 
         if (result.success) {
           setAvailablePackages(result.packages);
@@ -84,8 +85,8 @@ export default function ExtendSubscriptionPage() {
 
     const fetchExtensionHistory = async () => {
       try {
-        const response = await fetchWithUser("/api/user/extension-history");
-        const result = await response.json();
+        const response = await api.get("/user/extension-history");
+        const result = await response.data;
 
         if (result.success) {
           setExtensionHistory(result.extensions);
@@ -144,8 +145,7 @@ export default function ExtendSubscriptionPage() {
     try {
       // Get duration in months from selectedPkg.id
       // Call extend-subscription API with packageId from database
-      const response = await fetchWithUser("/api/user/extend-subscription", {
-        method: "POST",
+      const response = await api.post("/user/extend-subscription", {
         headers: {
           "Content-Type": "application/json",
         },
@@ -158,7 +158,7 @@ export default function ExtendSubscriptionPage() {
         }),
       });
 
-      const result = await response.json();
+      const result = await response.data;
 
       if (result.success) {
         setShowQRDialog(false);
@@ -206,8 +206,8 @@ export default function ExtendSubscriptionPage() {
           // Refresh all data when user changes
           const fetchCurrentPackage = async () => {
             try {
-              const response = await fetchWithUser("/api/user/current-package");
-              const result = await response.json();
+              const response = await api.get("/user/current-package");
+              const result = await response.data;
               if (result.success) {
                 setCurrentPackage(result.package);
               }
@@ -218,10 +218,8 @@ export default function ExtendSubscriptionPage() {
 
           const fetchAvailablePackages = async () => {
             try {
-              const response = await fetchWithUser(
-                "/api/user/extension-packages"
-              );
-              const result = await response.json();
+              const response = await api.get("/user/extension-packages");
+              const result = await response.data;
               if (result.success) {
                 setAvailablePackages(result.packages);
               }
@@ -232,10 +230,8 @@ export default function ExtendSubscriptionPage() {
 
           const fetchExtensionHistory = async () => {
             try {
-              const response = await fetchWithUser(
-                "/api/user/extension-history"
-              );
-              const result = await response.json();
+              const response = await api.get("/user/extension-history");
+              const result = await response.data;
               if (result.success) {
                 setExtensionHistory(result.extensions);
               }
