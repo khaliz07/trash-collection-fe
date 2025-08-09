@@ -1,42 +1,42 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { paymentId: string } }
 ) {
   try {
-    const { paymentId } = params
+    const { paymentId } = params;
 
     if (!paymentId) {
       return NextResponse.json(
-        { success: false, message: 'Payment ID is required' },
+        { success: false, message: "Payment ID is required" },
         { status: 400 }
-      )
+      );
     }
 
     // Get payment info from database to display for review
     const payment = await prisma.payment.findFirst({
       where: {
-        transactionId: paymentId
+        transactionId: paymentId,
       },
       include: {
         package: true,
         user: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        }
-      }
-    })
-    
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
     if (!payment) {
-      return new NextResponse(`
+      return new NextResponse(
+        `
         <!DOCTYPE html>
         <html lang="vi">
         <head>
@@ -62,14 +62,17 @@ export async function GET(
           </div>
         </body>
         </html>
-      `, {
-        headers: { 'Content-Type': 'text/html' }
-      })
+      `,
+        {
+          headers: { "Content-Type": "text/html" },
+        }
+      );
     }
 
     // Check if already completed
-    if (payment.status === 'success') {
-      return new NextResponse(`
+    if (payment.status === "success") {
+      return new NextResponse(
+        `
         <!DOCTYPE html>
         <html lang="vi">
         <head>
@@ -95,13 +98,16 @@ export async function GET(
           </div>
         </body>
         </html>
-      `, {
-        headers: { 'Content-Type': 'text/html' }
-      })
+      `,
+        {
+          headers: { "Content-Type": "text/html" },
+        }
+      );
     }
 
     // Return review/confirmation page
-    return new NextResponse(`
+    return new NextResponse(
+      `
       <!DOCTYPE html>
       <html lang="vi">
       <head>
@@ -154,16 +160,24 @@ export async function GET(
               <div class="space-y-3">
                 <div class="flex justify-between">
                   <span class="text-gray-600">Gói dịch vụ:</span>
-                  <span class="font-medium">${payment.packageName || 'Gia hạn dịch vụ'}</span>
+                  <span class="font-medium">${
+                    payment.packageName || "Gia hạn dịch vụ"
+                  }</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-600">Thời hạn:</span>
-                  <span class="font-medium">${payment.duration || '1 tháng'}</span>
+                  <span class="font-medium">${
+                    payment.duration || "1 tháng"
+                  }</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-600">Số tiền:</span>
                   <span class="font-semibold text-lg text-green-600">
-                    ${payment.amount ? payment.amount.toLocaleString('vi-VN') : '0'}đ
+                    ${
+                      payment.amount
+                        ? payment.amount.toLocaleString("vi-VN")
+                        : "0"
+                    }đ
                   </span>
                 </div>
                 <hr class="border-gray-300">
@@ -306,18 +320,19 @@ export async function GET(
         </script>
       </body>
       </html>
-    `, {
-      headers: {
-        'Content-Type': 'text/html',
-      },
-    })
-
+    `,
+      {
+        headers: {
+          "Content-Type": "text/html",
+        },
+      }
+    );
   } catch (error) {
-    console.error('Error confirming payment:', error)
+    console.error("Error confirming payment:", error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: "Internal server error" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -326,32 +341,31 @@ export async function POST(
   { params }: { params: { paymentId: string } }
 ) {
   try {
-    const { paymentId } = params
+    const { paymentId } = params;
 
     if (!paymentId) {
       return NextResponse.json(
-        { success: false, message: 'Payment ID is required' },
+        { success: false, message: "Payment ID is required" },
         { status: 400 }
-      )
+      );
     }
 
     // Update payment status to success
-    const updatedPayment = updatePaymentStatus(paymentId, 'success', {
+    const updatedPayment = updatePaymentStatus(paymentId, "success", {
       confirmedAt: new Date().toISOString(),
-      method: 'api_call'
-    })
+      method: "api_call",
+    });
 
     return NextResponse.json({
       success: true,
-      message: 'Payment confirmed successfully',
-      payment: updatedPayment
-    })
-
+      message: "Payment confirmed successfully",
+      payment: updatedPayment,
+    });
   } catch (error) {
-    console.error('Error confirming payment:', error)
+    console.error("Error confirming payment:", error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: "Internal server error" },
       { status: 500 }
-    )
+    );
   }
 }

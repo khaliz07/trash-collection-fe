@@ -51,8 +51,7 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } },
         { licensePlate: { contains: search, mode: 'insensitive' } },
@@ -71,8 +70,7 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           email: true,
-          firstName: true,
-          lastName: true,
+          name: true,
           phone: true,
           status: true,
           role: true,
@@ -97,7 +95,6 @@ export async function GET(request: NextRequest) {
     // Format response
     const formattedCollectors = collectors.map(collector => ({
       ...collector,
-      name: `${collector.lastName} ${collector.firstName}`.trim(),
       startDate: '', // TODO: Add after schema sync
       rating: 0,
       reviewCount: 0,
@@ -162,8 +159,7 @@ export async function POST(request: NextRequest) {
     const {
       email,
       password,
-      firstName,
-      lastName,
+      name,
       phone,
       address,
       licensePlate,
@@ -172,7 +168,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validate required fields
-    if (!email || !password || !firstName || !lastName) {
+    if (!email || !password || !name) {
       return NextResponse.json(
         { message: 'Thiếu thông tin bắt buộc' },
         { status: 400 }
@@ -199,8 +195,7 @@ export async function POST(request: NextRequest) {
       data: {
         email,
         password: hashedPassword,
-        firstName,
-        lastName,
+        name,
         phone,
         address,
         licensePlate,
@@ -214,8 +209,7 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         phone: true,
         status: true,
         role: true,
@@ -230,7 +224,6 @@ export async function POST(request: NextRequest) {
     // Format response
     const formattedCollector = {
       ...collector,
-      name: `${collector.lastName} ${collector.firstName}`.trim(),
       startDate: startDate || '',
       rating: 0,
       reviewCount: 0,
@@ -264,8 +257,7 @@ export async function PUT(request: NextRequest) {
     const {
       id,
       email,
-      firstName,
-      lastName,
+      name,
       phone,
       address,
       licensePlate,
@@ -275,7 +267,7 @@ export async function PUT(request: NextRequest) {
     } = body
 
     // Validate required fields
-    if (!id || !firstName || !lastName) {
+    if (!id || !name) {
       return NextResponse.json(
         { message: 'Thiếu thông tin bắt buộc' },
         { status: 400 }
@@ -313,8 +305,7 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: {
         ...(email && { email }),
-        firstName,
-        lastName,
+        name,
         phone,
         address,
         licensePlate,
@@ -325,8 +316,7 @@ export async function PUT(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         phone: true,
         status: true,
         role: true,
@@ -341,7 +331,6 @@ export async function PUT(request: NextRequest) {
     // Format response
     const formattedCollector = {
       ...updatedCollector,
-      name: `${updatedCollector.lastName} ${updatedCollector.firstName}`.trim(),
       startDate: startDate || '',
       rating: 0,
       reviewCount: 0,

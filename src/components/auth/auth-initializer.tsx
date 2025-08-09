@@ -5,8 +5,13 @@ import { useAuth } from '@/hooks/use-auth'
 import { useMe } from '@/hooks/use-auth-mutations'
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
-  const { token, user, login, logout } = useAuth()
+  const { token, user, login, logout, initializeAuth } = useAuth()
   const { data: meData, isError } = useMe()
+
+  useEffect(() => {
+    // Initialize auth from cookie when component mounts
+    initializeAuth()
+  }, [initializeAuth])
 
   useEffect(() => {
     if (token && !user && meData?.user) {

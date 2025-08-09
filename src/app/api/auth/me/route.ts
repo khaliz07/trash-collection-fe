@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         role: true,
         phone: true,
         address: true,
@@ -37,13 +36,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Format response to match frontend expectations
-    const formattedUser = {
-      ...user,
-      name: `${user.firstName} ${user.lastName}`.trim(),
-    }
-
-    return NextResponse.json({ user: formattedUser })
+    return NextResponse.json({ user })
   } catch (error) {
     console.error('Get me error:', error)
     return NextResponse.json(

@@ -7,8 +7,7 @@ export interface CollectorArea {
 
 export interface Collector {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone?: string | null;
   address?: string | null;
@@ -23,8 +22,6 @@ export interface Collector {
   rating: number; // 1-5
   reviewCount: number;
   cccd: string;
-  // Computed field for display
-  name?: string;
 }
 
 export interface CollectorReview {

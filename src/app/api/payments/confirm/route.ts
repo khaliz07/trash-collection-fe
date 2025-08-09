@@ -68,6 +68,23 @@ export async function POST(request: NextRequest) {
           )
         }
 
+        // For new payments (from QR scan), need to find the payment by transactionId
+        const pendingPayment = await prisma.payment.findFirst({
+          where: {
+            transactionId: paymentId
+          },
+          include: {
+            subscription: true
+          }
+        })
+
+        if (!pendingPayment) {
+          return NextResponse.json(
+            { success: false, message: 'Payment not found' },
+            { status: 404 }
+          )
+        }
+
         // Find active subscriptions for this user
         const activeSubscriptions = await prisma.subscription.findMany({
           where: {
@@ -79,8 +96,6 @@ export async function POST(request: NextRequest) {
           }
         })
 
-        let subscription
-
         // Check if subscription exists for this package
         const existingSubscription = await prisma.subscription.findFirst({
           where: {
@@ -90,18 +105,21 @@ export async function POST(request: NextRequest) {
           }
         })
 
+        let finalSubscription
+
         if (existingSubscription) {
-          subscription = existingSubscription
+          finalSubscription = existingSubscription
         } else {
-          // Create new subscription in queue
+          // Update the temporary subscription created during payment creation
           const nextQueuePosition = activeSubscriptions.length
           const startMonth = new Date().toISOString().substring(0, 7) // YYYY-MM
           const endMonth = calculateEndMonth(new Date(), packageInfo.duration)
           
-          subscription = await prisma.subscription.create({
+          finalSubscription = await prisma.subscription.update({
+            where: {
+              id: pendingPayment.subscriptionId
+            },
             data: {
-              userId: userId,
-              packageId: packageId,
               queuePosition: nextQueuePosition,
               status: 'ACTIVE',
               startMonth: startMonth,
@@ -114,33 +132,29 @@ export async function POST(request: NextRequest) {
         // Calculate covered months based on package duration
         const coveredMonths = calculateCoveredMonths(packageInfo.duration)
 
-        // Create payment record using Prisma
-        const payment = await prisma.payment.create({
+        // Update payment to completed
+        const completedPayment = await prisma.payment.update({
+          where: {
+            id: pendingPayment.id
+          },
           data: {
-            userId: userId,
-            packageId: packageId,
-            subscriptionId: subscription.id,
-            amount: amount || packageInfo.price,
-            currency: 'VND',
             status: 'COMPLETED',
-            paymentMethod: paymentMethod as any,
             coveredMonths: coveredMonths,
-            transactionId: paymentId,
-            externalId: transactionId,
-            paidAt: new Date()
+            paidAt: new Date(),
+            externalId: transactionId
           }
         })
 
-        console.log('✅ Payment confirmed and saved to database:', payment.id)
+        console.log('✅ Payment confirmed and subscription updated:', completedPayment.id)
 
         return NextResponse.json({ 
           success: true, 
           message: 'Payment status updated successfully',
           payment: {
-            id: payment.id,
+            id: completedPayment.id,
             status: 'COMPLETED',
-            amount: payment.amount,
-            coveredMonths: payment.coveredMonths
+            amount: completedPayment.amount,
+            coveredMonths: completedPayment.coveredMonths
           }
         })
 

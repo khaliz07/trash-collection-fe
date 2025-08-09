@@ -5,6 +5,12 @@ const prisma = new PrismaClient();
 
 // Simple getUserId function for this specific context
 function getUserId(request: NextRequest): string {
+  // Try to get from X-User-ID header (from fetchWithUser)
+  const userIdHeader = request.headers.get('X-User-ID');
+  if (userIdHeader) {
+    return userIdHeader;
+  }
+  
   // Try to get from Authorization header
   const authHeader = request.headers.get('authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -21,7 +27,8 @@ function getUserId(request: NextRequest): string {
     return userIdParam;
   }
   
-  throw new Error('User not authenticated');
+  // Default to user-1 for demo
+  return 'user-1';
 }
 
 export async function GET(request: NextRequest) {

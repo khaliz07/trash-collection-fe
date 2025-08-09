@@ -1,31 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { QRPaymentDialog } from "@/components/payments/QRPaymentDialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { CheckCircle, ArrowLeft, Package, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
-  TableHeader,
   TableBody,
-  TableRow,
-  TableHead,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { toast } from 'sonner';
-import { QRPaymentDialog } from "@/components/payments/QRPaymentDialog";
-import { format, parseISO } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import { Badge } from "@/components/ui/badge";
-import { UserSwitcher, fetchWithUser } from '@/components/user-switcher';
+import { UserSwitcher, fetchWithUser } from "@/components/user-switcher";
+import { format, parseISO } from "date-fns";
+import { vi } from "date-fns/locale";
+import { ArrowLeft, CheckCircle, Loader2, Package } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 const paymentMethods = [
   { id: "momo", name: "Ví MoMo" },
   { id: "zalopay", name: "ZaloPay" },
   { id: "bank", name: "Chuyển khoản ngân hàng" },
-  { id: "credit", name: "Thẻ tín dụng/Ghi nợ" }
+  { id: "credit", name: "Thẻ tín dụng/Ghi nợ" },
 ];
 
 export default function ExtendSubscriptionPage() {
@@ -49,17 +48,17 @@ export default function ExtendSubscriptionPage() {
   useEffect(() => {
     const fetchCurrentPackage = async () => {
       try {
-        const response = await fetchWithUser('/api/user/current-package');
+        const response = await fetchWithUser("/api/user/current-package");
         const result = await response.json();
-        
+
         if (result.success) {
           setCurrentPackage(result.package);
         } else {
-          toast.error('Không thể tải thông tin gói hiện tại');
+          toast.error("Không thể tải thông tin gói hiện tại");
         }
       } catch (error) {
-        console.error('Error fetching current package:', error);
-        toast.error('Lỗi kết nối khi tải thông tin gói');
+        console.error("Error fetching current package:", error);
+        toast.error("Lỗi kết nối khi tải thông tin gói");
       } finally {
         setLoading(false);
       }
@@ -67,17 +66,17 @@ export default function ExtendSubscriptionPage() {
 
     const fetchAvailablePackages = async () => {
       try {
-        const response = await fetchWithUser('/api/user/extension-packages');
+        const response = await fetchWithUser("/api/user/extension-packages");
         const result = await response.json();
-        
+
         if (result.success) {
           setAvailablePackages(result.packages);
         } else {
-          toast.error('Không thể tải danh sách gói gia hạn');
+          toast.error("Không thể tải danh sách gói gia hạn");
         }
       } catch (error) {
-        console.error('Error fetching packages:', error);
-        toast.error('Lỗi kết nối khi tải danh sách gói');
+        console.error("Error fetching packages:", error);
+        toast.error("Lỗi kết nối khi tải danh sách gói");
       } finally {
         setPackagesLoading(false);
       }
@@ -85,17 +84,17 @@ export default function ExtendSubscriptionPage() {
 
     const fetchExtensionHistory = async () => {
       try {
-        const response = await fetchWithUser('/api/user/extension-history');
+        const response = await fetchWithUser("/api/user/extension-history");
         const result = await response.json();
-        
+
         if (result.success) {
           setExtensionHistory(result.extensions);
         } else {
-          toast.error('Không thể tải lịch sử gia hạn');
+          toast.error("Không thể tải lịch sử gia hạn");
         }
       } catch (error) {
-        console.error('Error fetching extension history:', error);
-        toast.error('Lỗi kết nối khi tải lịch sử gia hạn');
+        console.error("Error fetching extension history:", error);
+        toast.error("Lỗi kết nối khi tải lịch sử gia hạn");
       } finally {
         setHistoryLoading(false);
       }
@@ -110,13 +109,20 @@ export default function ExtendSubscriptionPage() {
     setSelected(id);
     setTimeout(() => {
       if (summaryRef.current) {
-        summaryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        summaryRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }
     }, 100);
   };
 
   const handlePay = () => {
-    if (payMethod === 'momo' || payMethod === 'zalopay' || payMethod === 'bank') {
+    if (
+      payMethod === "momo" ||
+      payMethod === "zalopay" ||
+      payMethod === "bank"
+    ) {
       // Use QR payment for electronic methods
       setShowQRDialog(true);
     } else {
@@ -131,109 +137,119 @@ export default function ExtendSubscriptionPage() {
 
   const handlePaymentSuccess = async (transactionId?: string) => {
     if (!selectedPkg || !payMethod) {
-      toast.error('Thông tin thanh toán không đầy đủ');
+      toast.error("Thông tin thanh toán không đầy đủ");
       return;
     }
 
     try {
       // Get duration in months from selectedPkg.id
       // Call extend-subscription API with packageId from database
-      const response = await fetchWithUser('/api/user/extend-subscription', {
-        method: 'POST',
+      const response = await fetchWithUser("/api/user/extend-subscription", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           packageId: selectedPkg.id, // This is now the actual packageId from database
           duration: selectedPkg.duration, // Duration from package
           price: selectedPkg.final,
           paymentMethod: payMethod,
-          transactionId: transactionId || `ext-${Date.now()}`
-        })
+          transactionId: transactionId || `ext-${Date.now()}`,
+        }),
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         setShowQRDialog(false);
         setSuccess(true);
-        toast.success(`Gia hạn thành công! Dịch vụ được gia hạn ${duration} tháng.`);
-        
+        toast.success(
+          `Gia hạn thành công! Dịch vụ được gia hạn ${
+            selectedPkg?.duration || ""
+          } tháng.`
+        );
+
         // Refresh current package info
-        const refreshResponse = await fetch('/api/user/current-package');
+        const refreshResponse = await fetch("/api/user/current-package");
         const refreshResult = await refreshResponse.json();
         if (refreshResult.success) {
           setCurrentPackage(refreshResult.package);
         }
-        
+
         // Refresh extension history
-        const historyResponse = await fetch('/api/user/extension-history');
+        const historyResponse = await fetch("/api/user/extension-history");
         const historyResult = await historyResponse.json();
         if (historyResult.success) {
           setExtensionHistory(historyResult.extensions);
         }
       } else {
         setShowQRDialog(false);
-        toast.error(result.error || 'Lỗi khi gia hạn dịch vụ');
+        toast.error(result.error || "Lỗi khi gia hạn dịch vụ");
       }
     } catch (error) {
-      console.error('Error extending subscription:', error);
+      console.error("Error extending subscription:", error);
       setShowQRDialog(false);
-      toast.error('Lỗi kết nối khi gia hạn dịch vụ');
+      toast.error("Lỗi kết nối khi gia hạn dịch vụ");
     }
   };
 
   const handlePaymentFailure = () => {
     setShowQRDialog(false);
-    toast.error('Thanh toán thất bại. Vui lòng thử lại.');
+    toast.error("Thanh toán thất bại. Vui lòng thử lại.");
   };
 
   return (
     <div className="container max-w-full py-8">
       {/* User Switcher for Demo */}
-      <UserSwitcher onUserChange={() => {
-        // Refresh all data when user changes
-        const fetchCurrentPackage = async () => {
-          try {
-            const response = await fetchWithUser('/api/user/current-package');
-            const result = await response.json();
-            if (result.success) {
-              setCurrentPackage(result.package);
+      <UserSwitcher
+        onUserChange={() => {
+          // Refresh all data when user changes
+          const fetchCurrentPackage = async () => {
+            try {
+              const response = await fetchWithUser("/api/user/current-package");
+              const result = await response.json();
+              if (result.success) {
+                setCurrentPackage(result.package);
+              }
+            } catch (error) {
+              console.error("Error fetching current package:", error);
             }
-          } catch (error) {
-            console.error('Error fetching current package:', error);
-          }
-        };
-        
-        const fetchAvailablePackages = async () => {
-          try {
-            const response = await fetchWithUser('/api/user/extension-packages');
-            const result = await response.json();
-            if (result.success) {
-              setAvailablePackages(result.packages);
+          };
+
+          const fetchAvailablePackages = async () => {
+            try {
+              const response = await fetchWithUser(
+                "/api/user/extension-packages"
+              );
+              const result = await response.json();
+              if (result.success) {
+                setAvailablePackages(result.packages);
+              }
+            } catch (error) {
+              console.error("Error fetching packages:", error);
             }
-          } catch (error) {
-            console.error('Error fetching packages:', error);
-          }
-        };
-        
-        const fetchExtensionHistory = async () => {
-          try {
-            const response = await fetchWithUser('/api/user/extension-history');
-            const result = await response.json();
-            if (result.success) {
-              setExtensionHistory(result.extensions);
+          };
+
+          const fetchExtensionHistory = async () => {
+            try {
+              const response = await fetchWithUser(
+                "/api/user/extension-history"
+              );
+              const result = await response.json();
+              if (result.success) {
+                setExtensionHistory(result.extensions);
+              }
+            } catch (error) {
+              console.error("Error fetching extension history:", error);
             }
-          } catch (error) {
-            console.error('Error fetching extension history:', error);
-          }
-        };
-        
-        fetchCurrentPackage();
-        fetchAvailablePackages();
-        fetchExtensionHistory();
-      }} />
-      
+          };
+
+          fetchCurrentPackage();
+          fetchAvailablePackages();
+          fetchExtensionHistory();
+        }}
+      />
+
       <div className="flex items-center gap-2 mb-6">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
@@ -246,7 +262,9 @@ export default function ExtendSubscriptionPage() {
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : currentPackage ? (
           <span className="font-semibold text-primary">
-            {format(parseISO(currentPackage.endDate), 'dd/MM/yyyy', { locale: vi })}
+            {format(parseISO(currentPackage.endDate), "dd/MM/yyyy", {
+              locale: vi,
+            })}
           </span>
         ) : (
           <span className="text-destructive">Chưa có gói dịch vụ</span>
@@ -261,17 +279,30 @@ export default function ExtendSubscriptionPage() {
               <div className="flex items-center gap-3">
                 <Package className="h-8 w-8 text-blue-600" />
                 <div>
-                  <h3 className="font-semibold text-lg">{currentPackage.name}</h3>
-                  <p className="text-sm text-muted-foreground">{currentPackage.description}</p>
+                  <h3 className="font-semibold text-lg">
+                    {currentPackage.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {currentPackage.description}
+                  </p>
                   <p className="text-sm text-blue-600 font-medium mt-1">
-                    Phí: {currentPackage.fee.toLocaleString('vi-VN')}đ/{currentPackage.type === 'weekly' ? 'tuần' : 'tháng'}
+                    Phí: {currentPackage.fee.toLocaleString("vi-VN")}đ/
+                    {currentPackage.type === "weekly" ? "tuần" : "tháng"}
                   </p>
                 </div>
               </div>
-              <Badge variant={currentPackage.status === 'active' ? 'default' : currentPackage.status === 'expiring' ? 'warning' : 'error'}>
-                {currentPackage.status === 'active' && '✅ Đang hoạt động'}
-                {currentPackage.status === 'expiring' && '⚠️ Sắp hết hạn'}
-                {currentPackage.status === 'expired' && '❌ Hết hạn'}
+              <Badge
+                variant={
+                  currentPackage.status === "active"
+                    ? "default"
+                    : currentPackage.status === "expiring"
+                    ? "warning"
+                    : "error"
+                }
+              >
+                {currentPackage.status === "active" && "✅ Đang hoạt động"}
+                {currentPackage.status === "expiring" && "⚠️ Sắp hết hạn"}
+                {currentPackage.status === "expired" && "❌ Hết hạn"}
               </Badge>
             </div>
           </CardContent>
@@ -281,7 +312,10 @@ export default function ExtendSubscriptionPage() {
         {packagesLoading ? (
           // Loading skeleton for packages
           [...Array(3)].map((_, index) => (
-            <div key={index} className="rounded-xl bg-background border shadow-lg p-8 min-h-[370px]">
+            <div
+              key={index}
+              className="rounded-xl bg-background border shadow-lg p-8 min-h-[370px]"
+            >
               <div className="space-y-4 animate-pulse">
                 <div className="h-6 bg-gray-200 rounded w-20"></div>
                 <div className="h-8 bg-gray-200 rounded w-32"></div>
@@ -312,24 +346,50 @@ export default function ExtendSubscriptionPage() {
               <div>
                 <div className="text-xl font-semibold mb-1">{pkg.name}</div>
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">{pkg.final.toLocaleString()}đ</span>
+                  <span className="text-3xl font-bold">
+                    {pkg.final.toLocaleString()}đ
+                  </span>
                   {pkg.discount > 0 && (
-                    <span className="text-sm line-through text-muted-foreground">{pkg.price.toLocaleString()}đ</span>
+                    <span className="text-sm line-through text-muted-foreground">
+                      {pkg.price.toLocaleString()}đ
+                    </span>
                   )}
                 </div>
-                <div className="text-base text-muted-foreground mt-1">{pkg.durationText}</div>
-                <div className="text-xs text-green-700 mt-2 mb-4">{pkg.benefit}</div>
+                <div className="text-base text-muted-foreground mt-1">
+                  {pkg.durationText}
+                </div>
+                <div className="text-xs text-green-700 mt-2 mb-4">
+                  {pkg.benefit}
+                </div>
                 <ul className="mt-4 space-y-3 px-2">
                   {pkg.features.map((feature: string, index: number) => (
                     <li key={index} className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-primary">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4 text-primary"
+                      >
                         <path d="M20 6L9 17l-5-5" />
                       </svg>
                       <span>{feature}</span>
                     </li>
                   ))}
                   <li className="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-primary">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4 text-primary"
+                    >
                       <path d="M20 6L9 17l-5-5" />
                     </svg>
                     <span>Thu gom {pkg.collectionsPerWeek} lần/tuần</span>
@@ -337,8 +397,14 @@ export default function ExtendSubscriptionPage() {
                 </ul>
               </div>
               <div className="mt-8">
-                <Button className="w-full" variant={selected === pkg.id ? "default" : "outline"} onClick={() => handleSelect(pkg.id)}>
-                  {selected === pkg.id ? <CheckCircle className="mr-2 h-4 w-4" /> : null}
+                <Button
+                  className="w-full"
+                  variant={selected === pkg.id ? "default" : "outline"}
+                  onClick={() => handleSelect(pkg.id)}
+                >
+                  {selected === pkg.id ? (
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                  ) : null}
                   Chọn gói
                 </Button>
               </div>
@@ -347,7 +413,9 @@ export default function ExtendSubscriptionPage() {
         ) : (
           <div className="col-span-3 text-center py-8">
             <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">Không thể tải thông tin gói dịch vụ</p>
+            <p className="text-muted-foreground">
+              Không thể tải thông tin gói dịch vụ
+            </p>
           </div>
         )}
       </div>
@@ -377,18 +445,33 @@ export default function ExtendSubscriptionPage() {
                 </div>
               </div>
               <div className="mt-6">
-                <div className="font-semibold mb-2">Chọn phương thức thanh toán</div>
+                <div className="font-semibold mb-2">
+                  Chọn phương thức thanh toán
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   {paymentMethods.map((pm) => (
-                    <Button key={pm.id} variant={payMethod === pm.id ? "default" : "outline"} className="w-full" onClick={() => setPayMethod(pm.id)}>
+                    <Button
+                      key={pm.id}
+                      variant={payMethod === pm.id ? "default" : "outline"}
+                      className="w-full"
+                      onClick={() => setPayMethod(pm.id)}
+                    >
                       {pm.name}
                     </Button>
                   ))}
                 </div>
               </div>
               <div className="mt-6">
-                <Button className="w-full" disabled={!payMethod || confirm || success} onClick={handlePay}>
-                  {confirm ? "Đang xử lý..." : success ? "Gia hạn thành công!" : "Thanh toán ngay"}
+                <Button
+                  className="w-full"
+                  disabled={!payMethod || confirm || success}
+                  onClick={handlePay}
+                >
+                  {confirm
+                    ? "Đang xử lý..."
+                    : success
+                    ? "Gia hạn thành công!"
+                    : "Thanh toán ngay"}
                 </Button>
               </div>
             </CardContent>
@@ -402,12 +485,13 @@ export default function ExtendSubscriptionPage() {
           open={showQRDialog}
           onOpenChange={setShowQRDialog}
           paymentInfo={{
+            packageId: selectedPkg.id,
             packageName: selectedPkg.name,
             duration: selectedPkg.duration,
             amount: selectedPkg.final,
-            description: `Gia hạn gói ${selectedPkg.name}`
+            description: `Gia hạn gói ${selectedPkg.name}`,
           }}
-          method={payMethod || 'unknown'}
+          method={payMethod || "unknown"}
           onSuccess={handlePaymentSuccess}
           onFailure={handlePaymentFailure}
         />
@@ -437,40 +521,75 @@ export default function ExtendSubscriptionPage() {
                     // Loading skeleton
                     [...Array(3)].map((_, index) => (
                       <TableRow key={index}>
-                        <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
-                        <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
-                        <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
-                        <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
-                        <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
-                        <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                        <TableCell>
+                          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : extensionHistory.length > 0 ? (
                     extensionHistory.map((extension) => (
                       <TableRow key={extension.id}>
-                        <TableCell className="font-medium">{extension.packageName}</TableCell>
+                        <TableCell className="font-medium">
+                          {extension.packageName}
+                        </TableCell>
                         <TableCell className="font-semibold text-green-600">
-                          {extension.price.toLocaleString('vi-VN')}đ
+                          {extension.price.toLocaleString("vi-VN")}đ
                         </TableCell>
                         <TableCell>
-                          {format(parseISO(extension.paymentDate), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                          {format(
+                            parseISO(extension.paymentDate),
+                            "dd/MM/yyyy HH:mm",
+                            { locale: vi }
+                          )}
                         </TableCell>
                         <TableCell>
-                          {format(parseISO(extension.expiryDate), 'dd/MM/yyyy', { locale: vi })}
+                          {format(
+                            parseISO(extension.expiryDate),
+                            "dd/MM/yyyy",
+                            { locale: vi }
+                          )}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="default">{extension.paymentMethod}</Badge>
+                          <Badge variant="default">
+                            {extension.paymentMethod}
+                          </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={extension.status === 'completed' ? 'success' : 'warning'}>
-                            {extension.status === 'completed' ? '✅ Hoàn thành' : '⏳ Đang xử lý'}
+                          <Badge
+                            variant={
+                              extension.status === "completed"
+                                ? "success"
+                                : "warning"
+                            }
+                          >
+                            {extension.status === "completed"
+                              ? "✅ Hoàn thành"
+                              : "⏳ Đang xử lý"}
                           </Badge>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      <TableCell
+                        colSpan={6}
+                        className="text-center py-8 text-muted-foreground"
+                      >
                         Chưa có lịch sử gia hạn nào
                       </TableCell>
                     </TableRow>
@@ -483,4 +602,4 @@ export default function ExtendSubscriptionPage() {
       </div>
     </div>
   );
-} 
+}

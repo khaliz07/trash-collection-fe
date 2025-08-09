@@ -9,39 +9,38 @@ export async function GET(request: NextRequest) {
     const subscriptions = await prisma.subscription.findMany({
       include: {
         package: true,
-        customer: {
+        user: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
+            name: true,
             email: true
           }
         }
       },
       orderBy: [
-        { customerId: 'asc' },
+        { userId: 'asc' },
         { createdAt: 'asc' }
       ]
     });
 
     console.log('=== SUBSCRIPTION ANALYSIS ===');
     
-    // Group by customer
-    const byCustomer = subscriptions.reduce((acc, sub) => {
-      if (!acc[sub.customerId]) {
-        acc[sub.customerId] = [];
+    // Group by user
+    const byUser = subscriptions.reduce((acc, sub) => {
+      if (!acc[sub.userId]) {
+        acc[sub.userId] = [];
       }
-      acc[sub.customerId].push(sub);
+      acc[sub.userId].push(sub);
       return acc;
     }, {} as Record<string, any[]>);
 
-    for (const [customerId, subs] of Object.entries(byCustomer)) {
-      console.log(`\nCustomer: ${customerId} (${subs[0]?.customer?.email})`);
+    for (const [userId, subs] of Object.entries(byUser)) {
+      console.log(`\nUser: ${userId} (${subs[0]?.user?.email})`);
       subs.forEach(sub => {
         console.log(`  Subscription: ${sub.id}`);
-        console.log(`    Plan: ${sub.planName}`);
         console.log(`    PackageId: ${sub.packageId}`);
         console.log(`    Package Name: ${sub.package?.name}`);
+        console.log(`    Status: ${sub.status}`);
         console.log(`    Created: ${sub.createdAt}`);
       });
     }
@@ -50,11 +49,12 @@ export async function GET(request: NextRequest) {
       success: true,
       subscriptions: subscriptions.map(sub => ({
         id: sub.id,
-        customerId: sub.customerId,
-        customerEmail: sub.customer?.email,
-        planName: sub.planName,
+        userId: sub.userId,
+        userEmail: sub.user?.email,
+        userName: sub.user?.name,
         packageId: sub.packageId,
         packageName: sub.package?.name,
+        status: sub.status,
         createdAt: sub.createdAt
       }))
     });

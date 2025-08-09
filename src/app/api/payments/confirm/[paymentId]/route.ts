@@ -1,40 +1,40 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { paymentId: string } }
 ) {
   try {
-    const { paymentId } = params
+    const { paymentId } = params;
 
     if (!paymentId) {
       return NextResponse.json(
-        { success: false, message: 'Payment ID is required' },
+        { success: false, message: "Payment ID is required" },
         { status: 400 }
-      )
+      );
     }
 
     // Get payment info from database using raw SQL
-    const paymentData = await prisma.$queryRaw`
+    const paymentData = (await prisma.$queryRaw`
       SELECT p.*, 
              pkg.name as "packageName", 
              pkg.duration, 
              pkg.price,
-             u."firstName", 
-             u."lastName", 
+             u."name", 
              u.email
       FROM payments p
       JOIN packages pkg ON p."packageId" = pkg.id
       JOIN users u ON p."userId" = u.id
       WHERE p."transactionId" = ${paymentId}::text
       LIMIT 1
-    ` as any[]
-    
+    `) as any[];
+
     if (paymentData.length === 0) {
-      return new NextResponse(`
+      return new NextResponse(
+        `
         <!DOCTYPE html>
         <html lang="vi">
         <head>
@@ -60,16 +60,19 @@ export async function GET(
           </div>
         </body>
         </html>
-      `, {
-        headers: { 'Content-Type': 'text/html' }
-      })
+      `,
+        {
+          headers: { "Content-Type": "text/html" },
+        }
+      );
     }
 
-    const payment = paymentData[0]
+    const payment = paymentData[0];
 
     // Check if already completed
-    if (payment.status === 'COMPLETED') {
-      return new NextResponse(`
+    if (payment.status === "COMPLETED") {
+      return new NextResponse(
+        `
         <!DOCTYPE html>
         <html lang="vi">
         <head>
@@ -92,7 +95,9 @@ export async function GET(
                 <p class="text-sm text-gray-600 mb-1">Gói dịch vụ:</p>
                 <p class="font-medium text-gray-800">${payment.packageName}</p>
                 <p class="text-sm text-gray-600 mb-1 mt-2">Số tiền:</p>
-                <p class="font-medium text-gray-800">${Number(payment.amount).toLocaleString('vi-VN')}đ</p>
+                <p class="font-medium text-gray-800">${Number(
+                  payment.amount
+                ).toLocaleString("vi-VN")}đ</p>
               </div>
               <button onclick="window.close()" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg">
                 Đóng
@@ -101,13 +106,16 @@ export async function GET(
           </div>
         </body>
         </html>
-      `, {
-        headers: { 'Content-Type': 'text/html' }
-      })
+      `,
+        {
+          headers: { "Content-Type": "text/html" },
+        }
+      );
     }
 
     // Display payment confirmation page for PENDING payments
-    return new NextResponse(`
+    return new NextResponse(
+      `
       <!DOCTYPE html>
       <html lang="vi">
       <head>
@@ -135,17 +143,22 @@ export async function GET(
               
               <div class="bg-gray-50 p-4 rounded-lg">
                 <p class="text-sm text-gray-600 mb-1">Thời hạn:</p>
-                <p class="font-medium text-gray-800">${payment.duration} tháng</p>
+                <p class="font-medium text-gray-800">${
+                  payment.duration
+                } tháng</p>
               </div>
               
               <div class="bg-gray-50 p-4 rounded-lg">
                 <p class="text-sm text-gray-600 mb-1">Số tiền:</p>
-                <p class="text-xl font-bold text-blue-600">${Number(payment.amount).toLocaleString('vi-VN')}đ</p>
+                <p class="text-xl font-bold text-blue-600">${Number(
+                  payment.amount
+                ).toLocaleString("vi-VN")}đ</p>
               </div>
               
               <div class="bg-gray-50 p-4 rounded-lg">
                 <p class="text-sm text-gray-600 mb-1">Khách hàng:</p>
-                <p class="font-medium text-gray-800">${payment.firstName} ${payment.lastName}</p>
+                <p class="font-medium text-gray-800">${payment.name}
+      }</p>
                 <p class="text-sm text-gray-500">${payment.email}</p>
               </div>
             </div>
@@ -201,16 +214,17 @@ export async function GET(
         </script>
       </body>
       </html>
-    `, {
-      headers: { 'Content-Type': 'text/html' }
-    })
-
+    `,
+      {
+        headers: { "Content-Type": "text/html" },
+      }
+    );
   } catch (error) {
-    console.error('Error processing payment page:', error)
+    console.error("Error processing payment page:", error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: "Internal server error" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -219,29 +233,86 @@ export async function POST(
   { params }: { params: { paymentId: string } }
 ) {
   try {
-    const { paymentId } = params
-    const body = await request.json()
-    
-    // Call the main confirm API
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/payments/confirm`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        ...body,
-        paymentId: paymentId
-      })
-    })
-    
-    const result = await response.json()
-    return NextResponse.json(result)
+    const { paymentId } = params;
 
+    if (!paymentId) {
+      return NextResponse.json(
+        { success: false, message: "Payment ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Find the payment in database
+    const payment = await prisma.payment.findFirst({
+      where: {
+        transactionId: paymentId,
+      },
+      include: {
+        subscription: true,
+        package: true,
+      },
+    });
+
+    if (!payment) {
+      return NextResponse.json(
+        { success: false, message: "Payment not found" },
+        { status: 404 }
+      );
+    }
+
+    if (payment.status === "COMPLETED") {
+      return NextResponse.json({
+        success: true,
+        message: "Payment already confirmed",
+        payment: payment,
+      });
+    }
+
+    // Update payment status to COMPLETED
+    const updatedPayment = await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: "COMPLETED",
+        paidAt: new Date(),
+        // Update covered months based on package duration
+        coveredMonths: [new Date().toISOString().substring(0, 7)], // Current month
+      },
+      include: {
+        subscription: true,
+        package: true,
+      },
+    });
+
+    // Update subscription status to ACTIVE and calculate proper end month
+    if (payment.subscription) {
+      const startDate = new Date();
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + payment.package.duration);
+
+      await prisma.subscription.update({
+        where: { id: payment.subscription.id },
+        data: {
+          status: "ACTIVE",
+          activatedAt: new Date(),
+          startMonth: startDate.toISOString().substring(0, 7),
+          endMonth: endDate.toISOString().substring(0, 7),
+          queuePosition: 0, // Remove from queue
+        },
+      });
+    }
+
+    console.log(`✅ Payment ${paymentId} confirmed successfully`);
+
+    return NextResponse.json({
+      success: true,
+      message: "Payment confirmed successfully",
+      payment: updatedPayment,
+    });
   } catch (error) {
-    console.error('Error confirming payment:', error)
+    console.error("Error confirming payment:", error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: "Internal server error" },
       { status: 500 }
-    )
+    );
   }
 }

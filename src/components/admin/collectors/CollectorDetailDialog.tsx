@@ -21,7 +21,7 @@ export function CollectorDetailDialog({ open, onClose, collector, performance, h
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <div className="font-semibold text-lg mb-1">{collector.name || `${collector.lastName} ${collector.firstName}`}</div>
+            <div className="font-semibold text-lg mb-1">{collector.name}</div>
             <div className="text-sm text-gray-500 mb-1">SĐT: {collector.phone || 'N/A'}</div>
             <div className="text-sm text-gray-500 mb-1">CCCD: {collector.cccd || 'Chưa cập nhật'}</div>
             <div className="text-sm text-gray-500 mb-1">Biển số xe: {collector.licensePlate || 'Chưa cập nhật'}</div>

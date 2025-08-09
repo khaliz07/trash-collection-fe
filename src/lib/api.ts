@@ -12,8 +12,10 @@ export const api = axios.create({
 // Add token to requests
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token
+  console.log('API Request interceptor - token:', token ? 'exists' : 'missing')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+    console.log('Added Authorization header')
   }
   return config
 })
@@ -44,15 +46,10 @@ export const authAPI = {
     address: string
     password: string
   }) => {
-    // Split name into firstName and lastName for backend
-    const nameParts = data.name.trim().split(' ')
-    const firstName = nameParts[0] || ''
-    const lastName = nameParts.slice(1).join(' ') || ''
-    
+    // Use name directly for backend
     const registerData = {
       ...data,
-      firstName,
-      lastName,
+      name: data.name
     }
     
     const response = await api.post('/auth/register', registerData)
@@ -94,8 +91,7 @@ export const collectorsAPI = {
   },
   
   create: async (data: {
-    firstName: string
-    lastName: string
+    name: string
     email: string
     phone?: string
     address?: string
@@ -109,8 +105,7 @@ export const collectorsAPI = {
   },
   
   update: async (id: string, data: Partial<{
-    firstName: string
-    lastName: string
+    name: string
     email: string
     phone: string
     address: string

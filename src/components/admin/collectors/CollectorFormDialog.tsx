@@ -17,8 +17,7 @@ const statusOptions: { value: CollectorStatus; label: string }[] = [
 ];
 
 interface FormData {
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone: string;
   cccd: string;
@@ -35,8 +34,7 @@ export function CollectorFormDialog({ open, onClose, collector, areas }: Collect
   const updateCollectorMutation = useUpdateCollector(onClose);
   
   const [form, setForm] = React.useState<FormData>({
-    firstName: collector?.firstName || '',
-    lastName: collector?.lastName || '',
+    name: collector?.name || '',
     email: collector?.email || '',
     phone: collector?.phone || '',
     cccd: collector?.cccd || '',
@@ -51,8 +49,7 @@ export function CollectorFormDialog({ open, onClose, collector, areas }: Collect
   React.useEffect(() => {
     if (collector) {
       setForm({
-        firstName: collector.firstName || '',
-        lastName: collector.lastName || '',
+        name: collector.name || '',
         email: collector.email || '',
         phone: collector.phone || '',
         cccd: collector.cccd || '',
@@ -64,8 +61,7 @@ export function CollectorFormDialog({ open, onClose, collector, areas }: Collect
       });
     } else {
       setForm({
-        firstName: '', 
-        lastName: '', 
+        name: '', 
         email: '', 
         phone: '', 
         cccd: '', 
@@ -88,8 +84,8 @@ export function CollectorFormDialog({ open, onClose, collector, areas }: Collect
     e.preventDefault();
     
     // Validation
-    if (!form.firstName || !form.lastName || !form.phone) {
-      setError('Vui lòng nhập đầy đủ thông tin bắt buộc (Họ, Tên, SĐT).');
+    if (!form.name || !form.phone) {
+      setError('Vui lòng nhập đầy đủ thông tin bắt buộc (Tên, SĐT).');
       return;
     }
     
@@ -106,8 +102,7 @@ export function CollectorFormDialog({ open, onClose, collector, areas }: Collect
     setError('');
     
     const submitData = {
-      firstName: form.firstName,
-      lastName: form.lastName,
+      name: form.name,
       email: form.email,
       phone: form.phone,
       cccd: form.cccd,
@@ -139,12 +134,8 @@ export function CollectorFormDialog({ open, onClose, collector, areas }: Collect
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Họ *</label>
-            <input className="border rounded px-3 py-2 w-full" name="lastName" value={form.lastName} onChange={handleChange} required />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Tên *</label>
-            <input className="border rounded px-3 py-2 w-full" name="firstName" value={form.firstName} onChange={handleChange} required />
+            <label className="block text-sm font-medium mb-1">Họ tên *</label>
+            <input className="border rounded px-3 py-2 w-full" name="name" value={form.name} onChange={handleChange} required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Số điện thoại *</label>

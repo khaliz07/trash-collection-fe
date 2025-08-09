@@ -13,8 +13,7 @@ async function main() {
       id: 'user-1',
       email: 'user@example.com',
       password: 'hashedpassword',
-      firstName: 'Nguyễn',
-      lastName: 'Văn A',
+      name: 'Nguyễn Văn A',
       phone: '0901234567',
       role: 'USER',
       address: 'Phường Linh Trung, Quận Thủ Đức, TP. HCM'
@@ -27,16 +26,13 @@ async function main() {
     update: {},
     create: {
       id: 'sub-1',
-      customerId: user.id,
+      userId: user.id,
       packageId: 'pkg-monthly', // Link to the monthly package
-      planName: 'Gói cơ bản - 1 tháng',
-      description: 'Thu gom rác 2 lần/tuần (Thứ 3 và Thứ 6)',
-      frequency: 'MONTHLY',
-      price: 80000,
+      queuePosition: 0,
       status: 'ACTIVE',
-      startDate: new Date('2025-08-01'),
-      endDate: new Date('2025-09-01'),
-      nextBillingDate: new Date('2025-09-01')
+      startMonth: '2025-08',
+      endMonth: '2025-09',
+      activatedAt: new Date()
     }
   })
 
@@ -44,7 +40,8 @@ async function main() {
   const payments = [
     {
       id: 'pay-1',
-      customerId: user.id,
+      userId: user.id,
+      packageId: 'pkg-monthly',
       subscriptionId: subscription.id,
       amount: 80000,
       status: 'COMPLETED' as const,
@@ -54,7 +51,8 @@ async function main() {
     },
     {
       id: 'pay-2',
-      customerId: user.id,
+      userId: user.id,
+      packageId: 'pkg-quarterly',
       subscriptionId: subscription.id,
       amount: 228000, // 3 months with discount
       status: 'COMPLETED' as const,
@@ -64,7 +62,8 @@ async function main() {
     },
     {
       id: 'pay-3',
-      customerId: user.id,
+      userId: user.id,
+      packageId: 'pkg-monthly',
       subscriptionId: subscription.id,
       amount: 80000,
       status: 'COMPLETED' as const,

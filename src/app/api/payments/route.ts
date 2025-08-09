@@ -1,90 +1,201 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getBaseURL } from '@/lib/network'
-import { createPayment, getPayment } from '@/lib/payment-storage'
+import { NextRequest, NextResponse } from "next/server";
+import { getBaseURL } from "@/lib/network";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { amount, description, packageId, userId, packageName, duration, method } = body
-
-    // Generate payment ID
-    const paymentId = `PAY_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-
-    // Store payment record using shared storage
-    const payment = createPayment(paymentId, {
+    const body = await request.json();
+    const {
       amount,
+      description,
+      packageId,
+      userId,
       packageName,
       duration,
-      method: method || 'unknown'
-    })
+      method,
+    } = body;
 
-    // Auto-expire after 5 minutes
-    setTimeout(() => {
-      const currentPayment = getPayment(paymentId)
-      if (currentPayment && currentPayment.status === 'pending') {
-        // Update to failed status if still pending
-        import('@/lib/payment-storage').then(({ updatePaymentStatus }) => {
-          updatePaymentStatus(paymentId, 'failed', { expiredAt: new Date().toISOString() })
-        })
-      }
-    }, 5 * 60 * 1000)
+    // Validate required fields
+    if (!userId || !packageId) {
+      return NextResponse.json(
+        { success: false, message: "userId và packageId là bắt buộc" },
+        { status: 400 }
+      );
+    }
+
+    // Validate user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "Người dùng không tồn tại" },
+        { status: 404 }
+      );
+    }
+
+    // Validate package exists
+    const packageInfo = await prisma.package.findUnique({
+      where: { id: packageId },
+    });
+
+    if (!packageInfo) {
+      return NextResponse.json(
+        { success: false, message: "Gói dịch vụ không tồn tại" },
+        { status: 404 }
+      );
+    }
+
+    // Generate payment ID
+    const paymentId = `PAY_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
+    // Calculate expiration time (5 minutes from now)
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    // Create payment record in database with PENDING status
+    // Note: subscriptionId will be set when payment is confirmed
+    const payment = await prisma.payment.create({
+      data: {
+        transactionId: paymentId,
+        amount: amount || packageInfo.price,
+        currency: "VND",
+        status: "PENDING",
+        paymentMethod: (method === "momo"
+          ? "E_WALLET"
+          : method || "E_WALLET") as any,
+        expiresAt: expiresAt,
+        coveredMonths: [], // Will be updated when payment is confirmed
+        // Connect to existing package
+        package: {
+          connect: { id: packageId },
+        },
+        // Connect to existing user
+        user: {
+          connect: { id: userId },
+        },
+        // Create a temporary subscription for referential integrity
+        subscription: {
+          create: {
+            userId: userId,
+            packageId: packageId,
+            queuePosition: 999, // Temporary position
+            status: "PENDING",
+            startMonth: new Date().toISOString().substring(0, 7),
+            endMonth: new Date().toISOString().substring(0, 7),
+          },
+        },
+      },
+      include: {
+        subscription: true,
+      },
+    });
+
+    console.log(
+      "✅ Payment record created:",
+      payment.id,
+      "TransactionId:",
+      paymentId
+    );
 
     return NextResponse.json({
       success: true,
       paymentId,
-      amount,
-      description,
-      packageName,
-      duration,
+      amount: payment.amount,
+      packageName: packageInfo.name,
+      duration: packageInfo.duration,
       qrUrl: `${getBaseURL(3000)}/api/payments/confirm/${paymentId}`,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString()
-    })
-
+      expiresAt: expiresAt.toISOString(),
+    });
   } catch (error) {
-    console.error('Create payment error:', error)
+    console.error("Create payment error:", error);
     return NextResponse.json(
-      { success: false, message: 'Lỗi tạo thanh toán' },
+      { success: false, message: "Lỗi tạo thanh toán" },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const paymentId = searchParams.get('id')
+    const { searchParams } = new URL(request.url);
+    const paymentId = searchParams.get("id");
 
     if (!paymentId) {
       return NextResponse.json(
-        { success: false, message: 'Missing payment ID' },
+        { success: false, message: "Missing payment ID" },
         { status: 400 }
-      )
+      );
     }
 
-    const payment = getPayment(paymentId)
-    
+    // Get payment from database
+    const payment = await prisma.payment.findFirst({
+      where: {
+        transactionId: paymentId,
+      },
+      include: {
+        package: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
     if (!payment) {
       return NextResponse.json(
-        { success: false, message: 'Payment not found' },
+        { success: false, message: "Payment not found" },
         { status: 404 }
-      )
+      );
+    }
+
+    // Check if payment is expired
+    if (
+      payment.expiresAt &&
+      new Date() > payment.expiresAt &&
+      payment.status === "PENDING"
+    ) {
+      // Update status to expired
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { status: "FAILED" },
+      });
+
+      return NextResponse.json({
+        success: true,
+        payment: {
+          ...payment,
+          status: "FAILED",
+        },
+      });
     }
 
     return NextResponse.json({
       success: true,
       payment: {
         id: payment.id,
-        amount: payment.amount,
+        transactionId: payment.transactionId,
         status: payment.status,
+        amount: payment.amount,
+        packageName: payment.package.name,
+        duration: payment.package.duration,
+        user: payment.user,
+        expiresAt: payment.expiresAt,
         createdAt: payment.createdAt,
-      }
-    })
-
+      },
+    });
   } catch (error) {
-    console.error('Get payment error:', error)
+    console.error("Get payment error:", error);
     return NextResponse.json(
-      { success: false, message: 'Lỗi server' },
+      { success: false, message: "Internal server error" },
       { status: 500 }
-    )
+    );
   }
 }

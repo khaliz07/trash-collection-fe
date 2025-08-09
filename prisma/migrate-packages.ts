@@ -14,6 +14,7 @@ async function main() {
       type: 'monthly',
       duration: 1,
       price: 80000,
+      monthlyEquivalent: 80000,
       collectionsPerWeek: 2,
       features: [
         'Thu gom rác sinh hoạt',
@@ -32,6 +33,7 @@ async function main() {
       type: 'quarterly',
       duration: 3,
       price: 228000, // 80k * 3 * 0.95 (5% discount)
+      monthlyEquivalent: 76000,
       collectionsPerWeek: 2,
       features: [
         'Thu gom rác sinh hoạt',
@@ -52,6 +54,7 @@ async function main() {
       type: 'annual',
       duration: 12,
       price: 864000, // 80k * 12 * 0.9 (10% discount)
+      monthlyEquivalent: 72000,
       collectionsPerWeek: 2,
       features: [
         'Thu gom rác sinh hoạt',
