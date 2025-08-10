@@ -32,6 +32,8 @@ export async function POST(request: NextRequest) {
       transactionId,
     } = body;
 
+    console.log("Processing package change for user:", body);
+
     // Validate required fields
     if (!packageId || !paymentMethod) {
       return NextResponse.json(
@@ -99,7 +101,7 @@ export async function POST(request: NextRequest) {
       // Create payment record
       const payment = await tx.payment.create({
         data: {
-          customerId: userId,
+          userId: userId,
           subscriptionId: currentSubscription.id,
           amount: newPackage.price,
           currency: "VND",

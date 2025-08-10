@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-    console.log("Fetching extension history for user:", userId);
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");

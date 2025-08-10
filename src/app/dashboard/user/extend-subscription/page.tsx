@@ -201,50 +201,6 @@ export default function ExtendSubscriptionPage() {
   return (
     <div className="container max-w-full py-8">
       {/* User Switcher for Demo */}
-      <UserSwitcher
-        onUserChange={() => {
-          // Refresh all data when user changes
-          const fetchCurrentPackage = async () => {
-            try {
-              const response = await api.get("/user/current-package");
-              const result = await response.data;
-              if (result.success) {
-                setCurrentPackage(result.package);
-              }
-            } catch (error) {
-              console.error("Error fetching current package:", error);
-            }
-          };
-
-          const fetchAvailablePackages = async () => {
-            try {
-              const response = await api.get("/user/extension-packages");
-              const result = await response.data;
-              if (result.success) {
-                setAvailablePackages(result.packages);
-              }
-            } catch (error) {
-              console.error("Error fetching packages:", error);
-            }
-          };
-
-          const fetchExtensionHistory = async () => {
-            try {
-              const response = await api.get("/user/extension-history");
-              const result = await response.data;
-              if (result.success) {
-                setExtensionHistory(result.extensions);
-              }
-            } catch (error) {
-              console.error("Error fetching extension history:", error);
-            }
-          };
-
-          fetchCurrentPackage();
-          fetchAvailablePackages();
-          fetchExtensionHistory();
-        }}
-      />
 
       <div className="flex items-center gap-2 mb-6">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>

@@ -34,6 +34,8 @@ export async function POST(request: NextRequest) {
       transactionId,
     } = body;
 
+    console.log("Processing subscription extension for user:", body);
+
     // Validate required fields
     if (!packageId || !duration || !price || !paymentMethod) {
       return NextResponse.json(
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
     // Get current active subscription
     const currentSubscription = await prisma.subscription.findFirst({
       where: {
-        customerId: userId,
+        userId: userId,
         status: "ACTIVE",
       },
     });
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate new end date
-    const currentEndDate = currentSubscription.endDate || new Date();
+    const currentEndDate = currentSubscription.endMonth || new Date();
     const newEndDate = addMonths(currentEndDate, duration);
     const newNextBillingDate = addMonths(newEndDate, 0); // Same as end date for now
 
@@ -73,7 +75,7 @@ export async function POST(request: NextRequest) {
       // Create payment record
       const payment = await tx.payment.create({
         data: {
-          customerId: userId,
+          userId: userId,
           subscriptionId: currentSubscription.id,
           amount: price,
           currency: "VND",
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest) {
           paidAt: new Date(),
           metadata: {
             extensionDuration: duration,
-            oldEndDate: currentSubscription.endDate,
+            oldEndDate: currentSubscription.endMonth,
             newEndDate: newEndDate,
             packageId: packageId,
           },
@@ -94,7 +96,7 @@ export async function POST(request: NextRequest) {
       const updatedSubscription = await tx.subscription.update({
         where: { id: currentSubscription.id },
         data: {
-          endDate: newEndDate,
+          endMonth: newEndDate,
           nextBillingDate: newNextBillingDate,
           updatedAt: new Date(),
         },
@@ -115,7 +117,7 @@ export async function POST(request: NextRequest) {
       },
       subscription: {
         id: result.subscription.id,
-        endDate: result.subscription.endDate,
+        endMonth: result.subscription.endMonth,
         nextBillingDate: result.subscription.nextBillingDate,
       },
       extension: {

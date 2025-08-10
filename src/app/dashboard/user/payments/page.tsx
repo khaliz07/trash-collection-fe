@@ -1,23 +1,16 @@
 "use client";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -26,27 +19,33 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
-import { format, parseISO, differenceInDays } from "date-fns";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import api from "@/lib/api";
+import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
-import * as React from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import {
   Calendar,
+  CheckCircle2,
+  Clock,
+  CreditCard,
   Download,
   Filter,
-  RefreshCw,
   Package,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  TrendingUp,
+  RefreshCw,
   Search,
-  CreditCard,
+  TrendingUp,
+  XCircle,
 } from "lucide-react";
-import { UserSwitcher } from "@/components/user-switcher";
-import api from "@/lib/api";
+import { useRouter } from "next/navigation";
+import * as React from "react";
+import { toast } from "sonner";
 
 interface ServicePackage {
   id: string;
@@ -87,7 +86,7 @@ interface PaymentRecord {
 
 interface PaymentHistoryResponse {
   success: boolean;
-  payments: PaymentRecord[];
+  extensions: PaymentRecord[];
   pagination: {
     page: number;
     limit: number;
@@ -186,11 +185,11 @@ export default function UserPaymentsPage() {
       if (fromDate) params.append("fromDate", fromDate);
       if (toDate) params.append("toDate", toDate);
 
-      const response = await api.get(`/user/payment-history?${params}`);
+      const response = await api.get(`/user/extension-history?${params}`);
       const result: PaymentHistoryResponse = await response.data;
 
       if (result.success) {
-        setPayments(result.payments);
+        setPayments(result.extensions);
         setStatistics(result.statistics);
       } else {
         toast.error("Không thể tải lịch sử thanh toán");
@@ -265,14 +264,6 @@ export default function UserPaymentsPage() {
 
   return (
     <div className="container py-8 md:py-12 space-y-8">
-      {/* User Switcher for Demo */}
-      <UserSwitcher
-        onUserChange={() => {
-          fetchCurrentPackage();
-          fetchPaymentHistory();
-        }}
-      />
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -671,7 +662,8 @@ export default function UserPaymentsPage() {
                 </div>
               ))}
             </div>
-          ) : payments.length > 0 ? (
+          ) : //  ) : payments.length > 0 ? (
+          1 > 0 ? (
             <div className="space-y-4">
               {/* Desktop Table */}
               <div className="hidden md:block">

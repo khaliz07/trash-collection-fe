@@ -50,6 +50,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    console.log("Current subscription:", subscription);
+
     if (!subscription) {
       return NextResponse.json({
         success: false,

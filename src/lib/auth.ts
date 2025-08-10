@@ -38,8 +38,6 @@ export function getUserId(request: NextRequest): string | null {
   // Try to get from Authorization header
   const authHeader = request.headers.get("Authorization");
 
-  console.log("Auth header:", request.headers);
-
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.substring(7);
     const payload = verifyJWT(token);
