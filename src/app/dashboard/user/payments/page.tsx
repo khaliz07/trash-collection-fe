@@ -32,6 +32,7 @@ import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
   Calendar,
+  CheckCircle,
   CheckCircle2,
   Clock,
   CreditCard,
@@ -51,10 +52,12 @@ interface ServicePackage {
   id: string;
   name: string;
   type: string;
+  duration: number; // Add duration field (in months)
   startDate: string;
   endDate: string;
   status: "active" | "expiring" | "expired";
   fee: number;
+  monthlyEquivalent?: number; // Add optional monthly equivalent
   area: string;
   description: string;
   features: string[];
@@ -131,6 +134,24 @@ function getInvoiceStatusVariant(status: string) {
   }
 }
 
+// Utility function để xác định đơn vị thời gian dựa trên duration
+function getPeriodUnit(type: string, duration: number) {
+  if (type === "weekly") return "tuần";
+
+  switch (duration) {
+    case 1:
+      return "tháng";
+    case 3:
+      return "quý";
+    case 6:
+      return "nửa năm";
+    case 12:
+      return "năm";
+    default:
+      return `${duration} tháng`;
+  }
+}
+
 export default function UserPaymentsPage() {
   const router = useRouter();
 
@@ -138,9 +159,11 @@ export default function UserPaymentsPage() {
   const [currentPackage, setCurrentPackage] =
     React.useState<ServicePackage | null>(null);
   const [payments, setPayments] = React.useState<PaymentRecord[]>([]);
+  const [extensionHistory, setExtensionHistory] = React.useState<any[]>([]);
   const [statistics, setStatistics] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [paymentsLoading, setPaymentsLoading] = React.useState(true);
+  const [historyLoading, setHistoryLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
 
   // Filters
@@ -159,7 +182,7 @@ export default function UserPaymentsPage() {
       if (result.success) {
         setCurrentPackage(result.package);
       } else {
-        toast.error("Không thể tải thông tin gói dịch vụ");
+        //  toast.error("Không thể tải thông tin gói dịch vụ");
       }
     } catch (error) {
       console.error("Error fetching package:", error);
@@ -169,49 +192,37 @@ export default function UserPaymentsPage() {
     }
   }, []);
 
-  // Fetch payment history
-  const fetchPaymentHistory = React.useCallback(async () => {
+  // Fetch extension history (replacing payment history)
+  const fetchExtensionHistory = React.useCallback(async () => {
     try {
-      setPaymentsLoading(true);
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: "10",
-      });
-
-      if (statusFilter && statusFilter !== "all")
-        params.append("status", statusFilter);
-      if (methodFilter && methodFilter !== "all")
-        params.append("method", methodFilter);
-      if (fromDate) params.append("fromDate", fromDate);
-      if (toDate) params.append("toDate", toDate);
-
-      const response = await api.get(`/user/extension-history?${params}`);
-      const result: PaymentHistoryResponse = await response.data;
+      setHistoryLoading(true);
+      const response = await api.get("/user/extension-history");
+      const result = await response.data;
 
       if (result.success) {
-        setPayments(result.extensions);
-        setStatistics(result.statistics);
+        setExtensionHistory(result.extensions);
+        // setStatistics(result.statistics); // Keep existing statistics if needed
       } else {
-        toast.error("Không thể tải lịch sử thanh toán");
+        toast.error("Không thể tải lịch sử gia hạn");
       }
     } catch (error) {
-      console.error("Error fetching payments:", error);
-      toast.error("Lỗi kết nối khi tải lịch sử thanh toán");
+      console.error("Error fetching extension history:", error);
+      toast.error("Lỗi kết nối khi tải lịch sử gia hạn");
     } finally {
-      setPaymentsLoading(false);
+      setHistoryLoading(false);
     }
-  }, [currentPage, statusFilter, methodFilter, fromDate, toDate]);
+  }, []);
 
   // Initial load
   React.useEffect(() => {
     fetchCurrentPackage();
-    fetchPaymentHistory();
-  }, [fetchCurrentPackage, fetchPaymentHistory]);
+    fetchExtensionHistory();
+  }, [fetchCurrentPackage, fetchExtensionHistory]);
 
   // Refresh all data
   const handleRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchCurrentPackage(), fetchPaymentHistory()]);
+    await Promise.all([fetchCurrentPackage(), fetchExtensionHistory()]);
     setRefreshing(false);
     toast.success("Đã cập nhật dữ liệu");
   };
@@ -240,15 +251,9 @@ export default function UserPaymentsPage() {
     if (!currentPackage) return;
 
     try {
-      const response = await fetch("/api/user/current-package", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "toggle_auto_renewal",
-        }),
-      });
+      const response = await api.get("/api/user/current-package");
 
-      const result = await response.json();
+      const result = await response.data;
       if (result.success) {
         setCurrentPackage(result.package);
         toast.success(
@@ -367,7 +372,10 @@ export default function UserPaymentsPage() {
                         </span>
                         <span className="font-semibold text-green-600">
                           {currentPackage.fee.toLocaleString("vi-VN")}đ/
-                          {currentPackage.type === "weekly" ? "tuần" : "tháng"}
+                          {getPeriodUnit(
+                            currentPackage.type,
+                            currentPackage.duration
+                          )}
                         </span>
                       </div>
                     </div>
@@ -459,48 +467,44 @@ export default function UserPaymentsPage() {
               )}
             </CardContent>
 
-            {currentPackage && (
-              <CardFooter className="flex flex-wrap gap-3">
-                {currentPackage.status === "expired" ? (
-                  <Button onClick={handleExtend} className="flex-1">
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Mua gói mới
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleExtend}
-                    disabled={!currentPackage.canRenew}
-                    variant={
-                      currentPackage.isExpiringSoon ? "default" : "secondary"
-                    }
-                    className="flex-1"
-                  >
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Gia hạn (
-                    {(currentPackage.renewalPrice || 0).toLocaleString("vi-VN")}
-                    đ)
-                  </Button>
-                )}
-
-                {currentPackage.status !== "expired" && (
-                  <Button variant="outline" onClick={handleRequestCollection}>
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Yêu cầu thu gom gấp
-                  </Button>
-                )}
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleToggleAutoRenewal}
-                  className="flex items-center gap-2"
-                >
-                  {currentPackage.autoRenewal
-                    ? "🔄 Tắt tự động gia hạn"
-                    : "⏸️ Bật tự động gia hạn"}
+            <CardFooter className="flex flex-wrap gap-3">
+              {currentPackage?.status === "expired" ? (
+                <Button onClick={handleExtend} className="flex-1">
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Mua gói mới
                 </Button>
-              </CardFooter>
-            )}
+              ) : (
+                <Button
+                  onClick={handleExtend}
+                  //disabled={!currentPackage.canRenew}
+                  variant={
+                    currentPackage?.isExpiringSoon ? "default" : "secondary"
+                  }
+                  className="flex-1"
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Gia hạn
+                </Button>
+              )}
+
+              {currentPackage?.status !== "expired" && (
+                <Button variant="outline" onClick={handleRequestCollection}>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Yêu cầu thu gom gấp
+                </Button>
+              )}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleAutoRenewal}
+                className="flex items-center gap-2"
+              >
+                {currentPackage?.autoRenewal
+                  ? "🔄 Tắt tự động gia hạn"
+                  : "⏸️ Bật tự động gia hạn"}
+              </Button>
+            </CardFooter>
           </Card>
         </div>
 
@@ -564,7 +568,7 @@ export default function UserPaymentsPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
-              Lịch sử thanh toán
+              Lịch sử gia hạn
             </CardTitle>
 
             {/* Filters */}
@@ -639,8 +643,8 @@ export default function UserPaymentsPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => fetchPaymentHistory()}
-              disabled={paymentsLoading}
+              onClick={() => fetchExtensionHistory()}
+              disabled={historyLoading}
             >
               <Search className="h-4 w-4 mr-1" />
               Tìm kiếm
@@ -649,225 +653,97 @@ export default function UserPaymentsPage() {
         </CardHeader>
 
         <CardContent>
-          {paymentsLoading ? (
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                  <Skeleton className="h-8 w-24" />
-                </div>
-              ))}
-            </div>
-          ) : //  ) : payments.length > 0 ? (
-          1 > 0 ? (
-            <div className="space-y-4">
-              {/* Desktop Table */}
-              <div className="hidden md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Mã thanh toán</TableHead>
-                      <TableHead>Gói dịch vụ</TableHead>
-                      <TableHead>Ngày thanh toán</TableHead>
-                      <TableHead>Số tiền</TableHead>
-                      <TableHead>Phương thức</TableHead>
-                      <TableHead>Trạng thái</TableHead>
-                      <TableHead>Hành động</TableHead>
+          <div className="rounded-md border bg-background overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Gói dịch vụ</TableHead>
+                  <TableHead>Giá</TableHead>
+                  <TableHead>Ngày thanh toán</TableHead>
+                  <TableHead>Hạn sử dụng</TableHead>
+                  <TableHead>Phương thức thanh toán</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {historyLoading ? (
+                  // Loading skeleton
+                  [...Array(3)].map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {payments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-mono text-sm">
-                          {payment.invoiceId}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">
-                              {payment.packageName}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {payment.duration}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {format(
-                            parseISO(payment.paidAt),
-                            "dd/MM/yyyy HH:mm",
-                            { locale: vi }
-                          )}
-                        </TableCell>
-                        <TableCell className="font-semibold">
-                          {payment.amount.toLocaleString("vi-VN")}đ
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="info">{payment.method}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={getInvoiceStatusVariant(payment.status)}
-                          >
-                            {payment.status === "success" && (
-                              <>
-                                <CheckCircle2 className="h-3 w-3 mr-1" />
-                                Thành công
-                              </>
-                            )}
-                            {payment.status === "failed" && (
-                              <>
-                                <XCircle className="h-3 w-3 mr-1" />
-                                Thất bại
-                              </>
-                            )}
-                            {payment.status === "pending" && (
-                              <>
-                                <Clock className="h-3 w-3 mr-1" />
-                                Đang xử lý
-                              </>
-                            )}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {payment.downloadUrl &&
-                          payment.status === "success" ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleDownloadInvoice(payment.invoiceId)
-                              }
-                            >
-                              <Download className="h-4 w-4 mr-1" />
-                              Tải
-                            </Button>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">
-                              -
-                            </span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Mobile Cards */}
-              <div className="md:hidden space-y-4">
-                {payments.map((payment) => (
-                  <Card key={payment.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <div className="font-medium">
-                            {payment.packageName}
-                          </div>
-                          <div className="text-sm text-muted-foreground font-mono">
-                            {payment.invoiceId}
-                          </div>
-                        </div>
-                        <Badge
-                          variant={getInvoiceStatusVariant(payment.status)}
-                        >
-                          {payment.status === "success" && "Thành công"}
-                          {payment.status === "failed" && "Thất bại"}
-                          {payment.status === "pending" && "Đang xử lý"}
+                  ))
+                ) : extensionHistory.length > 0 ? (
+                  extensionHistory.map((extension) => (
+                    <TableRow key={extension.id}>
+                      <TableCell className="font-medium">
+                        {extension.packageName}
+                      </TableCell>
+                      <TableCell className="font-semibold text-green-600">
+                        {extension.price.toLocaleString("vi-VN")}đ
+                      </TableCell>
+                      <TableCell>
+                        {format(
+                          parseISO(extension.paymentDate),
+                          "dd/MM/yyyy HH:mm",
+                          { locale: vi }
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {format(parseISO(extension.expiryDate), "dd/MM/yyyy", {
+                          locale: vi,
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="default">
+                          {extension.paymentMethod}
                         </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">
-                            Số tiền:
-                          </span>
-                          <div className="font-semibold">
-                            {payment.amount.toLocaleString("vi-VN")}đ
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">
-                            Phương thức:
-                          </span>
-                          <div>{payment.method}</div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Ngày:</span>
-                          <div>
-                            {format(parseISO(payment.paidAt), "dd/MM/yyyy", {
-                              locale: vi,
-                            })}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">
-                            Thời gian:
-                          </span>
-                          <div>
-                            {format(parseISO(payment.paidAt), "HH:mm", {
-                              locale: vi,
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
-                      {payment.failureReason && (
-                        <div className="mt-3 p-2 bg-red-50 rounded text-sm text-red-700">
-                          <strong>Lý do thất bại:</strong>{" "}
-                          {payment.failureReason}
-                        </div>
-                      )}
-
-                      {payment.downloadUrl && payment.status === "success" && (
-                        <div className="mt-3 pt-3 border-t">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              handleDownloadInvoice(payment.invoiceId)
-                            }
-                            className="w-full"
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Tải hóa đơn
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">
-                Chưa có lịch sử thanh toán nào
-              </p>
-              {(statusFilter !== "all" ||
-                methodFilter !== "all" ||
-                fromDate ||
-                toDate) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => {
-                    setStatusFilter("all");
-                    setMethodFilter("all");
-                    setFromDate("");
-                    setToDate("");
-                  }}
-                >
-                  Xóa bộ lọc
-                </Button>
-              )}
-            </div>
-          )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            extension.status === "completed"
+                              ? "success"
+                              : "warning"
+                          }
+                        >
+                          {extension.status === "completed"
+                            ? "✅ Hoàn thành"
+                            : "⏳ Đang xử lý"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-muted-foreground"
+                    >
+                      Chưa có lịch sử gia hạn nào
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

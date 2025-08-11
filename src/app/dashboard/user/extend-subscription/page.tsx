@@ -28,6 +28,24 @@ const paymentMethods = [
   { id: "credit", name: "Thẻ tín dụng/Ghi nợ" },
 ];
 
+// Utility function để xác định đơn vị thời gian dựa trên duration
+function getPeriodUnit(type: string, duration: number) {
+  if (type === "weekly") return "tuần";
+
+  switch (duration) {
+    case 1:
+      return "tháng";
+    case 3:
+      return "quý";
+    case 6:
+      return "nửa năm";
+    case 12:
+      return "năm";
+    default:
+      return `${duration} tháng`;
+  }
+}
+
 export default function ExtendSubscriptionPage() {
   const router = useRouter();
   const [selected, setSelected] = useState<string | null>(null);
@@ -55,11 +73,11 @@ export default function ExtendSubscriptionPage() {
         if (result.success) {
           setCurrentPackage(result.package);
         } else {
-          toast.error("Không thể tải thông tin gói hiện tại");
+          //  toast.error("Không thể tải thông tin gói hiện tại");
         }
       } catch (error) {
         console.error("Error fetching current package:", error);
-        toast.error("Lỗi kết nối khi tải thông tin gói");
+        // toast.error("Lỗi kết nối khi tải thông tin gói");
       } finally {
         setLoading(false);
       }
@@ -143,48 +161,26 @@ export default function ExtendSubscriptionPage() {
     }
 
     try {
-      // Get duration in months from selectedPkg.id
-      // Call extend-subscription API with packageId from database
-      const response = await api.post("/user/extend-subscription", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          packageId: selectedPkg.id, // This is now the actual packageId from database
-          duration: selectedPkg.duration, // Duration from package
-          price: selectedPkg.final,
-          paymentMethod: payMethod,
-          transactionId: transactionId || `ext-${Date.now()}`,
-        }),
-      });
+      setShowQRDialog(false);
+      setSuccess(true);
+      toast.success(
+        `Gia hạn thành công! Dịch vụ được gia hạn ${
+          selectedPkg?.duration || ""
+        } tháng.`
+      );
 
-      const result = await response.data;
+      // Refresh current package info
+      const refreshResponse = await api.get("/user/current-package");
+      const refreshResult = await refreshResponse.data;
+      if (refreshResult.success) {
+        setCurrentPackage(refreshResult.package);
+      }
 
-      if (result.success) {
-        setShowQRDialog(false);
-        setSuccess(true);
-        toast.success(
-          `Gia hạn thành công! Dịch vụ được gia hạn ${
-            selectedPkg?.duration || ""
-          } tháng.`
-        );
-
-        // Refresh current package info
-        const refreshResponse = await fetch("/api/user/current-package");
-        const refreshResult = await refreshResponse.json();
-        if (refreshResult.success) {
-          setCurrentPackage(refreshResult.package);
-        }
-
-        // Refresh extension history
-        const historyResponse = await fetch("/api/user/extension-history");
-        const historyResult = await historyResponse.json();
-        if (historyResult.success) {
-          setExtensionHistory(historyResult.extensions);
-        }
-      } else {
-        setShowQRDialog(false);
-        toast.error(result.error || "Lỗi khi gia hạn dịch vụ");
+      // Refresh extension history
+      const historyResponse = await api.get("/user/extension-history");
+      const historyResult = await historyResponse.data;
+      if (historyResult.success) {
+        setExtensionHistory(historyResult.extensions);
       }
     } catch (error) {
       console.error("Error extending subscription:", error);
@@ -239,7 +235,10 @@ export default function ExtendSubscriptionPage() {
                   </p>
                   <p className="text-sm text-blue-600 font-medium mt-1">
                     Phí: {currentPackage.fee.toLocaleString("vi-VN")}đ/
-                    {currentPackage.type === "weekly" ? "tuần" : "tháng"}
+                    {getPeriodUnit(
+                      currentPackage.type,
+                      currentPackage.duration
+                    )}
                   </p>
                 </div>
               </div>

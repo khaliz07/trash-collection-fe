@@ -160,31 +160,31 @@ model Collection {
 }
 
 model Payment {
-  id             String        @id @default(cuid())
+  id             String         @id @default(cuid())
   userId         String
   packageId      String
-  subscriptionId String
-  collectionId   String?       @unique
-  amount         Decimal       @db.Decimal(10, 2)
-  currency       String        @default("VND")
-  status         PaymentStatus @default(PENDING)
+  subscriptionId String?
+  collectionId   String?        @unique
+  amount         Decimal        @db.Decimal(10, 2)
+  currency       String         @default("VND")
+  status         PaymentStatus  @default(PENDING)
   paymentMethod  PaymentMethod
   coveredMonths  String[]
-  paidAt         DateTime      @default(now())
-  transactionId  String?       @unique
+  paidAt         DateTime       @default(now())
+  transactionId  String?        @unique
   externalId     String?
   receiptUrl     String?
   expiresAt      DateTime?
   failureReason  String?
   refundedAt     DateTime?
-  refundAmount   Decimal?      @db.Decimal(10, 2)
+  refundAmount   Decimal?       @db.Decimal(10, 2)
   metadata       Json?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  collection     Collection?   @relation(fields: [collectionId], references: [id])
-  package        Package       @relation(fields: [packageId], references: [id])
-  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  collection     Collection?    @relation(fields: [collectionId], references: [id])
+  package        Package        @relation(fields: [packageId], references: [id])
+  subscription   Subscription?  @relation(fields: [subscriptionId], references: [id])
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])

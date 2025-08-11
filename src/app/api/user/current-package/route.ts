@@ -50,8 +50,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log("Current subscription:", subscription);
-
     if (!subscription) {
       return NextResponse.json({
         success: false,
@@ -114,12 +112,16 @@ export async function GET(request: NextRequest) {
       id: subscription.id,
       name: subscription.package?.name || "Gói dịch vụ",
       type: subscription.package?.type || "monthly",
+      duration: subscription.package?.duration || 1, // Add duration in months
       startDate:
         subscription.activatedAt?.toISOString() ||
         subscription.createdAt.toISOString(),
       endDate: endMonth ? `${endMonth}-28` : new Date().toISOString(),
       status,
       fee: Number(subscription.package?.price || 80000),
+      monthlyEquivalent: Number(
+        subscription.package?.monthlyEquivalent || 80000
+      ), // Add monthly equivalent
       area:
         subscription.user.address || "Phường Linh Trung, Quận Thủ Đức, TP. HCM",
       description:

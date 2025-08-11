@@ -32,9 +32,15 @@ export async function POST(request: NextRequest) {
       price,
       paymentMethod,
       transactionId,
-    } = body;
+    } = JSON.parse(body.body);
 
-    console.log("Processing subscription extension for user:", body);
+    console.log(
+      "Processing subscription extension for user:",
+      packageId,
+      duration,
+      price,
+      paymentMethod
+    );
 
     // Validate required fields
     if (!packageId || !duration || !price || !paymentMethod) {

@@ -20,6 +20,7 @@ import QRCodeLib from "qrcode";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import "./payment-animations.css";
+import { api } from "@/lib/api";
 
 interface PaymentInfo {
   packageId: string;
@@ -58,7 +59,6 @@ export function QRPaymentDialog({
 }: QRPaymentDialogProps) {
   const { user } = useAuth();
 
-  console.log("user", user);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<
     "pending" | "success" | "failed" | "expired"
@@ -182,11 +182,7 @@ export function QRPaymentDialog({
 
     setIsLoading(true);
     try {
-      const response = await fetch("/api/payments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const response = await api.post("/payments", {
         body: JSON.stringify({
           userId: user.id,
           packageId: paymentInfo.packageId,
@@ -199,7 +195,7 @@ export function QRPaymentDialog({
         }),
       });
 
-      const result = await response.json();
+      const result = await response.data;
 
       if (result.success) {
         // Generate real QR code

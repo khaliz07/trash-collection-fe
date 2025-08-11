@@ -1,21 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBaseURL } from "@/lib/network";
 import { PrismaClient } from "@prisma/client";
+import { getUserId, validateUser } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user from JWT token
+    const authenticatedUserId = getUserId(request);
+    if (!authenticatedUserId) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized - Token không hợp lệ" },
+        { status: 401 }
+      );
+    }
+
+    // Validate user exists in database
+    const isValidUser = await validateUser(authenticatedUserId, prisma);
+    if (!isValidUser) {
+      return NextResponse.json(
+        { success: false, message: "Người dùng không tồn tại" },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
-    const {
-      amount,
-      description,
-      packageId,
-      userId,
-      packageName,
-      duration,
-      method,
-    } = body;
+    const { amount, description, packageId, packageName, duration, method } =
+      JSON.parse(body.body);
+
+    // Use authenticated user ID instead of body userId
+    const userId = authenticatedUserId;
 
     // Validate required fields
     if (!userId || !packageId) {
@@ -58,7 +73,7 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     // Create payment record in database with PENDING status
-    // Note: subscriptionId will be set when payment is confirmed
+    // Subscription will be created only when payment is confirmed
     const payment = await prisma.payment.create({
       data: {
         transactionId: paymentId,
@@ -78,20 +93,7 @@ export async function POST(request: NextRequest) {
         user: {
           connect: { id: userId },
         },
-        // Create a temporary subscription for referential integrity
-        subscription: {
-          create: {
-            userId: userId,
-            packageId: packageId,
-            queuePosition: 999, // Temporary position
-            status: "PENDING",
-            startMonth: new Date().toISOString().substring(0, 7),
-            endMonth: new Date().toISOString().substring(0, 7),
-          },
-        },
-      },
-      include: {
-        subscription: true,
+        // Do NOT create subscription here - only create when payment confirmed
       },
     });
 

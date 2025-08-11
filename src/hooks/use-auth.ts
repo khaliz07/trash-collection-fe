@@ -68,12 +68,6 @@ export const useAuth = () => {
   const { user, token, isAuthenticated, login, logout, initializeAuth } =
     useAuthStore();
 
-  console.log("useAuth state:", {
-    isAuthenticated,
-    hasUser: !!user,
-    hasToken: !!token,
-  });
-
   return {
     user,
     token,
