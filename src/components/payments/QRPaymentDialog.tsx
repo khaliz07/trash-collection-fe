@@ -473,22 +473,6 @@ export function QRPaymentDialog({
                   <p className="text-xs text-center text-gray-500 mb-4">
                     Mã giao dịch: {paymentData.paymentId}
                   </p>
-                  <Button
-                    onClick={simulatePayment}
-                    disabled={isLoading}
-                    variant="secondary"
-                    size="sm"
-                    className="mb-2"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        Đang xử lý...
-                      </>
-                    ) : (
-                      "🧪 Mô phỏng thanh toán (Test)"
-                    )}
-                  </Button>
                 </div>
 
                 {/* Copy Link */}

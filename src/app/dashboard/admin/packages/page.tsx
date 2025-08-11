@@ -41,7 +41,7 @@ interface Package {
   price: string;
   collectionsPerWeek: number;
   features: string[];
-  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+  status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
   isPopular: boolean;
   displayOrder: number;
   createdAt: string;
@@ -64,20 +64,20 @@ export default function PackagesManagementPage() {
     price: string;
     collectionsPerWeek: number;
     features: string[];
-    status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+    status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
     isPopular: boolean;
     displayOrder: number;
   }>({
-    name: '',
-    description: '',
-    type: 'monthly',
+    name: "",
+    description: "",
+    type: "monthly",
     duration: 1,
-    price: '',
+    price: "",
     collectionsPerWeek: 2,
-    features: [''],
-    status: 'ACTIVE',
+    features: [""],
+    status: "ACTIVE",
     isPopular: false,
-    displayOrder: 0
+    displayOrder: 0,
   });
 
   useEffect(() => {
@@ -86,17 +86,17 @@ export default function PackagesManagementPage() {
 
   const fetchPackages = async () => {
     try {
-      const response = await fetch('/api/admin/packages');
+      const response = await fetch("/api/admin/packages");
       const result = await response.json();
-      
+
       if (result.success) {
         setPackages(result.packages);
       } else {
-        toast.error('Không thể tải danh sách gói dịch vụ');
+        toast.error("Không thể tải danh sách gói dịch vụ");
       }
     } catch (error) {
-      console.error('Error fetching packages:', error);
-      toast.error('Lỗi kết nối khi tải danh sách gói');
+      console.error("Error fetching packages:", error);
+      toast.error("Lỗi kết nối khi tải danh sách gói");
     } finally {
       setLoading(false);
     }
@@ -104,29 +104,29 @@ export default function PackagesManagementPage() {
 
   const handleCreatePackage = async () => {
     try {
-      const response = await fetch('/api/admin/packages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/admin/packages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           price: parseFloat(formData.price),
-          features: formData.features.filter(f => f.trim() !== '')
-        })
+          features: formData.features.filter((f) => f.trim() !== ""),
+        }),
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
-        toast.success('Tạo gói dịch vụ thành công!');
+        toast.success("Tạo gói dịch vụ thành công!");
         setIsCreateDialogOpen(false);
         resetForm();
         fetchPackages();
       } else {
-        toast.error(result.error || 'Không thể tạo gói dịch vụ');
+        toast.error(result.error || "Không thể tạo gói dịch vụ");
       }
     } catch (error) {
-      console.error('Error creating package:', error);
-      toast.error('Lỗi khi tạo gói dịch vụ');
+      console.error("Error creating package:", error);
+      toast.error("Lỗi khi tạo gói dịch vụ");
     }
   };
 
@@ -135,249 +135,334 @@ export default function PackagesManagementPage() {
 
     try {
       const response = await fetch(`/api/admin/packages/${editingPackage.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           price: parseFloat(formData.price),
-          features: formData.features.filter(f => f.trim() !== '')
-        })
+          features: formData.features.filter((f) => f.trim() !== ""),
+        }),
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
-        toast.success('Cập nhật gói dịch vụ thành công!');
+        toast.success("Cập nhật gói dịch vụ thành công!");
         setIsEditDialogOpen(false);
         setEditingPackage(null);
         resetForm();
         fetchPackages();
       } else {
-        toast.error(result.error || 'Không thể cập nhật gói dịch vụ');
+        toast.error(result.error || "Không thể cập nhật gói dịch vụ");
       }
     } catch (error) {
-      console.error('Error updating package:', error);
-      toast.error('Lỗi khi cập nhật gói dịch vụ');
+      console.error("Error updating package:", error);
+      toast.error("Lỗi khi cập nhật gói dịch vụ");
     }
   };
 
   const handleDeletePackage = async (packageId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa gói dịch vụ này?')) return;
+    if (!confirm("Bạn có chắc chắn muốn xóa gói dịch vụ này?")) return;
 
     try {
       const response = await fetch(`/api/admin/packages/${packageId}`, {
-        method: 'DELETE'
+        method: "DELETE",
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
-        toast.success('Xóa gói dịch vụ thành công!');
+        toast.success("Xóa gói dịch vụ thành công!");
         fetchPackages();
       } else {
-        toast.error(result.error || 'Không thể xóa gói dịch vụ');
+        toast.error(result.error || "Không thể xóa gói dịch vụ");
       }
     } catch (error) {
-      console.error('Error deleting package:', error);
-      toast.error('Lỗi khi xóa gói dịch vụ');
+      console.error("Error deleting package:", error);
+      toast.error("Lỗi khi xóa gói dịch vụ");
     }
   };
 
   const openEditDialog = (pkg: Package) => {
     setEditingPackage(pkg);
+
+    // Determine type based on duration for backward compatibility
+    let packageType = pkg.type;
+    if (
+      !packageType ||
+      !["monthly", "quarterly", "annual", "custom"].includes(packageType)
+    ) {
+      if (pkg.duration === 1) packageType = "monthly";
+      else if (pkg.duration === 3) packageType = "quarterly";
+      else if (pkg.duration === 12) packageType = "annual";
+      else packageType = "custom";
+    }
+
     setFormData({
       name: pkg.name,
       description: pkg.description,
-      type: pkg.type,
+      type: packageType,
       duration: pkg.duration,
       price: pkg.price,
       collectionsPerWeek: pkg.collectionsPerWeek,
       features: pkg.features,
       status: pkg.status,
       isPopular: pkg.isPopular,
-      displayOrder: pkg.displayOrder
+      displayOrder: pkg.displayOrder,
     });
     setIsEditDialogOpen(true);
   };
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      description: '',
-      type: 'monthly',
-      duration: 1,
-      price: '',
+      name: "",
+      description: "",
+      type: "monthly",
+      duration: 1, // Default to 1 month for monthly
+      price: "",
       collectionsPerWeek: 2,
-      features: [''],
-      status: 'ACTIVE',
+      features: [""],
+      status: "ACTIVE",
       isPopular: false,
-      displayOrder: 0
+      displayOrder: 0,
     });
   };
 
   const updateFeature = useCallback((index: number, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      features: prev.features.map((f, i) => i === index ? value : f)
+      features: prev.features.map((f, i) => (i === index ? value : f)),
     }));
   }, []);
 
   const removeFeature = useCallback((index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      features: prev.features.filter((_, i) => i !== index)
+      features: prev.features.filter((_, i) => i !== index),
     }));
   }, []);
 
   const addFeature = useCallback(() => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      features: [...prev.features, '']
+      features: [...prev.features, ""],
     }));
   }, []);
 
-  const PackageForm = useMemo(() => (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="name">Tên gói</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-          placeholder="Tên gói dịch vụ"
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="description">Mô tả</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-          placeholder="Mô tả gói dịch vụ"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+  const PackageForm = useMemo(
+    () => (
+      <div className="space-y-4">
         <div>
-          <Label htmlFor="type">Loại gói</Label>
-          <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="monthly">Hàng tháng</SelectItem>
-              <SelectItem value="quarterly">Hàng quý</SelectItem>
-              <SelectItem value="annual">Hàng năm</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="duration">Thời hạn (tháng)</Label>
+          <Label htmlFor="name">Tên gói</Label>
           <Input
-            id="duration"
-            type="number"
-            value={formData.duration}
-            onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="price">Giá (VNĐ)</Label>
-          <Input
-            id="price"
-            type="number"
-            value={formData.price}
-            onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-            placeholder="80000"
+            id="name"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, name: e.target.value }))
+            }
+            placeholder="Tên gói dịch vụ"
           />
         </div>
 
         <div>
-          <Label htmlFor="collectionsPerWeek">Số lần thu gom/tuần</Label>
-          <Input
-            id="collectionsPerWeek"
-            type="number"
-            value={formData.collectionsPerWeek}
-            onChange={(e) => setFormData(prev => ({ ...prev, collectionsPerWeek: parseInt(e.target.value) }))}
+          <Label htmlFor="description">Mô tả</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
+            placeholder="Mô tả gói dịch vụ"
           />
         </div>
-      </div>
 
-      <div>
-        <Label>Tính năng</Label>
-        {formData.features.map((feature, index) => (
-          <div key={index} className="flex gap-2 mt-2">
-            <Input
-              value={feature}
-              onChange={(e) => updateFeature(index, e.target.value)}
-              placeholder="Nhập tính năng"
-            />
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => removeFeature(index)}
-              disabled={formData.features.length === 1}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="type">Loại gói</Label>
+            <Select
+              value={formData.type}
+              onValueChange={(value) => {
+                let newDuration = formData.duration;
+                // Auto-set duration based on type
+                if (value === "monthly") newDuration = 1;
+                else if (value === "quarterly") newDuration = 3;
+                else if (value === "annual") newDuration = 12;
+                // For 'custom', keep current duration value
+
+                setFormData((prev) => ({
+                  ...prev,
+                  type: value,
+                  duration: newDuration,
+                }));
+              }}
             >
-              Xóa
-            </Button>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="monthly">Hàng tháng</SelectItem>
+                <SelectItem value="quarterly">Hàng quý</SelectItem>
+                <SelectItem value="annual">Hàng năm</SelectItem>
+                <SelectItem value="custom">Tùy chỉnh</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        ))}
-        <Button type="button" variant="outline" onClick={addFeature} className="mt-2">
-          Thêm tính năng
-        </Button>
-      </div>
 
-      <div className="grid grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="duration">Thời hạn (tháng)</Label>
+            <Input
+              id="duration"
+              type="number"
+              value={formData.duration}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  duration: parseInt(e.target.value),
+                }))
+              }
+              disabled={formData.type !== "custom"}
+              placeholder={
+                formData.type === "custom"
+                  ? "Nhập số tháng"
+                  : "Tự động theo loại gói"
+              }
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="price">Giá (VNĐ)</Label>
+            <Input
+              id="price"
+              type="number"
+              value={formData.price}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, price: e.target.value }))
+              }
+              placeholder="80000"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="collectionsPerWeek">Số lần thu gom/tuần</Label>
+            <Input
+              id="collectionsPerWeek"
+              type="number"
+              value={formData.collectionsPerWeek}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  collectionsPerWeek: parseInt(e.target.value),
+                }))
+              }
+            />
+          </div>
+        </div>
+
         <div>
-          <Label htmlFor="status">Trạng thái</Label>
-          <Select value={formData.status} onValueChange={(value: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED') => setFormData(prev => ({ ...prev, status: value }))}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ACTIVE">Hoạt động</SelectItem>
-              <SelectItem value="INACTIVE">Tạm ngưng</SelectItem>
-              <SelectItem value="ARCHIVED">Lưu trữ</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>Tính năng</Label>
+          {formData.features.map((feature, index) => (
+            <div key={index} className="flex gap-2 mt-2">
+              <Input
+                value={feature}
+                onChange={(e) => updateFeature(index, e.target.value)}
+                placeholder="Nhập tính năng"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => removeFeature(index)}
+                disabled={formData.features.length === 1}
+              >
+                Xóa
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addFeature}
+            className="mt-2"
+          >
+            Thêm tính năng
+          </Button>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="isPopular"
-            checked={formData.isPopular}
-            onChange={(e) => setFormData(prev => ({ ...prev, isPopular: e.target.checked }))}
-          />
-          <Label htmlFor="isPopular">Gói phổ biến</Label>
-        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="status">Trạng thái</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value: "ACTIVE" | "INACTIVE" | "ARCHIVED") =>
+                setFormData((prev) => ({ ...prev, status: value }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ACTIVE">Hoạt động</SelectItem>
+                <SelectItem value="INACTIVE">Tạm ngưng</SelectItem>
+                <SelectItem value="ARCHIVED">Lưu trữ</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div>
-          <Label htmlFor="displayOrder">Thứ tự hiển thị</Label>
-          <Input
-            id="displayOrder"
-            type="number"
-            value={formData.displayOrder}
-            onChange={(e) => setFormData(prev => ({ ...prev, displayOrder: parseInt(e.target.value) }))}
-          />
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="isPopular"
+              checked={formData.isPopular}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  isPopular: e.target.checked,
+                }))
+              }
+            />
+            <Label htmlFor="isPopular">Gói phổ biến</Label>
+          </div>
+
+          <div>
+            <Label htmlFor="displayOrder">Thứ tự hiển thị</Label>
+            <Input
+              id="displayOrder"
+              type="number"
+              value={formData.displayOrder}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  displayOrder: parseInt(e.target.value),
+                }))
+              }
+            />
+          </div>
         </div>
       </div>
-    </div>
-  ), [formData, updateFeature, removeFeature, addFeature]);
+    ),
+    [formData, updateFeature, removeFeature, addFeature]
+  );
+
+  const getTypeDisplay = (type: string) => {
+    const typeMap = {
+      monthly: "Hàng tháng",
+      quarterly: "Hàng quý",
+      annual: "Hàng năm",
+      custom: "Tùy chỉnh",
+    };
+    return typeMap[type as keyof typeof typeMap] || type;
+  };
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      ACTIVE: 'default',
-      INACTIVE: 'warning',
-      ARCHIVED: 'error'
+      ACTIVE: "default",
+      INACTIVE: "warning",
+      ARCHIVED: "error",
     } as const;
-    
+
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'default'}>
+      <Badge variant={variants[status as keyof typeof variants] || "default"}>
         {status}
       </Badge>
     );
@@ -404,12 +489,13 @@ export default function PackagesManagementPage() {
             </DialogHeader>
             {PackageForm}
             <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
                 Hủy
               </Button>
-              <Button onClick={handleCreatePackage}>
-                Tạo gói
-              </Button>
+              <Button onClick={handleCreatePackage}>Tạo gói</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -437,9 +523,11 @@ export default function PackagesManagementPage() {
               {packages.map((pkg) => (
                 <TableRow key={pkg.id}>
                   <TableCell className="font-medium">{pkg.name}</TableCell>
-                  <TableCell>{pkg.type}</TableCell>
+                  <TableCell>{getTypeDisplay(pkg.type)}</TableCell>
                   <TableCell>{pkg.duration} tháng</TableCell>
-                  <TableCell>{parseInt(pkg.price).toLocaleString('vi-VN')}đ</TableCell>
+                  <TableCell>
+                    {parseInt(pkg.price).toLocaleString("vi-VN")}đ
+                  </TableCell>
                   <TableCell>{pkg.collectionsPerWeek} lần</TableCell>
                   <TableCell>{getStatusBadge(pkg.status)}</TableCell>
                   <TableCell>
@@ -478,12 +566,13 @@ export default function PackagesManagementPage() {
           </DialogHeader>
           {PackageForm}
           <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+            >
               Hủy
             </Button>
-            <Button onClick={handleUpdatePackage}>
-              Cập nhật
-            </Button>
+            <Button onClick={handleUpdatePackage}>Cập nhật</Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
@@ -7,16 +7,16 @@ export async function GET(
 ) {
   try {
     const packageId = params.id;
-    
+
     const packageData = await prisma.package.findUnique({
-      where: { id: packageId }
+      where: { id: packageId },
     });
 
     if (!packageData) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Không tìm thấy gói dịch vụ' 
+        {
+          success: false,
+          error: "Không tìm thấy gói dịch vụ",
         },
         { status: 404 }
       );
@@ -24,14 +24,14 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      package: packageData
+      package: packageData,
     });
   } catch (error) {
-    console.error('Error fetching package:', error);
+    console.error("Error fetching package:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Không thể tải thông tin gói dịch vụ' 
+      {
+        success: false,
+        error: "Không thể tải thông tin gói dịch vụ",
       },
       { status: 500 }
     );
@@ -45,7 +45,10 @@ export async function PUT(
   try {
     const packageId = params.id;
     const data = await request.json();
-    
+
+    // Calculate monthly equivalent
+    const monthlyEquivalent = Math.round(data.price / data.duration);
+
     const updatedPackage = await prisma.package.update({
       where: { id: packageId },
       data: {
@@ -54,24 +57,25 @@ export async function PUT(
         type: data.type,
         duration: data.duration,
         price: data.price,
+        monthlyEquivalent: monthlyEquivalent,
         collectionsPerWeek: data.collectionsPerWeek,
         features: data.features,
         status: data.status,
         isPopular: data.isPopular,
-        displayOrder: data.displayOrder
-      }
+        displayOrder: data.displayOrder,
+      },
     });
 
     return NextResponse.json({
       success: true,
-      package: updatedPackage
+      package: updatedPackage,
     });
   } catch (error) {
-    console.error('Error updating package:', error);
+    console.error("Error updating package:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Không thể cập nhật gói dịch vụ' 
+      {
+        success: false,
+        error: "Không thể cập nhật gói dịch vụ",
       },
       { status: 500 }
     );
@@ -84,39 +88,40 @@ export async function DELETE(
 ) {
   try {
     const packageId = params.id;
-    
+
     // Check if package is being used in any active subscriptions
     const activeSubscriptions = await prisma.subscription.count({
-      where: { 
+      where: {
         packageId: packageId,
-        status: 'ACTIVE'
-      }
+        status: "ACTIVE",
+      },
     });
 
     if (activeSubscriptions > 0) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Không thể xóa gói đang có người sử dụng. Hãy chuyển sang trạng thái INACTIVE thay vì xóa.' 
+        {
+          success: false,
+          error:
+            "Không thể xóa gói đang có người sử dụng. Hãy chuyển sang trạng thái INACTIVE thay vì xóa.",
         },
         { status: 400 }
       );
     }
 
     await prisma.package.delete({
-      where: { id: packageId }
+      where: { id: packageId },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Gói dịch vụ đã được xóa'
+      message: "Gói dịch vụ đã được xóa",
     });
   } catch (error) {
-    console.error('Error deleting package:', error);
+    console.error("Error deleting package:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Không thể xóa gói dịch vụ' 
+      {
+        success: false,
+        error: "Không thể xóa gói dịch vụ",
       },
       { status: 500 }
     );
