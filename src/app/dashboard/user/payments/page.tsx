@@ -201,7 +201,7 @@ export default function UserPaymentsPage() {
 
       if (result.success) {
         setExtensionHistory(result.extensions);
-        // setStatistics(result.statistics); // Keep existing statistics if needed
+        setStatistics(result.statistics); // Now get statistics from API
       } else {
         toast.error("Không thể tải lịch sử gia hạn");
       }
@@ -517,7 +517,7 @@ export default function UserPaymentsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {paymentsLoading ? (
+            {historyLoading ? (
               <div className="space-y-4">
                 <Skeleton className="h-8 w-full" />
                 <Skeleton className="h-6 w-3/4" />
@@ -558,7 +558,11 @@ export default function UserPaymentsPage() {
                   </div>
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                Không có dữ liệu thống kê
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -116,7 +116,11 @@ export async function GET(request: NextRequest) {
       startDate:
         subscription.activatedAt?.toISOString() ||
         subscription.createdAt.toISOString(),
-      endDate: endMonth ? `${endMonth}-28` : new Date().toISOString(),
+      endDate: endMonth ? (() => {
+        const [year, month] = endMonth.split("-").map(Number);
+        const lastDay = new Date(year, month, 0).getDate(); // Get last day of the month
+        return `${endMonth}-${lastDay.toString().padStart(2, '0')}`;
+      })() : new Date().toISOString(),
       status,
       fee: Number(subscription.package?.price || 80000),
       monthlyEquivalent: Number(

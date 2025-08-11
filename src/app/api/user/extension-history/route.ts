@@ -107,9 +107,33 @@ export async function GET(request: NextRequest) {
     // Calculate pagination
     const totalPages = Math.ceil(total / limit);
 
+    // Calculate statistics from all payments (not just paginated)
+    const allPaymentsStats = await prisma.$queryRaw`
+      SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) as successful,
+        COUNT(CASE WHEN status = 'FAILED' THEN 1 END) as failed,
+        COUNT(CASE WHEN status = 'PENDING' THEN 1 END) as pending,
+        COALESCE(SUM(CASE WHEN status = 'COMPLETED' THEN amount ELSE 0 END), 0) as totalAmount,
+        COUNT(CASE WHEN status = 'COMPLETED' AND EXTRACT(MONTH FROM "paidAt") = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM "paidAt") = EXTRACT(YEAR FROM CURRENT_DATE) THEN 1 END) as thisMonth
+      FROM payments 
+      WHERE "userId" = ${userId}
+    ` as any[];
+
+    const statsRaw = allPaymentsStats[0] || {};
+    const statistics = {
+      total: Number(statsRaw.total || 0),
+      successful: Number(statsRaw.successful || 0),
+      failed: Number(statsRaw.failed || 0),
+      pending: Number(statsRaw.pending || 0),
+      totalAmount: Number(statsRaw.totalamount || 0),
+      thisMonth: Number(statsRaw.thismonth || 0),
+    };
+
     return NextResponse.json({
       success: true,
       extensions,
+      statistics, // Add statistics to response
       pagination: {
         page,
         limit,
