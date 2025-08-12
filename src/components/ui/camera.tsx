@@ -16,6 +16,7 @@ export function Camera({ onCapture, onClose }: CameraProps) {
   const streamRef = useRef<MediaStream | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [videoReady, setVideoReady] = useState(false);
   const [permissionRequested, setPermissionRequested] = useState(false);
   const [permissionDialogShown, setPermissionDialogShown] = useState(false);
   const { permissions, requestCameraPermission, isMobile } = usePermissions();
@@ -24,6 +25,7 @@ export function Camera({ onCapture, onClose }: CameraProps) {
     try {
       console.log("🎥 Starting camera...");
       setError(null);
+      setVideoReady(false);
 
       // Safety check: Đảm bảo video element có sẵn
       if (!videoRef.current) {
@@ -95,9 +97,6 @@ export function Camera({ onCapture, onClose }: CameraProps) {
 
         // Fallback: Set active anyway và let user manual restart
         setIsActive(true);
-        setError(
-          "Video có thể cần restart thủ công. Nhấn 'Restart Video' nếu không thấy camera."
-        );
       }
 
       console.log("📹 Video element configured");
@@ -162,21 +161,21 @@ export function Camera({ onCapture, onClose }: CameraProps) {
 
       return () => clearTimeout(retryTimer);
     }
-  }, [permissions.camera, isActive, startCamera]);
+  }, [permissions.camera, isActive, startCamera, videoRef.current?.videoWidth]);
 
   // Force refresh khi modal mở
-  useEffect(() => {
-    // Khi component mount, đợi một chút rồi check video element
-    const mountTimer = setTimeout(() => {
-      console.log("📺 Component mounted, video element:", !!videoRef.current);
-      if (permissions.camera === "granted" && !isActive && videoRef.current) {
-        console.log("🚀 Late start: Video element ready after mount");
-        startCamera();
-      }
-    }, 200);
+  // useEffect(() => {
+  //   // Khi component mount, đợi một chút rồi check video element
+  //   const mountTimer = setTimeout(() => {
+  //     console.log("📺 Component mounted, video element:", !!videoRef.current);
+  //     if (permissions.camera === "granted" && !isActive && videoRef.current) {
+  //       console.log("🚀 Late start: Video element ready after mount");
+  //       startCamera();
+  //     }
+  //   }, 200);
 
-    return () => clearTimeout(mountTimer);
-  }, []); // Chỉ chạy một lần khi mount
+  //   return () => clearTimeout(mountTimer);
+  // }, []); // Chỉ chạy một lần khi mount
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -184,6 +183,7 @@ export function Camera({ onCapture, onClose }: CameraProps) {
       streamRef.current = null;
     }
     setIsActive(false);
+    setVideoReady(false);
   }, []);
 
   const capturePhoto = useCallback(() => {
@@ -284,48 +284,50 @@ export function Camera({ onCapture, onClose }: CameraProps) {
                   "x",
                   videoRef.current?.videoHeight
                 );
+                setVideoReady(true);
               }}
               onPlaying={() => {
                 console.log("▶️ Video playing event fired");
+                setVideoReady(true);
               }}
               onError={(e) => {
                 console.error("❌ Video error:", e);
+                setVideoReady(false);
               }}
               onCanPlay={() => {
                 console.log("✅ Video can play");
+                setVideoReady(true);
               }}
             />
 
             {/* Manual start button nếu video không hiển thị */}
-
-            {streamRef.current &&
-              (!videoRef.current?.videoWidth ||
-                videoRef.current?.videoWidth === 0) && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="text-center text-white">
-                    <div className="mb-2">
-                      📹 Camera connected but video not showing
-                    </div>
-                    <Button
-                      onClick={async () => {
-                        if (videoRef.current && streamRef.current) {
-                          console.log("🔄 Manual video restart");
-                          videoRef.current.srcObject = streamRef.current;
-                          try {
-                            await videoRef.current.play();
-                            console.log("✅ Manual play successful");
-                          } catch (err) {
-                            console.error("❌ Manual play failed:", err);
-                          }
-                        }
-                      }}
-                      size="sm"
-                    >
-                      🔄 Restart Video
-                    </Button>
+            {streamRef.current && !videoReady && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="text-center text-white">
+                  <div className="mb-2">
+                    📹 Camera connected but video not showing
                   </div>
+                  <Button
+                    onClick={async () => {
+                      if (videoRef.current && streamRef.current) {
+                        console.log("🔄 Manual video restart");
+                        videoRef.current.srcObject = streamRef.current;
+                        try {
+                          await videoRef.current.play();
+                          console.log("✅ Manual play successful");
+                          setVideoReady(true);
+                        } catch (err) {
+                          console.error("❌ Manual play failed:", err);
+                        }
+                      }
+                    }}
+                    size="sm"
+                  >
+                    🔄 Restart Video
+                  </Button>
                 </div>
-              )}
+              </div>
+            )}
 
             {/* Overlay hướng dẫn */}
             <div className="absolute inset-0 pointer-events-none">
