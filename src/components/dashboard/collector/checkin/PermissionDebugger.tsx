@@ -6,36 +6,11 @@ import { usePermissions } from "@/hooks/use-permissions";
 
 export function PermissionDebugger() {
   const [logs, setLogs] = useState<string[]>([]);
-  const { 
-    permissions, 
-    requestCameraPermission, 
-    requestGeolocationPermission,
-    forcePermissionDialog 
-  } = usePermissions();
+  const { permissions } = usePermissions();
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
-    setLogs(prev => [`[${timestamp}] ${message}`, ...prev].slice(0, 10));
-  };
-
-  const testCameraPermission = async () => {
-    addLog("🔵 Testing camera permission...");
-    try {
-      const result = await forcePermissionDialog('camera');
-      addLog(`📷 Camera permission result: ${result ? 'GRANTED' : 'DENIED'}`);
-    } catch (error) {
-      addLog(`❌ Camera permission error: ${error}`);
-    }
-  };
-
-  const testGPSPermission = async () => {
-    addLog("🔵 Testing GPS permission...");
-    try {
-      const result = await forcePermissionDialog('geolocation');
-      addLog(`📍 GPS permission result: ${result ? 'GRANTED' : 'DENIED'}`);
-    } catch (error) {
-      addLog(`❌ GPS permission error: ${error}`);
-    }
+    setLogs((prev) => [`[${timestamp}] ${message}`, ...prev].slice(0, 10));
   };
 
   const checkDeviceInfo = () => {
@@ -44,20 +19,20 @@ export function PermissionDebugger() {
     addLog(`- Platform: ${navigator.platform}`);
     addLog(`- Language: ${navigator.language}`);
     addLog(`- Online: ${navigator.onLine}`);
-    
-    if ('permissions' in navigator) {
+
+    if ("permissions" in navigator) {
       addLog("✅ Permissions API supported");
     } else {
       addLog("❌ Permissions API not supported");
     }
-    
-    if ('mediaDevices' in navigator) {
+
+    if ("mediaDevices" in navigator) {
       addLog("✅ MediaDevices API supported");
     } else {
       addLog("❌ MediaDevices API not supported");
     }
-    
-    if ('geolocation' in navigator) {
+
+    if ("geolocation" in navigator) {
       addLog("✅ Geolocation API supported");
     } else {
       addLog("❌ Geolocation API not supported");
@@ -67,41 +42,41 @@ export function PermissionDebugger() {
   return (
     <Card className="p-4 m-4 max-w-md">
       <h3 className="font-bold mb-4">🔧 Permission Debugger</h3>
-      
+
       <div className="space-y-2 mb-4">
         <div className="text-sm">
-          <strong>Camera:</strong> {permissions.camera || 'unknown'}
+          <strong>Camera:</strong> {permissions.camera || "unknown"}
         </div>
         <div className="text-sm">
-          <strong>GPS:</strong> {permissions.geolocation || 'unknown'}
+          <strong>GPS:</strong> {permissions.geolocation || "unknown"}
         </div>
       </div>
 
       <div className="space-y-2 mb-4">
-        <Button 
-          onClick={testCameraPermission} 
+        <Button
+          onClick={testCameraPermission}
           className="w-full text-xs"
           size="sm"
         >
           📷 Test Camera Permission
         </Button>
-        <Button 
-          onClick={testGPSPermission} 
+        <Button
+          onClick={testGPSPermission}
           className="w-full text-xs"
           size="sm"
         >
           📍 Test GPS Permission
         </Button>
-        <Button 
-          onClick={checkDeviceInfo} 
+        <Button
+          onClick={checkDeviceInfo}
           className="w-full text-xs"
           size="sm"
           variant="outline"
         >
           📱 Check Device Info
         </Button>
-        <Button 
-          onClick={() => setLogs([])} 
+        <Button
+          onClick={() => setLogs([])}
           className="w-full text-xs"
           size="sm"
           variant="destructive"

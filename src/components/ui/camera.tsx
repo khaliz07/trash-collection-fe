@@ -137,16 +137,16 @@ export function Camera({ onCapture, onClose }: CameraProps) {
     }
   }, [requestCameraPermission, permissions.camera, isMobile]);
 
-  // Tự động start camera nếu đã có permission
-  useEffect(() => {
-    // Chỉ auto-start nếu đã có permission VÀ video element đã sẵn sàng
-    if (permissions.camera === "granted" && !isActive && videoRef.current) {
-      console.log(
-        "📱 Camera permission already granted and video element ready, auto-starting..."
-      );
-      startCamera();
-    }
-  }, [permissions.camera, isActive, startCamera, videoRef.current]);
+  // // Tự động start camera nếu đã có permission
+  // useEffect(() => {
+  //   // Chỉ auto-start nếu đã có permission VÀ video element đã sẵn sàng
+  //   if (permissions.camera === "granted" && !isActive && videoRef.current) {
+  //     console.log(
+  //       "📱 Camera permission already granted and video element ready, auto-starting..."
+  //     );
+  //     startCamera();
+  //   }
+  // }, [permissions.camera, isActive, startCamera, videoRef.current]);
 
   // Retry mechanism nếu video element chưa sẵn sàng
   useEffect(() => {
@@ -234,6 +234,13 @@ export function Camera({ onCapture, onClose }: CameraProps) {
       );
     }
   }, [isMobile]);
+  console.log(
+    streamRef.current,
+    !videoRef.current?.videoWidth,
+    videoRef.current?.videoWidth === 0,
+    streamRef.current &&
+      (!videoRef.current?.videoWidth || videoRef.current?.videoWidth === 0)
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -252,24 +259,6 @@ export function Camera({ onCapture, onClose }: CameraProps) {
             {error}
           </div>
         )}
-
-        {/* Debug Panel */}
-        <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-          <div>
-            📱 Permission: <strong>{permissions.camera}</strong>
-          </div>
-          <div>
-            🎥 Camera Active: <strong>{isActive ? "Yes" : "No"}</strong>
-          </div>
-          <div>
-            📡 Stream:{" "}
-            <strong>{streamRef.current ? "Connected" : "None"}</strong>
-          </div>
-          <div>
-            🔄 Permission Requested:{" "}
-            <strong>{permissionRequested ? "Yes" : "No"}</strong>
-          </div>
-        </div>
 
         {/* Video element - LUÔN render để ref có thể attach */}
         <div className={`space-y-4 ${!isActive ? "hidden" : ""}`}>
@@ -307,21 +296,8 @@ export function Camera({ onCapture, onClose }: CameraProps) {
               }}
             />
 
-            {/* Debug overlay */}
-            <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white p-2 rounded text-xs">
-              <div>📹 Active: {isActive ? "Yes" : "No"}</div>
-              <div>🎥 Stream: {streamRef.current ? "Connected" : "None"}</div>
-              <div>
-                📺 Video: {videoRef.current?.videoWidth || 0}x
-                {videoRef.current?.videoHeight || 0}
-              </div>
-              <div>▶️ Ready: {videoRef.current?.readyState || 0}</div>
-              <div>
-                🔗 srcObject: {videoRef.current?.srcObject ? "Set" : "None"}
-              </div>
-            </div>
-
             {/* Manual start button nếu video không hiển thị */}
+
             {streamRef.current &&
               (!videoRef.current?.videoWidth ||
                 videoRef.current?.videoWidth === 0) && (

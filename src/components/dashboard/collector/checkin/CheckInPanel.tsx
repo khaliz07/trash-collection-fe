@@ -16,14 +16,11 @@ import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";
 import { MobileInstructions } from "./MobileInstructions";
 import { PermissionDialogPrompt } from "./PermissionDialogPrompt";
-import { PermissionDebugger } from "./PermissionDebugger";
 
 function getCurrentTimeString() {
   const now = new Date();
   return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
-
-import { CameraDebug } from "@/components/debug/camera-debug";
 
 export default function CheckInPanel() {
   const [data, setData] = useState<CheckInData>(mockCheckInData);
@@ -107,9 +104,6 @@ export default function CheckInPanel() {
 
   // Xử lý khi nhấn nút chụp ảnh - hiển thị prompt trước khi trigger permission
   const handleCameraClick = () => {
-    console.log("🎯 Camera button clicked");
-    console.log("📊 Current permissions:", permissions);
-    console.log("🎥 Camera modal opening...");
     setShowCamera(true);
   };
 
@@ -292,56 +286,10 @@ export default function CheckInPanel() {
       {/* Mobile Instructions */}
       {isMobile && <MobileInstructions />}
 
-      {/* Debug Panel - only in development */}
-      {process.env.NODE_ENV === "development" && <PermissionDebugger />}
-
       <Card
         className={`mx-auto p-6 mt-8 ${isMobile ? "max-w-sm" : "max-w-md"}`}
       >
         <h2 className="text-lg font-bold mb-2">Điểm danh bắt đầu ca</h2>
-
-        {/* Debug controls */}
-        <div className="mb-4 p-4 bg-blue-50 border rounded-lg">
-          <h3 className="font-semibold mb-2">🔧 Debug Controls</h3>
-          <div className="flex gap-2 flex-wrap">
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => {
-                console.log("🎯 Force open camera");
-                setShowCamera(true);
-              }}
-            >
-              🎥 Force Open Camera
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => {
-                console.log("📊 Current states:", {
-                  showCamera,
-                  permissions,
-                  photo: !!photo,
-                  photoUrl
-                });
-              }}
-            >
-              📊 Log States
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={async () => {
-                console.log("📱 Test camera permission");
-                const granted = await requestCameraPermission();
-                console.log("Permission result:", granted);
-              }}
-            >
-              🔑 Test Permission
-            </Button>
-          </div>
-        </div>
-
         {/* Mobile permissions warning */}
         {isMobile &&
           (permissions.camera === "denied" ||
@@ -362,12 +310,9 @@ export default function CheckInPanel() {
                   Cấp quyền ngay
                 </Button>
               </div>
-            {/* Debug tool */}
-            <div className="mt-8 border-t pt-4">
-              <CameraDebug />
             </div>
-          </div>
-        )}        <div className="mb-4">
+          )}{" "}
+        <div className="mb-4">
           <Badge variant={data.checkedIn ? "success" : "warning"}>
             {data.checkedIn ? "Đã điểm danh" : "Chưa điểm danh"}
           </Badge>
@@ -486,7 +431,6 @@ export default function CheckInPanel() {
             </Button>
           </>
         )}
-
         {/* Camera Modal */}
         {showCamera && (
           <Camera
@@ -494,7 +438,6 @@ export default function CheckInPanel() {
             onClose={() => setShowCamera(false)}
           />
         )}
-
         {/* Permission Dialog Prompt */}
         {showPermissionPrompt && (
           <PermissionDialogPrompt
