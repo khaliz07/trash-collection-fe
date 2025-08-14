@@ -70,6 +70,8 @@ model User {
   routeAssignments       RouteAssignment[]
   schedules              Schedule[]
   subscriptions          Subscription[]
+  urgentRequests         UrgentRequest[]     @relation("UserUrgentRequests")
+  assignedUrgentRequests UrgentRequest[]     @relation("CollectorUrgentRequests")
 
   @@map("users")
 }
@@ -252,43 +254,84 @@ model Feedback {
 }
 
 model CollectionRoute {
-  id                String            @id @default(cuid())
-  name              String
-  description       String?
-  isActive          Boolean           @default(true)
-  routeGeometry     Json
-  waypoints         Json
-  estimatedDuration Int
-  estimatedDistance Float
-  difficultyLevel   Int               @default(1)
-  scheduledDays     String[]          @default([])
-  startTime         String?
-  endTime           String?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  assignments       RouteAssignment[]
-  progress          RouteProgress[]
+  id                    String            @id @default(cuid())
+  route_name           String
+  route_code           String            @unique
+  work_zone_id         String?
+  description          String?
+
+  // Google Maps route data
+  route_path           Json              // Google Directions API response
+  route_polyline       String            // Encoded polyline from Google
+  total_distance_km    Decimal           @db.Decimal(8,3)
+  estimated_time_min   Int
+
+  // Route schedule
+  active_days          Json              // ["monday", "wednesday", "friday"]
+  time_windows         Json              // [{"start": "08:00", "end": "12:00"}]
+
+  // Legacy fields (keep for backward compatibility)
+  name                 String?           // Alias for route_name
+  isActive             Boolean           @default(true)
+  routeGeometry        Json?
+  waypoints            Json?
+  estimatedDuration    Int?
+  estimatedDistance    Float?
+  difficultyLevel      Int               @default(1)
+  scheduledDays        String[]          @default([])
+  startTime            String?
+  endTime              String?
+
+  // Status and management
+  status               RouteStatus       @default(ACTIVE)
+  created_by           String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  // Relations
+  assignments          RouteAssignment[]
+  progress             RouteProgress[]
+  urgent_requests      UrgentRequest[]
 
   @@map("collection_routes")
 }
 
 model RouteAssignment {
-  id            String          @id @default(cuid())
-  routeId       String
-  collectorId   String
-  assignedDate  DateTime
-  isCompleted   Boolean         @default(false)
-  startedAt     DateTime?
-  completedAt   DateTime?
-  totalDistance Float?
-  totalDuration Int?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  collector     User            @relation(fields: [collectorId], references: [id], onDelete: Cascade)
-  route         CollectionRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  progress      RouteProgress[]
+  id                   String               @id @default(cuid())
+  route_id             String
+  collector_id         String
+  assigned_date        DateTime
+  time_window_start    String               // "08:00"
+  time_window_end      String               // "12:00"
 
-  @@unique([routeId, collectorId, assignedDate])
+  // Legacy fields (keep for backward compatibility)
+  routeId              String?
+  collectorId          String?
+  assignedDate         DateTime?
+  isCompleted          Boolean              @default(false)
+  startedAt            DateTime?
+  completedAt          DateTime?
+  totalDistance        Float?
+  totalDuration        Int?
+
+  // Execution tracking
+  status               AssignmentStatus     @default(PENDING)
+  started_at           DateTime?
+  completed_at         DateTime?
+
+  // Performance metrics
+  actual_distance      Decimal?             @db.Decimal(8,3)
+  actual_duration      Int?                 // minutes
+
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  // Relations
+  collector            User                 @relation(fields: [collector_id], references: [id], onDelete: Cascade)
+  route                CollectionRoute      @relation(fields: [route_id], references: [id], onDelete: Cascade)
+  progress             RouteProgress[]
+
+  @@unique([route_id, collector_id, assigned_date])
   @@map("route_assignments")
 }
 
@@ -463,4 +506,64 @@ enum FeedbackStatus {
   PENDING
   REVIEWED
   RESOLVED
+}
+
+enum RouteStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum AssignmentStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum UrgencyLevel {
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum UrgentStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model UrgentRequest {
+  id                   String               @id @default(cuid())
+  user_id              String
+
+  // Request details
+  pickup_address       String
+  pickup_lat           Decimal              @db.Decimal(10,8)
+  pickup_lng           Decimal              @db.Decimal(11,8)
+  requested_date       DateTime
+  urgency_level        UrgencyLevel
+  waste_description    String
+
+  // Auto-assignment
+  assigned_route_id    String?
+  assigned_collector_id String?
+  assigned_at          DateTime?
+
+  // Status
+  status               UrgentStatus         @default(PENDING)
+  completed_at         DateTime?
+
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  // Relations
+  user                 User                 @relation("UserUrgentRequests", fields: [user_id], references: [id], onDelete: Cascade)
+  route                CollectionRoute?     @relation(fields: [assigned_route_id], references: [id])
+  collector            User?                @relation("CollectorUrgentRequests", fields: [assigned_collector_id], references: [id])
+
+  @@map("urgent_requests")
 }

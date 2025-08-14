@@ -310,120 +310,264 @@ yarn config set registry https://registry.npmjs.org/
 yarn install --network-timeout 100000
 ```
 
-## Package.json Scripts Configuration
+---
 
-Ensure your `package.json` scripts are optimized for Yarn:
+# 🏗️ Trash Collection Management System
 
-```json
-{
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "jest",
-    "type-check": "tsc --noEmit",
-    "postinstall": "husky install"
-  },
-  "packageManager": "yarn@3.6.0"
-}
-```
+## Repository Overview
 
-## Team Guidelines
+This is a **Next.js 14** full-stack application for managing waste collection services in Vietnam. The system serves three main user roles:
 
-### For New Team Members:
+- **👤 Users (Households)** - Register, subscribe to packages, schedule pickups, track collection status
+- **🚛 Collectors** - View assigned routes, check-in at locations, handle urgent requests  
+- **🛠️ Admins** - Manage users, collectors, routes, payments, and system analytics
 
-1. Install Yarn globally before starting
-2. Always use `yarn install` after pulling changes
-3. Never mix npm and yarn in the same project
-4. Report any package-related issues immediately
+### Tech Stack
+- **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL with PostGIS extension
+- **Maps**: Google Maps JavaScript API
+- **Authentication**: Custom JWT-based auth
+- **UI Components**: Radix UI, shadcn/ui
+- **Package Manager**: Yarn (mandatory)
 
-### For Code Reviews:
-
-1. Verify `yarn.lock` changes are intentional
-2. Check that new dependencies are necessary
-3. Ensure dev dependencies are properly categorized
-4. Review package versions for security
-
-### For Deployment:
-
-1. Use `yarn install --frozen-lockfile` in production
-2. Ensure Yarn version consistency across environments
-3. Cache `node_modules` efficiently
-4. Monitor bundle size after dependency changes
-
-## Security Best Practices
-
-```bash
-# Regular security audits
-yarn audit
-
-# Fix security issues
-yarn audit --fix
-
-# Check for vulnerabilities in specific packages
-yarn why <package-name>
-
-# License checking
-yarn licenses list
-```
-
-## IDE Configuration
-
-### VS Code Settings (`.vscode/settings.json`):
-
-```json
-{
-  "npm.packageManager": "yarn",
-  "typescript.preferences.includePackageJsonAutoImports": "on",
-  "eslint.packageManager": "yarn"
-}
-```
-
-## Enforcement
-
-### Pre-commit Hooks
-
-Add to `.husky/pre-commit`:
-
-```bash
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Check if package-lock.json exists
-if [ -f package-lock.json ]; then
-  echo "❌ package-lock.json found! This project uses Yarn only."
-  echo "Please delete package-lock.json and use 'yarn install' instead."
-  exit 1
-fi
-
-# Check if using npm in scripts
-if grep -r "npm " scripts/ 2>/dev/null; then
-  echo "❌ npm commands found in scripts! Use yarn instead."
-  exit 1
-fi
-```
-
-### Package.json Validation
-
-Add to `package.json`:
-
-```json
-{
-  "engines": {
-    "yarn": ">=1.22.0",
-    "npm": "Please use Yarn instead of npm"
-  }
-}
-```
+### Repository Size
+- ~50 API endpoints
+- ~100+ React components  
+- ~20 database models
+- ~500+ TypeScript files
 
 ---
 
-## Summary
+## 🚀 Build & Development Commands
 
-**Remember**: This project is Yarn-only. Always use Yarn commands and never mix package managers. This ensures consistency, reliability, and optimal performance across all development and deployment environments.
+### Prerequisites
+```bash
+# Ensure yarn is installed globally
+npm install -g yarn
+yarn --version  # Should be >= 1.22.0
 
-For questions or issues, please contact the development team or refer to the [official Yarn documentation](https://yarnpkg.com/).
+# Node.js version
+node --version  # Should be >= 18.17.0
+```
 
-**Last Updated**: August 11, 2025
-**Maintainer**: Development Team
+### Essential Commands
+
+#### **Development Workflow**
+```bash
+# ALWAYS start with fresh dependencies
+yarn install
+
+# Generate Prisma client (REQUIRED after schema changes)
+yarn db:generate
+
+# Start development server with network access
+yarn dev
+# This runs: node scripts/network-info.ts && next dev --hostname 0.0.0.0 --port 3000
+
+# Alternative: Local-only development
+yarn dev:local
+```
+
+#### **Database Operations**
+```bash
+# Generate Prisma client (run after any schema.prisma changes)
+yarn db:generate
+
+# Apply migrations to database
+yarn db:migrate
+
+# Push schema changes directly (development only)
+yarn db:push
+
+# Open Prisma Studio database browser
+yarn db:studio
+
+# Seed database with sample data
+yarn db:seed
+```
+
+#### **Build & Validation**
+```bash
+# Production build (currently fails with module errors - see Known Issues)
+yarn build
+
+# Type checking
+yarn lint
+
+# Database connection test
+yarn db:generate
+```
+
+### ⚠️ Known Issues & Workarounds
+
+#### Build Failures
+The build currently fails with TypeScript module errors:
+```
+Type error: File '/src/app/api/debug/fix-subscriptions/route.ts' is not a module.
+```
+
+**Workaround**: Before building, ensure all API route files have proper export structure:
+```typescript
+export async function GET() { /* ... */ }
+export async function POST() { /* ... */ }
+```
+
+#### Linting Errors
+Common ESLint issues to fix before deployment:
+- React unescaped entities (use `&quot;` instead of `"`)
+- Missing dependencies in useEffect hooks
+- Use Next.js `<Image>` instead of `<img>` tags
+
+#### Development Server
+The dev command includes a network info script that may cause issues on some systems. Use `yarn dev:local` if experiencing problems.
+
+---
+
+## 📁 Project Architecture
+
+### Directory Structure
+```
+├── src/
+│   ├── app/                    # Next.js 14 App Router
+│   │   ├── (auth)/            # Auth route groups
+│   │   ├── api/               # API endpoints
+│   │   │   ├── admin/         # Admin-only endpoints
+│   │   │   ├── auth/          # Authentication
+│   │   │   ├── user/          # User management
+│   │   │   └── payments/      # Payment processing
+│   │   ├── dashboard/         # Role-based dashboards
+│   │   │   ├── admin/         # Admin interface
+│   │   │   ├── collector/     # Collector mobile interface
+│   │   │   └── user/          # User dashboard
+│   │   └── globals.css        # Global styles
+│   ├── components/            # Reusable components
+│   │   ├── ui/               # shadcn/ui components
+│   │   ├── auth/             # Authentication components
+│   │   ├── admin/            # Admin-specific components
+│   │   ├── dashboard/        # Dashboard components
+│   │   └── providers/        # Context providers
+│   ├── hooks/                # Custom React hooks
+│   ├── lib/                  # Utility libraries
+│   │   ├── auth.ts           # Authentication logic
+│   │   ├── db.ts             # Database connection
+│   │   ├── google-maps.ts    # Google Maps integration
+│   │   └── utils.ts          # General utilities
+│   └── types/                # TypeScript type definitions
+│       ├── database.ts       # Database types
+│       ├── collection.ts     # Collection-related types
+│       └── route.ts          # Routing system types
+├── prisma/
+│   ├── schema.prisma         # Database schema
+│   ├── migrations/           # Database migrations
+│   └── seed.ts              # Database seeding
+├── public/
+│   ├── images/              # Static images
+│   └── locales/             # i18n translations
+├── docs/                    # Project documentation
+└── scripts/                 # Utility scripts
+```
+
+### Configuration Files
+- **next.config.js** - Next.js configuration
+- **tailwind.config.ts** - Tailwind CSS config
+- **tsconfig.json** - TypeScript configuration
+- **components.json** - shadcn/ui configuration
+- **.eslintrc.json** - ESLint rules
+- **prisma/schema.prisma** - Database schema
+
+### Key Components
+
+#### Authentication System
+- Location: `src/components/auth/`
+- Files: `auth-guard.tsx`, `auth-initializer.tsx`, `redirect-if-authenticated.tsx`
+- JWT-based authentication with role-based access control
+
+#### Google Maps Integration  
+- Location: `src/lib/google-maps.ts`
+- Features: Route optimization, geocoding, polyline encoding
+- Required ENV: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+
+#### Database Layer
+- ORM: Prisma with PostgreSQL + PostGIS
+- Models: User, Package, Payment, CollectionRoute, UrgentRequest
+- Location: `prisma/schema.prisma`
+
+#### Routing System (Recently Added)
+- Location: `src/components/admin/schedules/`
+- Features: Interactive route creation, urgent request handling
+- Components: `RouteCreator.tsx`, `EnhancedScheduleMapView.tsx`, `EnhancedScheduleSidebar.tsx`
+
+### Environment Variables
+Required variables in `.env.local`:
+```bash
+DATABASE_URL="postgresql://..."
+NEXTAUTH_SECRET="..."
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="..."
+VNPAY_TMN_CODE="..."
+VNPAY_HASH_SECRET="..."
+```
+
+### API Routes Structure
+- `/api/auth/*` - Authentication endpoints
+- `/api/admin/*` - Admin-only operations
+- `/api/user/*` - User operations
+- `/api/payments/*` - Payment processing
+- `/api/debug/*` - Development utilities
+
+---
+
+## 🔍 Development Guidelines
+
+### Before Making Changes
+1. **Always run** `yarn install` after pulling changes
+2. **Generate Prisma client** after any schema changes: `yarn db:generate`
+3. **Check linting** before committing: `yarn lint`
+4. **Test database connection** if modifying database code
+
+### Code Quality
+- Use TypeScript strictly - no `any` types
+- Follow Next.js 14 App Router patterns
+- Use shadcn/ui components for consistency
+- Implement proper error handling in API routes
+- Use Prisma for all database operations
+
+### Testing Changes
+1. Test on multiple screen sizes (mobile-first design)
+2. Verify database operations with `yarn db:studio`
+3. Check network accessibility with development server
+4. Validate API endpoints with proper HTTP methods
+
+### Common Patterns
+- API routes use `NextRequest`/`NextResponse`
+- Components use TypeScript interfaces for props
+- Database queries use Prisma client
+- Maps integration uses Google Maps React components
+- Authentication uses custom JWT middleware
+
+---
+
+## 🎯 Quick Reference
+
+### File Locations
+- **Main layout**: `src/app/layout.tsx`
+- **Auth logic**: `src/lib/auth.ts`
+- **Database**: `src/lib/db.ts` 
+- **API utilities**: `src/lib/api.ts`
+- **Type definitions**: `src/types/`
+
+### Common Tasks
+- **Add new API endpoint**: Create in `src/app/api/[path]/route.ts`
+- **Add database model**: Update `prisma/schema.prisma` + run `yarn db:generate` + `yarn db:migrate`
+- **Add new component**: Place in appropriate `src/components/` subdirectory
+- **Add new page**: Create in `src/app/` following App Router conventions
+
+### Emergency Fixes
+- **Build failing**: Check for missing exports in API routes
+- **Database issues**: Run `yarn db:generate` then `yarn db:push`
+- **Type errors**: Update type definitions in `src/types/`
+- **Dependency issues**: Clear cache with `yarn cache clean` then `yarn install`
+
+---
+
+**⚡ Trust these instructions and only search for additional information if something is unclear or doesn't work as documented.**
