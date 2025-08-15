@@ -1,11 +1,54 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { AssignmentStatus } from '@/types/route-assignment';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { AssignmentStatus } from "@/types/route-assignment";
 
-// GET - List all assignments
-export async function GET() {
+// GET - List all assignments with filters
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const date = searchParams.get("date");
+    const routeId = searchParams.get("route_id");
+    const collectorId = searchParams.get("collector_id");
+
+    // Build where clause for filtering
+    const where: any = {};
+
+    // Filter by date (default to today if not provided)
+    if (date) {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      where.assigned_date = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
+    } else {
+      // Default to today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+
+      where.assigned_date = {
+        gte: today,
+        lte: endOfToday,
+      };
+    }
+
+    // Filter by route
+    if (routeId && routeId !== "all") {
+      where.route_id = routeId;
+    }
+
+    // Filter by collector
+    if (collectorId && collectorId !== "all") {
+      where.collector_id = collectorId;
+    }
+
     const assignments = await prisma.routeAssignment.findMany({
+      where,
       include: {
         route: {
           select: {
@@ -14,8 +57,8 @@ export async function GET() {
             description: true,
             estimated_duration: true,
             total_distance_km: true,
-            trackPoints: true
-          }
+            trackPoints: true,
+          },
         },
         collector: {
           select: {
@@ -25,20 +68,22 @@ export async function GET() {
             phone: true,
             cccd: true,
             licensePlate: true,
-            rating: true
-          }
-        }
+            rating: true,
+          },
+        },
       },
-      orderBy: {
-        assigned_date: 'desc'
-      }
+      orderBy: [
+        { started_at: "asc" },
+        { time_window_start: "asc" },
+        { assigned_date: "asc" },
+      ],
     });
 
     return NextResponse.json({ assignments });
   } catch (error) {
-    console.error('Failed to fetch assignments:', error);
+    console.error("Failed to fetch assignments:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch assignments' },
+      { error: "Failed to fetch assignments" },
       { status: 500 }
     );
   }
@@ -48,39 +93,50 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { route_id, collector_id, assigned_date, time_window_start, time_window_end, status, notes } = body;
+    const {
+      route_id,
+      collector_id,
+      assigned_date,
+      time_window_start,
+      time_window_end,
+      status,
+      notes,
+    } = body;
 
     // Validate required fields
-    if (!route_id || !collector_id || !assigned_date || !time_window_start || !time_window_end) {
+    if (
+      !route_id ||
+      !collector_id ||
+      !assigned_date ||
+      !time_window_start ||
+      !time_window_end
+    ) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
     // Verify route exists
     const route = await prisma.route.findUnique({
-      where: { id: route_id }
+      where: { id: route_id },
     });
 
     if (!route) {
-      return NextResponse.json(
-        { error: 'Route not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Route not found" }, { status: 404 });
     }
 
     // Verify collector exists
     const collector = await prisma.user.findFirst({
-      where: { 
+      where: {
         id: collector_id,
-        role: 'COLLECTOR'
-      }
+        role: "COLLECTOR",
+      },
     });
 
     if (!collector) {
       return NextResponse.json(
-        { error: 'Collector not found' },
+        { error: "Collector not found" },
         { status: 404 }
       );
     }
@@ -94,7 +150,7 @@ export async function POST(request: NextRequest) {
         time_window_start,
         time_window_end,
         status: status || AssignmentStatus.PENDING,
-        notes
+        notes,
       },
       include: {
         route: {
@@ -104,8 +160,8 @@ export async function POST(request: NextRequest) {
             description: true,
             estimated_duration: true,
             total_distance_km: true,
-            trackPoints: true
-          }
+            trackPoints: true,
+          },
         },
         collector: {
           select: {
@@ -115,17 +171,17 @@ export async function POST(request: NextRequest) {
             phone: true,
             cccd: true,
             licensePlate: true,
-            rating: true
-          }
-        }
-      }
+            rating: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json(assignment);
   } catch (error) {
-    console.error('Failed to create route assignment:', error);
+    console.error("Failed to create route assignment:", error);
     return NextResponse.json(
-      { error: 'Failed to create route assignment', details: error },
+      { error: "Failed to create route assignment", details: error },
       { status: 500 }
     );
   }
@@ -139,19 +195,19 @@ export async function PUT(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { error: 'Assignment ID is required' },
+        { error: "Assignment ID is required" },
         { status: 400 }
       );
     }
 
     // Check if assignment exists
     const existingAssignment = await prisma.routeAssignment.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!existingAssignment) {
       return NextResponse.json(
-        { error: 'Assignment not found' },
+        { error: "Assignment not found" },
         { status: 404 }
       );
     }
@@ -162,10 +218,16 @@ export async function PUT(request: NextRequest) {
       data: {
         ...updateData,
         // Convert date strings to Date objects if present
-        ...(updateData.assigned_date && { assigned_date: new Date(updateData.assigned_date) }),
-        ...(updateData.started_at && { started_at: new Date(updateData.started_at) }),
-        ...(updateData.completed_at && { completed_at: new Date(updateData.completed_at) }),
-        updatedAt: new Date()
+        ...(updateData.assigned_date && {
+          assigned_date: new Date(updateData.assigned_date),
+        }),
+        ...(updateData.started_at && {
+          started_at: new Date(updateData.started_at),
+        }),
+        ...(updateData.completed_at && {
+          completed_at: new Date(updateData.completed_at),
+        }),
+        updatedAt: new Date(),
       },
       include: {
         route: {
@@ -175,8 +237,8 @@ export async function PUT(request: NextRequest) {
             description: true,
             estimated_duration: true,
             total_distance_km: true,
-            trackPoints: true
-          }
+            trackPoints: true,
+          },
         },
         collector: {
           select: {
@@ -186,17 +248,17 @@ export async function PUT(request: NextRequest) {
             phone: true,
             cccd: true,
             licensePlate: true,
-            rating: true
-          }
-        }
-      }
+            rating: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json(assignment);
   } catch (error) {
-    console.error('Failed to update assignment:', error);
+    console.error("Failed to update assignment:", error);
     return NextResponse.json(
-      { error: 'Failed to update assignment', details: error },
+      { error: "Failed to update assignment", details: error },
       { status: 500 }
     );
   }
@@ -206,23 +268,23 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
-        { error: 'Assignment ID is required' },
+        { error: "Assignment ID is required" },
         { status: 400 }
       );
     }
 
     // Check if assignment exists and get its status
     const existingAssignment = await prisma.routeAssignment.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!existingAssignment) {
       return NextResponse.json(
-        { error: 'Assignment not found' },
+        { error: "Assignment not found" },
         { status: 404 }
       );
     }
@@ -230,9 +292,9 @@ export async function DELETE(request: NextRequest) {
     // Only allow deletion if status is PENDING
     if (existingAssignment.status !== AssignmentStatus.PENDING) {
       return NextResponse.json(
-        { 
-          error: 'Cannot delete assignment', 
-          message: 'Chỉ có thể xóa lịch trình ở trạng thái CHUẨN BỊ' 
+        {
+          error: "Cannot delete assignment",
+          message: "Chỉ có thể xóa lịch trình ở trạng thái CHUẨN BỊ",
         },
         { status: 400 }
       );
@@ -240,17 +302,17 @@ export async function DELETE(request: NextRequest) {
 
     // Delete assignment
     await prisma.routeAssignment.delete({
-      where: { id }
+      where: { id },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Assignment deleted successfully' 
+    return NextResponse.json({
+      success: true,
+      message: "Assignment deleted successfully",
     });
   } catch (error) {
-    console.error('Failed to delete assignment:', error);
+    console.error("Failed to delete assignment:", error);
     return NextResponse.json(
-      { error: 'Failed to delete assignment', details: error },
+      { error: "Failed to delete assignment", details: error },
       { status: 500 }
     );
   }

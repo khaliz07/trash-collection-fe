@@ -5,6 +5,7 @@ import { ScheduleDialog } from "@/components/admin/schedules/ScheduleDialog";
 import ScheduleTable from "@/components/admin/schedules/ScheduleTable";
 import { CreateAssignmentDialog } from "@/components/admin/schedules/create-assignment-dialog";
 import { AssignmentDetailsDialog } from "@/components/admin/schedules/assignment-details-dialog";
+import { AssignmentFilterBar } from "@/components/admin/schedules/assignment-filter-bar";
 import type { Schedule } from "@/components/admin/schedules/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,14 +40,26 @@ export default function AdminSchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [assignments, setAssignments] = useState<RouteAssignment[]>([]);
   const [collectors, setCollectors] = useState<any[]>([]);
-  const [selectedAssignment, setSelectedAssignment] = useState<RouteAssignment | null>(null);
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<RouteAssignment | null>(null);
   const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
   const [showAssignmentDetails, setShowAssignmentDetails] = useState(false);
-  const [showAssignmentDetailsDialog, setShowAssignmentDetailsDialog] = useState(false);
-  const [assignmentDialogMode, setAssignmentDialogMode] = useState<"create" | "edit">("create");
+  const [showAssignmentDetailsDialog, setShowAssignmentDetailsDialog] =
+    useState(false);
+  const [assignmentDialogMode, setAssignmentDialogMode] = useState<
+    "create" | "edit"
+  >("create");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("schedules");
+
+  // Assignment filters state
+  const getTodayDate = () => new Date().toISOString().split("T")[0];
+  const [assignmentFilters, setAssignmentFilters] = useState({
+    date: getTodayDate(),
+    route_id: "all",
+    collector_id: "all",
+  });
 
   // Fetch schedules from database
   useEffect(() => {
@@ -95,9 +108,26 @@ export default function AdminSchedulesPage() {
     }
   };
 
-  const fetchAssignments = async () => {
+  const fetchAssignments = async (filters?: typeof assignmentFilters) => {
     try {
-      const response = await fetch("/api/admin/assignments");
+      const activeFilters = filters || assignmentFilters;
+      const params = new URLSearchParams();
+
+      if (activeFilters.date) {
+        params.append("date", activeFilters.date);
+      }
+      if (activeFilters.route_id && activeFilters.route_id !== "all") {
+        params.append("route_id", activeFilters.route_id);
+      }
+      if (activeFilters.collector_id && activeFilters.collector_id !== "all") {
+        params.append("collector_id", activeFilters.collector_id);
+      }
+
+      const url = `/api/admin/assignments${
+        params.toString() ? "?" + params.toString() : ""
+      }`;
+      const response = await fetch(url);
+
       if (response.ok) {
         const data = await response.json();
         setAssignments(data.assignments || []);
@@ -220,6 +250,13 @@ export default function AdminSchedulesPage() {
     setSelectedAssignment(null);
     setAssignmentDialogMode("create");
     setShowAssignmentDialog(true);
+  };
+
+  // Filter handlers
+  const handleFiltersChange = (newFilters: typeof assignmentFilters) => {
+    setAssignmentFilters(newFilters);
+    // Auto-fetch assignments when filters change
+    fetchAssignments(newFilters);
   };
 
   const handleAssignmentCreated = async (assignmentData: any) => {
@@ -367,71 +404,98 @@ export default function AdminSchedulesPage() {
     };
 
     return (
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Danh sách lịch trình</CardTitle>
-            <CreateAssignmentDialog
-              routes={routes}
-              collectors={collectors}
-              onAssignmentCreated={fetchAssignments}
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-medium">Tuyến đường</th>
-                  <th className="text-left p-3 font-medium">Nhân viên</th>
-                  <th className="text-left p-3 font-medium">Thời gian bắt đầu</th>
-                  <th className="text-left p-3 font-medium">Trạng thái</th>
-                  <th className="text-left p-3 font-medium">Hoàn thành</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assignments.map((assignment) => (
-                  <tr
-                    key={assignment.id}
-                    className="border-b hover:bg-gray-50 cursor-pointer"
-                    onClick={() => handleAssignmentClick(assignment)}
-                  >
-                    <td className="p-3">{assignment.route.name}</td>
-                    <td className="p-3">{assignment.collector.name}</td>
-                    <td className="p-3">
-                      {new Date(assignment.assigned_date).toLocaleDateString("vi-VN")} {assignment.time_window_start}
-                    </td>
-                    <td className="p-3">
-                      <Badge variant={getStatusVariant(assignment.status)}>
-                        {getStatusText(assignment.status)}
-                      </Badge>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <Progress 
-                          value={getProgressValue(assignment.status)} 
-                          className="w-16 h-2"
-                        />
-                        <span className="text-sm text-gray-600 min-w-[35px]">
-                          {getProgressValue(assignment.status)}%
-                        </span>
-                      </div>
-                    </td>
+      <>
+        <AssignmentFilterBar
+          routes={routes}
+          collectors={collectors}
+          filters={assignmentFilters}
+          onFiltersChange={handleFiltersChange}
+        />
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle>Danh sách lịch trình</CardTitle>
+              <CreateAssignmentDialog
+                routes={routes}
+                collectors={collectors}
+                onAssignmentCreated={fetchAssignments}
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-medium">Tuyến đường</th>
+                    <th className="text-left p-3 font-medium">Nhân viên</th>
+                    <th className="text-left p-3 font-medium">
+                      Thời gian bắt đầu
+                    </th>
+                    <th className="text-left p-3 font-medium">Trạng thái</th>
+                    <th className="text-left p-3 font-medium">Hoàn thành</th>
                   </tr>
-                ))}
-                {assignments.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-gray-500">
-                      Chưa có lịch trình nào
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                </thead>
+                <tbody>
+                  {assignments.map((assignment) => (
+                    <tr
+                      key={assignment.id}
+                      className="border-b hover:bg-gray-50 cursor-pointer"
+                      onClick={() => handleAssignmentClick(assignment)}
+                    >
+                      <td className="p-3">{assignment.route.name}</td>
+                      <td className="p-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {assignment.collector.name}
+                          </span>
+                          <div className="text-xs text-gray-500 space-y-0.5">
+                            {assignment.collector.phone && (
+                              <div>📞 {assignment.collector.phone}</div>
+                            )}
+                            {assignment.collector.licensePlate && (
+                              <div>🚗 {assignment.collector.licensePlate}</div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        {new Date(assignment.assigned_date).toLocaleDateString(
+                          "vi-VN"
+                        )}{" "}
+                        {assignment.time_window_start}
+                      </td>
+                      <td className="p-3">
+                        <Badge variant={getStatusVariant(assignment.status)}>
+                          {getStatusText(assignment.status)}
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <Progress
+                            value={getProgressValue(assignment.status)}
+                            className="w-16 h-2"
+                          />
+                          <span className="text-sm text-gray-600 min-w-[35px]">
+                            {getProgressValue(assignment.status)}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {assignments.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-gray-500">
+                        Chưa có lịch trình nào
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </>
     );
   };
 
