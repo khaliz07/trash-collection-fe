@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -6,26 +8,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  Clock,
-  MapPin,
-  Truck,
-  User,
-  Phone,
-  Calendar,
-  Route,
-  AlertTriangle,
-} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { ScheduleMapView, EnhancedScheduleMapView } from "./ScheduleMapView";
-import OptimizedRouteCreator from "./OptimizedRouteCreator";
+import {
+  AlertTriangle,
+  Calendar,
+  Clock,
+  MapPin,
+  Phone,
+  Route,
+  User,
+} from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { EnhancedScheduleMapView } from "./ScheduleMapView";
 
 interface ScheduleDialogProps {
   schedule: any;
@@ -388,12 +386,6 @@ export function ScheduleDialog({
                       Tạo lộ trình thu gom bằng cách click trên bản đồ
                     </p>
                   </div>
-                  <OptimizedRouteCreator
-                    onRouteCreated={(route) => {
-                      toast.success("Đã tạo lộ trình thành công");
-                      onOpenChange(false);
-                    }}
-                  />
                 </div>
               </TabsContent>
 

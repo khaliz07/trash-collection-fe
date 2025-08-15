@@ -1,4 +1,8 @@
-export type ScheduleStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+export type ScheduleStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 
 export interface ScheduleCollector {
   id: string;
@@ -29,7 +33,7 @@ export interface SchedulePoint {
   lat: number;
   lng: number;
   address: string;
-  type: 'start' | 'end' | 'normal';
+  type: "start" | "end" | "normal";
 }
 
 export interface ScheduleRoute {
@@ -41,10 +45,9 @@ export interface Schedule {
   code: string;
   startTime: string;
   endTime: string;
-  wasteType: string;
   status: ScheduleStatus;
   note?: string;
   attachments?: ScheduleAttachment[];
   collector: ScheduleCollector;
   route: ScheduleRoute;
-} 
+}
