@@ -1,5 +1,5 @@
 /**
- * Custom Routing Simple Leaflet Map Component - No routing machine errors
+ * Custom Routing Simple Leaflet Map Component - Separated Effects Architecture
  */
 
 "use client";
@@ -112,6 +112,185 @@ function SimpleLeafletMap(props: LeafletMapProps) {
 
     isInitializedRef.current = false;
   }, []);
+
+  // 🚀 EFFECT 1: Map Initialization (runs ONCE)
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      !mapContainerRef.current ||
+      isInitializedRef.current
+    ) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const initializeMap = async () => {
+      try {
+        console.log("🚀 INITIALIZING MAP (one-time setup)");
+        isInitializedRef.current = true;
+
+        // Cleanup any existing instances
+        performCleanup();
+
+        // Dynamic import Leaflet
+        if (!leafletInstance) {
+          leafletInstance = (await import("leaflet")).default;
+
+          // Add CSS
+          if (!document.querySelector('link[href*="leaflet.css"]')) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+            document.head.appendChild(link);
+          }
+
+          // Fix default markers
+          delete (leafletInstance.Icon.Default.prototype as any)._getIconUrl;
+          leafletInstance.Icon.Default.mergeOptions({
+            iconRetinaUrl:
+              "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+            iconUrl:
+              "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+            shadowUrl:
+              "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+          });
+        }
+
+        if (!isMounted) return;
+
+        // Create map with initial center and zoom
+        const map = leafletInstance
+          .map(mapContainerRef.current!)
+          .setView([center.lat, center.lng], zoom);
+        mapRef.current = map;
+
+        // Add tile layer
+        leafletInstance
+          .tileLayer(leafletService.getTileLayerUrl(), {
+            attribution: leafletService.getTileLayerAttribution(),
+          })
+          .addTo(map);
+
+        // Add map click handler
+        if (stableOnMapClick.current) {
+          map.on("click", (e: any) => {
+            stableOnMapClick.current!(e.latlng.lat, e.latlng.lng);
+          });
+        }
+
+        console.log("✅ Map initialized successfully");
+      } catch (error) {
+        console.error("Failed to initialize map:", error);
+        isInitializedRef.current = false;
+      }
+    };
+
+    initializeMap();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // ⭐ EMPTY DEPS - only run once!
+
+  // Helper function to get icon color
+  const getIconColor = (type: string) => {
+    switch (type) {
+      case "start":
+        return "#16a34a"; // Green
+      case "end":
+        return "#dc2626"; // Red
+      case "pickup":
+        return "#3b82f6"; // Blue
+      default:
+        return "#e11d48"; // Default red/pink
+    }
+  };
+
+  // Helper function to update markers
+  const updateMapMarkers = useCallback((points: any[]) => {
+    if (!mapRef.current || !leafletInstance) {
+      console.warn("⚠️ Map not ready for marker updates");
+      return;
+    }
+
+    console.log("🔄 UPDATING MARKERS", points.length);
+
+    // Clear existing markers
+    markersRef.current.forEach((marker) => {
+      try {
+        if (marker && typeof marker.remove === "function") {
+          marker.remove();
+        }
+      } catch (e) {
+        // Silent cleanup
+      }
+    });
+    markersRef.current = [];
+
+    // Add new markers
+    points.forEach((point: any, index: number) => {
+      if (!point || typeof point.lat !== 'number' || typeof point.lng !== 'number') {
+        console.warn("⚠️ Invalid point data:", point);
+        return;
+      }
+
+      const type =
+        point.type ||
+        (index === 0
+          ? "start"
+          : index === points.length - 1
+          ? "end"
+          : "waypoint");
+      const color = getIconColor(type);
+
+      const customIcon = leafletInstance.divIcon({
+        html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: white;">${
+          type === "start"
+            ? "S"
+            : type === "end"
+            ? "E"
+            : type === "pickup"
+            ? "P"
+            : "•"
+        }</div>`,
+        className: "custom-div-icon",
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
+
+      try {
+        const marker = leafletInstance
+          .marker([point.lat, point.lng], { icon: customIcon })
+          .addTo(mapRef.current);
+        markersRef.current.push(marker);
+
+        marker.bindPopup(
+          `<div style="font-size: 14px;"><div style="font-weight: 600;">${
+            point.address
+          }</div><div style="color: #666; font-size: 12px;">${point.lat.toFixed(
+            6
+          )}, ${point.lng.toFixed(6)}</div></div>`
+        );
+
+        if (stableOnMarkerClick.current) {
+          marker.on("click", () =>
+            stableOnMarkerClick.current!(point.id)
+          );
+        }
+      } catch (error) {
+        console.error("Error creating marker:", error);
+      }
+    });
+
+    console.log(`✅ Updated ${markersRef.current.length} markers`);
+  }, []);
+
+  // 🔄 EFFECT 2: Update markers when points change
+  useEffect(() => {
+    const parsedPoints = JSON.parse(memoizedPoints);
+    updateMapMarkers(parsedPoints);
+  }, [memoizedPoints, updateMapMarkers]);
 
   // Fallback routing function for when OSRM is rate limited
   const addFallbackRouting = useCallback(
@@ -279,31 +458,25 @@ function SimpleLeafletMap(props: LeafletMapProps) {
 
         // Add timeout and proper error handling
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
         const response = await fetch(osrmUrl, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
           signal: controller.signal,
+          headers: {
+            "User-Agent": "LeafletRouting/1.0",
+          },
         });
 
         clearTimeout(timeoutId);
 
-        console.log("OSRM Response status:", response.status);
-
         if (!response.ok) {
-          throw new Error(
-            `OSRM API error: ${response.status} ${response.statusText}`
-          );
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log("OSRM Data:", data);
 
-        if (!data.routes || data.routes.length === 0) {
-          throw new Error("No routes found from OSRM");
+        if (data.code !== "Ok" || !data.routes || data.routes.length === 0) {
+          throw new Error(`OSRM Error: ${data.message || "No routes found"}`);
         }
 
         const route = data.routes[0];
@@ -380,7 +553,7 @@ function SimpleLeafletMap(props: LeafletMapProps) {
           fallbackLine.addTo(map);
           routeLayerRef.current = fallbackLine;
 
-          // Conditionally fit map to route bounds (error fallback)
+          // Conditionally fit map to route bounds (fallback routing)
           if (autoFitBounds) {
             const group = L.featureGroup([fallbackLine, ...markersRef.current]);
             map.fitBounds(group.getBounds(), { padding: [20, 20] });
@@ -417,193 +590,96 @@ function SimpleLeafletMap(props: LeafletMapProps) {
     []
   );
 
-  // Initialize map
+  // 🛣️ EFFECT 3: Update routing when showRoute or points change
   useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      !mapContainerRef.current ||
-      isInitializedRef.current
-    ) {
+    if (!mapRef.current || !leafletInstance || !showRoute) {
+      // Clear route if showRoute is false
+      if (routeLayerRef.current && mapRef.current) {
+        mapRef.current.removeLayer(routeLayerRef.current);
+        routeLayerRef.current = null;
+      }
       return;
     }
 
-    let isMounted = true;
-
-    const initializeMap = async () => {
-      try {
-        isInitializedRef.current = true;
-
-        // Cleanup any existing instances
-        performCleanup();
-
-        // Dynamic import Leaflet
-        if (!leafletInstance) {
-          leafletInstance = (await import("leaflet")).default;
-
-          // Add CSS
-          if (!document.querySelector('link[href*="leaflet.css"]')) {
-            const link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-            document.head.appendChild(link);
-          }
-
-          // Fix default markers
-          delete (leafletInstance.Icon.Default.prototype as any)._getIconUrl;
-          leafletInstance.Icon.Default.mergeOptions({
-            iconRetinaUrl:
-              "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-            iconUrl:
-              "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-            shadowUrl:
-              "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-          });
-        }
-
-        if (!isMounted) return;
-
-        // Create map
-        const map = leafletInstance
-          .map(mapContainerRef.current!)
-          .setView([center.lat, center.lng], zoom);
-        mapRef.current = map;
-
-        // Add tile layer
-        leafletInstance
-          .tileLayer(leafletService.getTileLayerUrl(), {
-            attribution: leafletService.getTileLayerAttribution(),
-          })
-          .addTo(map);
-
-        // Add markers
-        const parsedPoints = JSON.parse(memoizedPoints);
-        parsedPoints.forEach((point: any, index: number) => {
-          if (!isMounted) return;
-
-          const type =
-            point.type ||
-            (index === 0
-              ? "start"
-              : index === parsedPoints.length - 1
-              ? "end"
-              : "waypoint");
-          const color = getIconColor(type);
-
-          const customIcon = leafletInstance.divIcon({
-            html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: white;">${
-              type === "start"
-                ? "S"
-                : type === "end"
-                ? "E"
-                : type === "pickup"
-                ? "P"
-                : "•"
-            }</div>`,
-            className: "custom-div-icon",
-            iconSize: [20, 20],
-            iconAnchor: [10, 10],
-          });
-
-          const marker = leafletInstance
-            .marker([point.lat, point.lng], { icon: customIcon })
-            .addTo(map);
-          markersRef.current.push(marker);
-
-          marker.bindPopup(
-            `<div style="font-size: 14px;"><div style="font-weight: 600;">${
-              point.address
-            }</div><div style="color: #666; font-size: 12px;">${point.lat.toFixed(
-              6
-            )}, ${point.lng.toFixed(6)}</div></div>`
-          );
-
-          if (onMarkerClick) {
-            marker.on("click", () => onMarkerClick(point.id));
-          }
-        });
-
-        // Add map click handler
-        if (onMapClick) {
-          map.on("click", (e: any) => {
-            onMapClick(e.latlng.lat, e.latlng.lng);
-          });
-        }
-
-        // Add routing if needed with debouncing
-        if (showRoute && parsedPoints.length >= 2) {
-          // Clear any existing timeout
-          if (routingTimeoutRef.current) {
-            clearTimeout(routingTimeoutRef.current);
-          }
-
-          // Debounce routing calls to prevent rapid API requests
-          routingTimeoutRef.current = setTimeout(() => {
-            if (isMounted) {
-              addCustomRouting(
-                map,
-                parsedPoints,
-                leafletInstance,
-                onRouteUpdate
-              );
-            }
-          }, 800); // 800ms debounce delay
-        }
-      } catch (error) {
-        console.error("Failed to initialize map:", error);
-        isInitializedRef.current = false;
+    const parsedPoints = JSON.parse(memoizedPoints);
+    if (parsedPoints.length < 2) {
+      // Clear route if not enough points
+      if (routeLayerRef.current) {
+        mapRef.current.removeLayer(routeLayerRef.current);
+        routeLayerRef.current = null;
       }
-    };
+      return;
+    }
 
-    initializeMap();
+    console.log("🛣️ UPDATING ROUTING", parsedPoints.length, "points");
+
+    // Clear any existing timeout
+    if (routingTimeoutRef.current) {
+      clearTimeout(routingTimeoutRef.current);
+    }
+
+    // Debounce routing calls to prevent rapid API requests
+    routingTimeoutRef.current = setTimeout(() => {
+      addCustomRouting(
+        mapRef.current,
+        parsedPoints,
+        leafletInstance,
+        stableOnRouteUpdate.current
+      );
+    }, 800); // 800ms debounce delay
 
     return () => {
-      isMounted = false;
+      if (routingTimeoutRef.current) {
+        clearTimeout(routingTimeoutRef.current);
+        routingTimeoutRef.current = null;
+      }
+    };
+  }, [memoizedPoints, showRoute, addCustomRouting]);
 
+  // 📍 EFFECT 4: Update map center when center prop changes
+  useEffect(() => {
+    if (mapRef.current && typeof center === "object" && center.lat && center.lng) {
+      // Only update view if center actually changed significantly (>100m difference)
+      const currentCenter = mapRef.current.getCenter();
+      const distance = mapRef.current.distance(
+        [currentCenter.lat, currentCenter.lng],
+        [center.lat, center.lng]
+      );
+
+      // Only update if the distance is significant (>100 meters) to avoid micro-adjustments
+      if (distance > 100) {
+        console.log("📍 Updating map center to:", center);
+        mapRef.current.setView(
+          [center.lat, center.lng],
+          mapRef.current.getZoom(),
+          {
+            animate: true,
+            duration: 0.5,
+          }
+        );
+      }
+    }
+  }, [memoizedCenter]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
       // Clear debounce timeout
       if (routingTimeoutRef.current) {
         clearTimeout(routingTimeoutRef.current);
         routingTimeoutRef.current = null;
       }
-
       performCleanup();
     };
-  }, [
-    memoizedCenter,
-    memoizedPoints,
-    zoom,
-    showRoute,
-    autoFitBounds,
-    performCleanup,
-  ]);
-
-  const getIconColor = (type: string) => {
-    switch (type) {
-      case "start":
-        return "#22c55e";
-      case "end":
-        return "#ef4444";
-      case "pickup":
-        return "#f59e0b";
-      case "waypoint":
-        return "#3b82f6";
-      default:
-        return "#6b7280";
-    }
-  };
+  }, [performCleanup]);
 
   return (
     <div
+      ref={mapContainerRef}
       style={{ width: "100%", height }}
-      className="relative rounded-lg overflow-hidden"
-    >
-      <div
-        ref={mapContainerRef}
-        style={{ height: "100%", width: "100%" }}
-        className="leaflet-container"
-      />
-    </div>
+      className="rounded-lg overflow-hidden border border-gray-200"
+    />
   );
 }
 
-export { SimpleLeafletMap };
 export default SimpleLeafletMap;
