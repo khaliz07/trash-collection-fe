@@ -1,15 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { useState, useEffect } from "react";
-import ScheduleTable from "@/components/admin/schedules/ScheduleTable";
-import { mockSchedules } from "@/components/admin/schedules/mockData";
-import type { Schedule } from "@/components/admin/schedules/types";
-import { ScheduleDialog } from "@/components/admin/schedules/ScheduleDialog";
 import { RouteCreator } from "@/components/admin/schedules/RouteCreator";
+import { ScheduleDialog } from "@/components/admin/schedules/ScheduleDialog";
+import ScheduleTable from "@/components/admin/schedules/ScheduleTable";
+import type { Schedule } from "@/components/admin/schedules/types";
 import { Button } from "@/components/ui/button";
+import { RouteStatus, RouteWithUrgents } from "@/types/route";
 import { Plus } from "lucide-react";
-import { RouteWithUrgents, RouteStatus } from "@/types/route";
+import * as React from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 

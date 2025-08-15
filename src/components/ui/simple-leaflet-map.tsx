@@ -42,7 +42,7 @@ function SimpleLeafletMap(props: LeafletMapProps) {
   const routeCacheRef = useRef<Map<string, RouteResult>>(new Map());
   const lastRequestTimeRef = useRef<number>(0);
   const requestCountRef = useRef<number>(0);
-  const lastRoutedPointsRef = useRef<string>(''); // Track last routed points to prevent duplicate calls
+  const lastRoutedPointsRef = useRef<string>(""); // Track last routed points to prevent duplicate calls
 
   const {
     center,
@@ -59,12 +59,12 @@ function SimpleLeafletMap(props: LeafletMapProps) {
   // Memoize points to prevent unnecessary re-renders
   const memoizedPoints = useMemo(() => JSON.stringify(points), [points]);
   const memoizedCenter = useMemo(() => JSON.stringify(center), [center]);
-  
+
   // Stable refs for callbacks to prevent useEffect re-runs
   const stableOnRouteUpdate = useRef(onRouteUpdate);
   const stableOnMapClick = useRef(onMapClick);
   const stableOnMarkerClick = useRef(onMarkerClick);
-  
+
   // Update refs when props change
   useEffect(() => {
     stableOnRouteUpdate.current = onRouteUpdate;
@@ -192,7 +192,7 @@ function SimpleLeafletMap(props: LeafletMapProps) {
       const pointsKey = points
         .map((p) => `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`)
         .join("|");
-      
+
       // Skip if we already routed these exact points (prevent re-render loops)
       if (lastRoutedPointsRef.current === pointsKey) {
         console.log("🚫 Skipping duplicate routing call for same points");
@@ -248,7 +248,12 @@ function SimpleLeafletMap(props: LeafletMapProps) {
         // Within last minute
         if (requestCountRef.current >= 5) {
           console.warn("Rate limit exceeded, using fallback routing");
-          return addFallbackRouting(map, points, L, stableOnRouteUpdate.current);
+          return addFallbackRouting(
+            map,
+            points,
+            L,
+            stableOnRouteUpdate.current
+          );
         }
       } else {
         // Reset counter after a minute

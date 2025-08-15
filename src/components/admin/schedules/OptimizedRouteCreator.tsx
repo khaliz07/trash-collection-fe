@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,16 +12,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
-import dynamic from "next/dynamic";
-import { RouteStatus, RouteData, CreateRouteRequest } from "@/types/route";
+import { useCollectorsList } from "@/hooks/use-collectors-api";
 import leafletService, {
   type LatLng,
   type RouteResult,
 } from "@/lib/leaflet-service";
 import { debounce } from "@/lib/utils";
+import { CreateRouteRequest, RouteData, RouteStatus } from "@/types/route";
+import dynamic from "next/dynamic";
+import React, { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 // Dynamic import to prevent SSR issues
 const SimpleLeafletMap = dynamic(
@@ -57,12 +58,12 @@ export function OptimizedRouteCreator({
   onRouteCreated,
   initialData,
 }: RouteCreatorProps) {
-  // Mock collectors for testing
-  const mockCollectors = [
-    { id: "collector-1", name: "Nguyễn Văn An", phone: "0901234567" },
-    { id: "collector-2", name: "Trần Thị Bình", phone: "0901234568" },
-    { id: "collector-3", name: "Lê Văn Cường", phone: "0901234569" },
-  ];
+  // Get collectors from API
+  const {
+    collectors,
+    loading: collectorsLoading,
+    error: collectorsError,
+  } = useCollectorsList();
 
   const [formData, setFormData] = useState<CreateRouteRequest>({
     name: "",
@@ -288,7 +289,14 @@ export function OptimizedRouteCreator({
       {/* Basic Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Thông tin cơ bản</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            Thông tin cơ bản
+            <div className="text-sm font-normal text-gray-600">
+              {collectorsLoading
+                ? "Đang tải collectors..."
+                : `${collectors.length} collector có sẵn`}
+            </div>
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -306,6 +314,11 @@ export function OptimizedRouteCreator({
 
             <div>
               <Label htmlFor="collector">Người thu gom</Label>
+              {collectorsError && (
+                <div className="text-sm text-red-600 mb-2">
+                  ⚠️ Lỗi tải danh sách collector: {collectorsError}
+                </div>
+              )}
               <Select
                 value={formData.assigned_collector_id}
                 onValueChange={(value) =>
@@ -314,18 +327,57 @@ export function OptimizedRouteCreator({
                     assigned_collector_id: value,
                   }))
                 }
+                disabled={collectorsLoading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Chọn người thu gom" />
+                  <SelectValue
+                    placeholder={
+                      collectorsLoading ? "Đang tải..." : "Chọn người thu gom"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockCollectors.map((collector) => (
-                    <SelectItem key={collector.id} value={collector.id}>
-                      {collector.name} - {collector.phone}
+                  {collectorsLoading ? (
+                    <SelectItem value="" disabled>
+                      Đang tải...
                     </SelectItem>
-                  ))}
+                  ) : collectorsError ? (
+                    <SelectItem value="" disabled>
+                      Lỗi tải dữ liệu
+                    </SelectItem>
+                  ) : collectors.length === 0 ? (
+                    <SelectItem value="" disabled>
+                      Không có collector nào
+                    </SelectItem>
+                  ) : (
+                    collectors.map((collector) => (
+                      <SelectItem key={collector.id} value={collector.id}>
+                        {collector.name} - {collector.phone}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+
+              {/* Show selected collector info */}
+              {formData.assigned_collector_id && !collectorsLoading && (
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
+                  <div className="text-blue-800">
+                    <strong>Đã chọn:</strong>{" "}
+                    {
+                      collectors.find(
+                        (c) => c.id === formData.assigned_collector_id
+                      )?.name
+                    }{" "}
+                    -{" "}
+                    {
+                      collectors.find(
+                        (c) => c.id === formData.assigned_collector_id
+                      )?.phone
+                    }
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>

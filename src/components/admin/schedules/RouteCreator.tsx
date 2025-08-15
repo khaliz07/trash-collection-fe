@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,15 +12,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
-import dynamic from "next/dynamic";
-import { RouteStatus, RouteData, CreateRouteRequest } from "@/types/route";
+import { useCollectorsList } from "@/hooks/use-collectors-api";
 import leafletService, {
   type LatLng,
   type RouteResult,
 } from "@/lib/leaflet-service";
+import { CreateRouteRequest, RouteData, RouteStatus } from "@/types/route";
+import dynamic from "next/dynamic";
+import React, { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 // Utility function for debouncing
 function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
@@ -65,12 +66,11 @@ export function RouteCreator({
   onRouteCreated,
   initialData,
 }: RouteCreatorProps) {
-  // Mock collectors for testing
-  const mockCollectors = [
-    { id: "collector-1", name: "Nguyễn Văn An", phone: "0901234567" },
-    { id: "collector-2", name: "Trần Thị Bình", phone: "0901234568" },
-    { id: "collector-3", name: "Lê Văn Cường", phone: "0901234569" },
-  ];
+  const {
+    collectors,
+    loading: collectorsLoading,
+    error: collectorsError,
+  } = useCollectorsList();
 
   const [formData, setFormData] = useState<CreateRouteRequest>({
     name: "",
@@ -427,7 +427,7 @@ export function RouteCreator({
                   <SelectValue placeholder="Chọn người thu gom" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockCollectors.map((collector) => (
+                  {collectors.map((collector) => (
                     <SelectItem key={collector.id} value={collector.id}>
                       {collector.name} - {collector.phone}
                     </SelectItem>

@@ -113,6 +113,6 @@
     "@types/nodemailer": "^6.4.8",
     "@types/react-i18next": "^8.1.0",
     "prisma": "^5.1.1",
-    "tsx": "^4.20.3"
+    "tsx": "^4.20.4"
   }
 }
