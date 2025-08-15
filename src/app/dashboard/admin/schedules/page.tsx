@@ -3,6 +3,8 @@
 import { RouteCreator } from "@/components/admin/schedules/RouteCreator";
 import { ScheduleDialog } from "@/components/admin/schedules/ScheduleDialog";
 import ScheduleTable from "@/components/admin/schedules/ScheduleTable";
+import { CreateAssignmentDialog } from "@/components/admin/schedules/create-assignment-dialog";
+import { AssignmentDetailsDialog } from "@/components/admin/schedules/assignment-details-dialog";
 import type { Schedule } from "@/components/admin/schedules/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,8 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SimpleRoute } from "@/types/simple-route";
+import { RouteAssignment } from "@/types/route-assignment";
 import { Plus } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -33,6 +37,13 @@ export default function AdminSchedulesPage() {
     "create"
   );
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [assignments, setAssignments] = useState<RouteAssignment[]>([]);
+  const [collectors, setCollectors] = useState<any[]>([]);
+  const [selectedAssignment, setSelectedAssignment] = useState<RouteAssignment | null>(null);
+  const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
+  const [showAssignmentDetails, setShowAssignmentDetails] = useState(false);
+  const [showAssignmentDetailsDialog, setShowAssignmentDetailsDialog] = useState(false);
+  const [assignmentDialogMode, setAssignmentDialogMode] = useState<"create" | "edit">("create");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("schedules");
@@ -41,6 +52,8 @@ export default function AdminSchedulesPage() {
   useEffect(() => {
     fetchSchedules();
     fetchRoutes();
+    fetchAssignments();
+    fetchCollectors();
   }, []);
 
   const fetchSchedules = async () => {
@@ -79,6 +92,32 @@ export default function AdminSchedulesPage() {
     } catch (error) {
       console.error("Error fetching routes:", error);
       toast.error("Không thể tải danh sách tuyến đường");
+    }
+  };
+
+  const fetchAssignments = async () => {
+    try {
+      const response = await fetch("/api/admin/assignments");
+      if (response.ok) {
+        const data = await response.json();
+        setAssignments(data.assignments || []);
+      }
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+      toast.error("Không thể tải danh sách lịch trình");
+    }
+  };
+
+  const fetchCollectors = async () => {
+    try {
+      const response = await fetch("/api/admin/collectors");
+      if (response.ok) {
+        const data = await response.json();
+        setCollectors(data.collectors || []);
+      }
+    } catch (error) {
+      console.error("Error fetching collectors:", error);
+      toast.error("Không thể tải danh sách nhân viên thu gom");
     }
   };
 
@@ -171,6 +210,43 @@ export default function AdminSchedulesPage() {
     }
   };
 
+  // Assignment handlers
+  const handleAssignmentClick = (assignment: RouteAssignment) => {
+    setSelectedAssignment(assignment);
+    setShowAssignmentDetailsDialog(true);
+  };
+
+  const handleCreateAssignment = () => {
+    setSelectedAssignment(null);
+    setAssignmentDialogMode("create");
+    setShowAssignmentDialog(true);
+  };
+
+  const handleAssignmentCreated = async (assignmentData: any) => {
+    try {
+      // Assignment đã được tạo thành công
+      // Chỉ cần refresh danh sách và đóng dialog
+      await fetchAssignments();
+      setShowAssignmentDialog(false);
+    } catch (error) {
+      console.error("Error refreshing assignments:", error);
+      toast.error("Không thể refresh danh sách lịch trình");
+    }
+  };
+
+  const handleAssignmentDeleted = async (assignmentId: string) => {
+    try {
+      // Assignment đã được xóa thành công
+      // Refresh danh sách và đóng dialog
+      await fetchAssignments();
+      setShowAssignmentDialog(false);
+      setSelectedAssignment(null);
+    } catch (error) {
+      console.error("Error refreshing assignments after delete:", error);
+      toast.error("Không thể refresh danh sách lịch trình");
+    }
+  };
+
   // Component RouteTable
   const RouteTable = () => {
     return (
@@ -243,6 +319,122 @@ export default function AdminSchedulesPage() {
     );
   };
 
+  // Component AssignmentTable
+  const AssignmentTable = () => {
+    const getProgressValue = (status: string) => {
+      switch (status) {
+        case "COMPLETED":
+          return 100;
+        case "IN_PROGRESS":
+          return 45;
+        case "PENDING":
+          return 0;
+        case "FAILED":
+          return 0;
+        default:
+          return 0;
+      }
+    };
+
+    const getStatusText = (status: string) => {
+      switch (status) {
+        case "PENDING":
+          return "CHUẨN BỊ";
+        case "IN_PROGRESS":
+          return "ĐANG THỰC HIỆN";
+        case "COMPLETED":
+          return "HOÀN THÀNH";
+        case "FAILED":
+          return "KHÔNG HOÀN THÀNH";
+        default:
+          return status;
+      }
+    };
+
+    const getStatusVariant = (status: string) => {
+      switch (status) {
+        case "COMPLETED":
+          return "success";
+        case "IN_PROGRESS":
+          return "info";
+        case "PENDING":
+          return "warning";
+        case "FAILED":
+          return "error";
+        default:
+          return "default";
+      }
+    };
+
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Danh sách lịch trình</CardTitle>
+            <CreateAssignmentDialog
+              routes={routes}
+              collectors={collectors}
+              onAssignmentCreated={fetchAssignments}
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-3 font-medium">Tuyến đường</th>
+                  <th className="text-left p-3 font-medium">Nhân viên</th>
+                  <th className="text-left p-3 font-medium">Thời gian bắt đầu</th>
+                  <th className="text-left p-3 font-medium">Trạng thái</th>
+                  <th className="text-left p-3 font-medium">Hoàn thành</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assignments.map((assignment) => (
+                  <tr
+                    key={assignment.id}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleAssignmentClick(assignment)}
+                  >
+                    <td className="p-3">{assignment.route.name}</td>
+                    <td className="p-3">{assignment.collector.name}</td>
+                    <td className="p-3">
+                      {new Date(assignment.assigned_date).toLocaleDateString("vi-VN")} {assignment.time_window_start}
+                    </td>
+                    <td className="p-3">
+                      <Badge variant={getStatusVariant(assignment.status)}>
+                        {getStatusText(assignment.status)}
+                      </Badge>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <Progress 
+                          value={getProgressValue(assignment.status)} 
+                          className="w-16 h-2"
+                        />
+                        <span className="text-sm text-gray-600 min-w-[35px]">
+                          {getProgressValue(assignment.status)}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {assignments.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-gray-500">
+                      Chưa có lịch trình nào
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="container py-8 max-w-6xl">
       <div className="flex justify-between items-center mb-6">
@@ -263,31 +455,7 @@ export default function AdminSchedulesPage() {
         </TabsList>
 
         <TabsContent value="schedules" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Danh sách lịch trình</CardTitle>
-                <Button onClick={() => setShowRouteCreator(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Tạo lịch trình mới
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="text-center py-8">Đang tải...</div>
-              ) : error ? (
-                <div className="text-center py-8 text-red-500">
-                  Lỗi: {error}
-                </div>
-              ) : (
-                <ScheduleTable
-                  schedules={schedules}
-                  onRowClick={handleRowClick}
-                />
-              )}
-            </CardContent>
-          </Card>
+          <AssignmentTable />
         </TabsContent>
 
         <TabsContent value="routes" className="space-y-4">
@@ -362,6 +530,17 @@ export default function AdminSchedulesPage() {
           </div>
         </div>
       )}
+
+      {/* Assignment Details Dialog */}
+      <AssignmentDetailsDialog
+        assignment={selectedAssignment}
+        open={showAssignmentDetailsDialog}
+        onOpenChange={setShowAssignmentDetailsDialog}
+        routes={routes}
+        collectors={collectors}
+        onAssignmentUpdated={fetchAssignments}
+        onAssignmentDeleted={fetchAssignments}
+      />
     </div>
   );
 }

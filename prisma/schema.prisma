@@ -246,16 +246,17 @@ model Feedback {
 }
 
 model Route {
-  id                 String      @id @default(cuid())
+  id                 String            @id @default(cuid())
   name               String
   description        String?
   startTime          Json
-  status             RouteStatus @default(DRAFT)
+  status             RouteStatus       @default(DRAFT)
   trackPoints        Json
   estimated_duration Int
-  total_distance_km  Decimal?    @db.Decimal(8, 3)
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  total_distance_km  Decimal?          @db.Decimal(8, 3)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  assignments        RouteAssignment[]
 
   @@map("routes")
 }
@@ -286,7 +287,6 @@ model CollectionRoute {
   time_windows       Json
   total_distance_km  Decimal           @db.Decimal(8, 3)
   work_zone_id       String?
-  assignments        RouteAssignment[]
   progress           RouteProgress[]
   urgent_requests    UrgentRequest[]
 
@@ -295,28 +295,21 @@ model CollectionRoute {
 
 model RouteAssignment {
   id                String           @id @default(cuid())
-  routeId           String?
-  collectorId       String?
-  assignedDate      DateTime?
-  isCompleted       Boolean          @default(false)
-  startedAt         DateTime?
-  completedAt       DateTime?
-  totalDistance     Float?
-  totalDuration     Int?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  route_id          String
+  collector_id      String
+  assigned_date     DateTime
+  status            AssignmentStatus @default(PENDING)
+  time_window_start String
+  time_window_end   String
+  started_at        DateTime?
+  completed_at      DateTime?
   actual_distance   Decimal?         @db.Decimal(8, 3)
   actual_duration   Int?
-  assigned_date     DateTime
-  collector_id      String
-  completed_at      DateTime?
-  route_id          String
-  started_at        DateTime?
-  status            AssignmentStatus @default(PENDING)
-  time_window_end   String
-  time_window_start String
+  notes             String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   collector         User             @relation(fields: [collector_id], references: [id], onDelete: Cascade)
-  route             CollectionRoute  @relation(fields: [route_id], references: [id], onDelete: Cascade)
+  route             Route            @relation(fields: [route_id], references: [id], onDelete: Cascade)
   progress          RouteProgress[]
 
   @@unique([route_id, collector_id, assigned_date])
