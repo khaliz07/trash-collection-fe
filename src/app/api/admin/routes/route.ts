@@ -6,7 +6,17 @@ const prisma = new PrismaClient();
 // GET /api/admin/routes - List all routes
 export async function GET(request: NextRequest) {
   try {
-    const routes = await prisma.collectionRoute.findMany({
+    const routes = await prisma.route.findMany({
+      include: {
+        collector: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            email: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -26,24 +36,79 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log("Creating route with data:", body);
 
-    // Simple route creation for now
-    const route = {
-      id: `route_${Date.now()}`,
-      route_name: body.name,
-      route_code: `R${Date.now().toString().slice(-6)}`,
-      description: body.description,
-      status: "DRAFT",
-      total_distance_km: 0,
-      estimated_time_min: body.estimated_duration || 60,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    // Validate required fields
+    if (
+      !body.name ||
+      !body.assigned_collector_id ||
+      !body.pickup_points ||
+      body.pickup_points.length < 2
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Missing required fields: name, assigned_collector_id, and at least 2 pickup_points",
+        },
+        { status: 400 }
+      );
+    }
 
+    // Prepare track points from pickup points
+    const trackPoints = body.pickup_points.map((point: any) => ({
+      lat: point.lat,
+      lng: point.lng,
+      address: point.address,
+    }));
+
+    // Prepare start time - for now, single time, later can be extended to multiple
+    const startTime = body.schedule_time
+      ? [
+          {
+            day: new Date(body.schedule_time)
+              .toLocaleDateString("en-US", { weekday: "long" })
+              .toLowerCase(),
+            time: new Date(body.schedule_time).toLocaleTimeString("en-US", {
+              hour12: false,
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]
+      : [];
+
+    // Create route in database
+    const route = await prisma.route.create({
+      data: {
+        name: body.name,
+        description: body.description || "",
+        startTime: startTime,
+        status: body.status || "DRAFT",
+        trackPoints: trackPoints,
+        estimated_duration: body.estimated_duration || 60,
+        total_distance_km: body.total_distance_km || 0,
+        assigned_collector_id: body.assigned_collector_id,
+      },
+      include: {
+        collector: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    console.log("Route created successfully:", route);
     return NextResponse.json(route, { status: 201 });
   } catch (error) {
     console.error("Error creating route:", error);
+    console.error("Error details:", JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { error: "Failed to create route" },
+      {
+        error: "Failed to create route",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

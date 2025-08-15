@@ -6,19 +6,9 @@ const prisma = new PrismaClient();
 // GET /api/admin/schedules - Get all schedules from database
 export async function GET(request: NextRequest) {
   try {
-    // Get collections with related data (customer, collector, schedule)
+    // Get collections with related data (collector, schedule only - customer & subscription removed)
     const collections = await prisma.collection.findMany({
       include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            address: true,
-            avatar: true,
-          },
-        },
         collector: {
           select: {
             id: true,
@@ -43,17 +33,9 @@ export async function GET(request: NextRequest) {
             instructions: true,
           },
         },
-        subscription: {
-          include: {
-            package: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
-              },
-            },
-          },
-        },
+        feedback: true,
+        payment: true,
+        routeProgress: true,
       },
       orderBy: {
         scheduledDate: "desc",
@@ -65,8 +47,6 @@ export async function GET(request: NextRequest) {
     const schedules = collections.map((collection) => ({
       id: collection.id,
       code: `COL-${collection.id.slice(-6).toUpperCase()}`,
-      customerId: collection.customerId,
-      customer: collection.customer,
       collector: collection.collector || {
         id: "unassigned",
         name: "Chưa phân công",
@@ -81,7 +61,6 @@ export async function GET(request: NextRequest) {
       scheduledDate: collection.scheduledDate,
       startTime: collection.scheduledDate,
       endTime: collection.completedAt || collection.scheduledDate,
-      wasteType: collection.wasteTypes.join(", ") || "Rác thải sinh hoạt",
       note: collection.notes || collection.schedule?.instructions || "",
       route: {
         points: collection.schedule
@@ -104,7 +83,6 @@ export async function GET(request: NextRequest) {
       longitude: collection.longitude,
       basePrice: collection.basePrice,
       totalAmount: collection.totalAmount,
-      packageInfo: collection.subscription?.package,
     }));
 
     return NextResponse.json({

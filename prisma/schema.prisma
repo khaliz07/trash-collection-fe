@@ -16,15 +16,15 @@ model Package {
   type               String
   duration           Int
   price              Decimal        @db.Decimal(10, 2)
-  monthlyEquivalent  Decimal        @db.Decimal(10, 2)
   collectionsPerWeek Int            @default(2)
   features           String[]
-  tier               Int            @default(1)
   status             PackageStatus  @default(ACTIVE)
   isPopular          Boolean        @default(false)
   displayOrder       Int            @default(0)
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
+  monthlyEquivalent  Decimal        @db.Decimal(10, 2)
+  tier               Int            @default(1)
   payments           Payment[]
   subscriptions      Subscription[]
 
@@ -35,7 +35,6 @@ model User {
   id                     String              @id @default(cuid())
   email                  String              @unique
   password               String
-  name                   String
   phone                  String?
   role                   UserRole            @default(USER)
   status                 UserStatus          @default(ACTIVE)
@@ -43,11 +42,6 @@ model User {
   dateOfBirth            DateTime?
   address                String?
   bio                    String?
-  licensePlate           String?
-  startDate              DateTime?
-  rating                 Float?              @default(0)
-  reviewCount            Int?                @default(0)
-  cccd                   String?
   isEmailVerified        Boolean             @default(false)
   emailVerificationToken String?             @unique
   resetToken             String?             @unique
@@ -57,10 +51,15 @@ model User {
   updatedAt              DateTime            @updatedAt
   latitude               Float?
   longitude              Float?
-  totalDebt              Decimal             @default(0) @db.Decimal(10, 2)
+  licensePlate           String?
+  cccd                   String?
+  rating                 Float?              @default(0)
+  reviewCount            Int?                @default(0)
+  startDate              DateTime?
   debtMonths             String[]
+  totalDebt              Decimal             @default(0) @db.Decimal(10, 2)
+  name                   String
   collectorCollections   Collection[]        @relation("CollectorCollections")
-  collections            Collection[]        @relation("CustomerCollections")
   collectorLocation      CollectorLocation[]
   debtRecords            DebtRecord[]
   feedback               Feedback[]
@@ -68,26 +67,26 @@ model User {
   payments               Payment[]
   refreshTokens          RefreshToken[]
   routeAssignments       RouteAssignment[]
+  assignedRoutes         Route[]             @relation("RouteCollector")
   schedules              Schedule[]
   subscriptions          Subscription[]
-  urgentRequests         UrgentRequest[]     @relation("UserUrgentRequests")
   assignedUrgentRequests UrgentRequest[]     @relation("CollectorUrgentRequests")
+  urgentRequests         UrgentRequest[]     @relation("UserUrgentRequests")
 
   @@map("users")
 }
 
 model Subscription {
   id            String             @id @default(cuid())
-  userId        String
-  packageId     String
-  startMonth    String
-  endMonth      String
-  queuePosition Int                @default(0)
   status        SubscriptionStatus @default(PENDING)
-  activatedAt   DateTime?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
-  collections   Collection[]
+  packageId     String
+  activatedAt   DateTime?
+  endMonth      String
+  queuePosition Int                @default(0)
+  startMonth    String
+  userId        String
   payments      Payment[]
   package       Package            @relation(fields: [packageId], references: [id])
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -119,9 +118,7 @@ model Schedule {
 
 model Collection {
   id                String           @id @default(cuid())
-  customerId        String
   collectorId       String?
-  subscriptionId    String?
   scheduleId        String?
   status            CollectionStatus @default(SCHEDULED)
   scheduledDate     DateTime
@@ -132,7 +129,6 @@ model Collection {
   pickupAddress     String
   latitude          Float
   longitude         Float
-  wasteTypes        String[]
   estimatedWeight   Float?
   actualWeight      Float?
   itemsCount        Int?
@@ -146,14 +142,11 @@ model Collection {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   collector         User?            @relation("CollectorCollections", fields: [collectorId], references: [id])
-  customer          User             @relation("CustomerCollections", fields: [customerId], references: [id], onDelete: Cascade)
   schedule          Schedule?        @relation(fields: [scheduleId], references: [id])
-  subscription      Subscription?    @relation(fields: [subscriptionId], references: [id])
   feedback          Feedback[]
   payment           Payment?
   routeProgress     RouteProgress?
 
-  @@index([customerId])
   @@index([collectorId])
   @@index([status])
   @@index([scheduledDate])
@@ -162,31 +155,31 @@ model Collection {
 }
 
 model Payment {
-  id             String         @id @default(cuid())
-  userId         String
-  packageId      String
+  id             String        @id @default(cuid())
+  collectionId   String?       @unique
   subscriptionId String?
-  collectionId   String?        @unique
-  amount         Decimal        @db.Decimal(10, 2)
-  currency       String         @default("VND")
-  status         PaymentStatus  @default(PENDING)
+  amount         Decimal       @db.Decimal(10, 2)
+  currency       String        @default("VND")
+  status         PaymentStatus @default(PENDING)
   paymentMethod  PaymentMethod
-  coveredMonths  String[]
-  paidAt         DateTime       @default(now())
-  transactionId  String?        @unique
+  transactionId  String?       @unique
   externalId     String?
   receiptUrl     String?
-  expiresAt      DateTime?
+  paidAt         DateTime      @default(now())
   failureReason  String?
   refundedAt     DateTime?
-  refundAmount   Decimal?       @db.Decimal(10, 2)
+  refundAmount   Decimal?      @db.Decimal(10, 2)
   metadata       Json?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  collection     Collection?    @relation(fields: [collectionId], references: [id])
-  package        Package        @relation(fields: [packageId], references: [id])
-  subscription   Subscription?  @relation(fields: [subscriptionId], references: [id])
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  coveredMonths  String[]
+  expiresAt      DateTime?
+  packageId      String
+  userId         String
+  collection     Collection?   @relation(fields: [collectionId], references: [id])
+  package        Package       @relation(fields: [packageId], references: [id])
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
@@ -253,83 +246,81 @@ model Feedback {
   @@map("feedback")
 }
 
+model Route {
+  id                    String      @id @default(cuid())
+  name                  String
+  description           String?
+  startTime             Json
+  status                RouteStatus @default(DRAFT)
+  trackPoints           Json
+  estimated_duration    Int
+  total_distance_km     Decimal?    @db.Decimal(8, 3)
+  assigned_collector_id String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  collector             User?       @relation("RouteCollector", fields: [assigned_collector_id], references: [id])
+
+  @@map("routes")
+}
+
 model CollectionRoute {
-  id                    String            @id @default(cuid())
-  route_name           String
-  route_code           String            @unique
-  work_zone_id         String?
-  description          String?
-
-  // Google Maps route data
-  route_path           Json              // Google Directions API response
-  route_polyline       String            // Encoded polyline from Google
-  total_distance_km    Decimal           @db.Decimal(8,3)
-  estimated_time_min   Int
-
-  // Route schedule
-  active_days          Json              // ["monday", "wednesday", "friday"]
-  time_windows         Json              // [{"start": "08:00", "end": "12:00"}]
-
-  // Legacy fields (keep for backward compatibility)
-  name                 String?           // Alias for route_name
-  isActive             Boolean           @default(true)
-  routeGeometry        Json?
-  waypoints            Json?
-  estimatedDuration    Int?
-  estimatedDistance    Float?
-  difficultyLevel      Int               @default(1)
-  scheduledDays        String[]          @default([])
-  startTime            String?
-  endTime              String?
-
-  // Status and management
-  status               RouteStatus       @default(ACTIVE)
-  created_by           String?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-
-  // Relations
-  assignments          RouteAssignment[]
-  progress             RouteProgress[]
-  urgent_requests      UrgentRequest[]
+  id                 String            @id @default(cuid())
+  name               String?
+  description        String?
+  isActive           Boolean           @default(true)
+  routeGeometry      Json?
+  waypoints          Json?
+  estimatedDuration  Int?
+  estimatedDistance  Float?
+  difficultyLevel    Int               @default(1)
+  scheduledDays      String[]          @default([])
+  startTime          String?
+  endTime            String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  active_days        Json
+  created_by         String?
+  estimated_time_min Int
+  route_code         String            @unique
+  route_name         String
+  route_path         Json
+  route_polyline     String
+  status             RouteStatus       @default(ACTIVE)
+  time_windows       Json
+  total_distance_km  Decimal           @db.Decimal(8, 3)
+  work_zone_id       String?
+  assignments        RouteAssignment[]
+  progress           RouteProgress[]
+  urgent_requests    UrgentRequest[]
 
   @@map("collection_routes")
 }
 
 model RouteAssignment {
-  id                   String               @id @default(cuid())
-  route_id             String
-  collector_id         String
-  assigned_date        DateTime
-  time_window_start    String               // "08:00"
-  time_window_end      String               // "12:00"
-
-  // Legacy fields (keep for backward compatibility)
-  routeId              String?
-  collectorId          String?
-  assignedDate         DateTime?
-  isCompleted          Boolean              @default(false)
-  startedAt            DateTime?
-  completedAt          DateTime?
-  totalDistance        Float?
-  totalDuration        Int?
-
-  // Execution tracking
-  status               AssignmentStatus     @default(PENDING)
-  started_at           DateTime?
-  completed_at         DateTime?
-
-  // Performance metrics
-  actual_distance      Decimal?             @db.Decimal(8,3)
-  actual_duration      Int?                 // minutes
-
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-
-  // Relations
-  collector            User                 @relation(fields: [collector_id], references: [id], onDelete: Cascade)
-  route                CollectionRoute      @relation(fields: [route_id], references: [id], onDelete: Cascade)
-  progress             RouteProgress[]
+  id                String           @id @default(cuid())
+  routeId           String?
+  collectorId       String?
+  assignedDate      DateTime?
+  isCompleted       Boolean          @default(false)
+  startedAt         DateTime?
+  completedAt       DateTime?
+  totalDistance     Float?
+  totalDuration     Int?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  actual_distance   Decimal?         @db.Decimal(8, 3)
+  actual_duration   Int?
+  assigned_date     DateTime
+  collector_id      String
+  completed_at      DateTime?
+  route_id          String
+  started_at        DateTime?
+  status            AssignmentStatus @default(PENDING)
+  time_window_end   String
+  time_window_start String
+  collector         User             @relation(fields: [collector_id], references: [id], onDelete: Cascade)
+  route             CollectionRoute  @relation(fields: [route_id], references: [id], onDelete: Cascade)
+  progress          RouteProgress[]
 
   @@unique([route_id, collector_id, assigned_date])
   @@map("route_assignments")
@@ -424,6 +415,29 @@ model spatial_ref_sys {
   proj4text String? @db.VarChar(2048)
 }
 
+model UrgentRequest {
+  id                    String           @id @default(cuid())
+  user_id               String
+  pickup_address        String
+  pickup_lat            Decimal          @db.Decimal(10, 8)
+  pickup_lng            Decimal          @db.Decimal(11, 8)
+  requested_date        DateTime
+  urgency_level         UrgencyLevel
+  waste_description     String
+  assigned_route_id     String?
+  assigned_collector_id String?
+  assigned_at           DateTime?
+  status                UrgentStatus     @default(PENDING)
+  completed_at          DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  collector             User?            @relation("CollectorUrgentRequests", fields: [assigned_collector_id], references: [id])
+  route                 CollectionRoute? @relation(fields: [assigned_route_id], references: [id])
+  user                  User             @relation("UserUrgentRequests", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("urgent_requests")
+}
+
 enum UserRole {
   ADMIN
   USER
@@ -472,9 +486,9 @@ enum FrequencyType {
   WEEKLY
   BI_WEEKLY
   MONTHLY
+  ONE_TIME
   QUARTERLY
   YEARLY
-  ONE_TIME
 }
 
 enum PackageStatus {
@@ -534,36 +548,4 @@ enum UrgentStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
-}
-
-model UrgentRequest {
-  id                   String               @id @default(cuid())
-  user_id              String
-
-  // Request details
-  pickup_address       String
-  pickup_lat           Decimal              @db.Decimal(10,8)
-  pickup_lng           Decimal              @db.Decimal(11,8)
-  requested_date       DateTime
-  urgency_level        UrgencyLevel
-  waste_description    String
-
-  // Auto-assignment
-  assigned_route_id    String?
-  assigned_collector_id String?
-  assigned_at          DateTime?
-
-  // Status
-  status               UrgentStatus         @default(PENDING)
-  completed_at         DateTime?
-
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-
-  // Relations
-  user                 User                 @relation("UserUrgentRequests", fields: [user_id], references: [id], onDelete: Cascade)
-  route                CollectionRoute?     @relation(fields: [assigned_route_id], references: [id])
-  collector            User?                @relation("CollectorUrgentRequests", fields: [assigned_collector_id], references: [id])
-
-  @@map("urgent_requests")
 }

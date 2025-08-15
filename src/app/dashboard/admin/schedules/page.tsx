@@ -5,7 +5,10 @@ import { ScheduleDialog } from "@/components/admin/schedules/ScheduleDialog";
 import ScheduleTable from "@/components/admin/schedules/ScheduleTable";
 import type { Schedule } from "@/components/admin/schedules/types";
 import { Button } from "@/components/ui/button";
-import { RouteStatus, RouteWithUrgents } from "@/types/route";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SimpleRoute } from "@/types/simple-route";
 import { Plus } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -17,12 +20,14 @@ export default function AdminSchedulesPage() {
   const [selected, setSelected] = React.useState<Schedule | null>(null);
   const [openDialog, setOpenDialog] = React.useState(false);
   const [showRouteCreator, setShowRouteCreator] = useState(false);
-  const [routes, setRoutes] = useState<RouteWithUrgents[]>([]);
-  const [selectedRouteData, setSelectedRouteData] =
-    useState<RouteWithUrgents | null>(null);
+  const [routes, setRoutes] = useState<SimpleRoute[]>([]);
+  const [selectedRoute, setSelectedRoute] = useState<SimpleRoute | null>(null);
+  const [showRouteDialog, setShowRouteDialog] = useState(false);
+  const [routeDialogMode, setRouteDialogMode] = useState<"create" | "edit">("create");
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("schedules");
 
   // Fetch schedules from database
   useEffect(() => {
@@ -51,13 +56,6 @@ export default function AdminSchedulesPage() {
       console.error("Error fetching schedules:", error);
       setError(error instanceof Error ? error.message : "Unknown error");
       toast.error("Không thể tải danh sách lịch trình từ database");
-
-      // Fallback to mock data if API fails
-      const { mockSchedules } = await import(
-        "@/components/admin/schedules/mockData"
-      );
-      setSchedules(mockSchedules);
-      toast.info("Đang sử dụng dữ liệu mẫu");
     } finally {
       setIsLoading(false);
     }
@@ -78,29 +76,19 @@ export default function AdminSchedulesPage() {
 
   const handleRowClick = (schedule: Schedule) => {
     setSelected(schedule);
-
-    // Convert schedule to RouteWithUrgents format
-    const routeData: RouteWithUrgents = {
-      route: {
-        id: schedule.id,
-        route_name: schedule.code,
-        route_code: schedule.code,
-        description: schedule.note || "",
-        status: RouteStatus.DRAFT, // Convert to valid RouteStatus
-        total_distance_km: 0,
-        estimated_time_min: 60,
-        created_at: new Date(schedule.startTime).toISOString(),
-        updated_at: new Date(schedule.endTime).toISOString(),
-        route_path: null,
-        route_polyline: "",
-        active_days: [],
-        time_windows: [],
-      },
-      urgent_points: [], // Mock empty urgent points for now
-    };
-
-    setSelectedRouteData(routeData);
     setOpenDialog(true);
+  };
+
+  const handleRouteClick = (route: SimpleRoute) => {
+    setSelectedRoute(route);
+    setRouteDialogMode("edit");
+    setShowRouteDialog(true);
+  };
+
+  const handleCreateRoute = () => {
+    setSelectedRoute(null);
+    setRouteDialogMode("create");
+    setShowRouteDialog(true);
   };
 
   const handleRouteUpdate = async (routeId: string, updates: any) => {
@@ -152,25 +140,78 @@ export default function AdminSchedulesPage() {
 
   const handleRouteCreated = async (routeData: any) => {
     try {
-      const response = await fetch("/api/admin/routes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(routeData),
-      });
-
-      if (response.ok) {
-        await fetchRoutes(); // Refresh routes list
-        setShowRouteCreator(false);
-        toast.success("Đã tạo tuyến đường mới");
-      } else {
-        throw new Error("Creation failed");
-      }
+      // Route đã được tạo thành công từ RouteCreator
+      // Chỉ cần refresh danh sách và đóng dialog
+      await fetchRoutes();
+      setShowRouteDialog(false);
     } catch (error) {
-      console.error("Error creating route:", error);
-      toast.error("Không thể tạo tuyến đường");
+      console.error("Error refreshing routes:", error);
+      toast.error("Không thể refresh danh sách tuyến đường");
     }
+  };
+
+  // Component RouteTable
+  const RouteTable = () => {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Danh sách tuyến đường</CardTitle>
+            <Button onClick={handleCreateRoute}>
+              <Plus className="w-4 h-4 mr-2" />
+              Tạo tuyến đường mới
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-3 font-medium">Tên tuyến đường</th>
+                  <th className="text-left p-3 font-medium">Mô tả</th>
+                  <th className="text-left p-3 font-medium">Trạng thái</th>
+                  <th className="text-left p-3 font-medium">Người thu gom</th>
+                </tr>
+              </thead>
+              <tbody>
+                {routes.map((route) => (
+                  <tr
+                    key={route.id}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleRouteClick(route)}
+                  >
+                    <td className="p-3">{route.name}</td>
+                    <td className="p-3">{route.description || "—"}</td>
+                    <td className="p-3">
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${
+                          route.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : route.status === "DRAFT"
+                            ? "bg-gray-100 text-gray-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {route.status}
+                      </span>
+                    </td>
+                    <td className="p-3">{route.collector?.name || "Chưa gán"}</td>
+                  </tr>
+                ))}
+                {routes.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-8 text-center text-gray-500">
+                      Chưa có tuyến đường nào
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
@@ -178,57 +219,98 @@ export default function AdminSchedulesPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">
-            {t("admin_schedules.title", "Lịch trình thu gom")}
+            Quản lý lịch trình và tuyến đường
           </h1>
           <p className="text-gray-600 text-sm mt-1">
-            {isLoading
-              ? "Đang tải..."
-              : `${schedules.length} lịch trình từ database`}
-            {error && <span className="text-red-500 ml-2">({error})</span>}
+            Quản lý lịch trình thu gom và các tuyến đường
           </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={fetchSchedules}
-            variant="outline"
-            disabled={isLoading}
-            className="flex items-center gap-2"
-          >
-            🔄 Refresh
-          </Button>
-          <Button
-            onClick={() => setShowRouteCreator(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Tạo tuyến đường mới
-          </Button>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Đang tải dữ liệu từ database...</p>
-          </div>
-        </div>
-      ) : (
-        <ScheduleTable schedules={schedules} onRowClick={handleRowClick} />
-      )}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="schedules">Lịch trình</TabsTrigger>
+          <TabsTrigger value="routes">Tuyến đường</TabsTrigger>
+        </TabsList>
 
+        <TabsContent value="schedules" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Danh sách lịch trình</CardTitle>
+                <Button onClick={() => setShowRouteCreator(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Tạo lịch trình mới
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8">Đang tải...</div>
+              ) : error ? (
+                <div className="text-center py-8 text-red-500">
+                  Lỗi: {error}
+                </div>
+              ) : (
+                <ScheduleTable
+                  schedules={schedules}
+                  onRowClick={handleRowClick}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="routes" className="space-y-4">
+          <RouteTable />
+        </TabsContent>
+      </Tabs>
+
+      {/* Schedule Dialog */}
       <ScheduleDialog
         schedule={selected}
         open={openDialog}
         onOpenChange={setOpenDialog}
       />
 
+      {/* Route Dialog */}
+      <Dialog open={showRouteDialog} onOpenChange={setShowRouteDialog}>
+        <DialogContent className="max-w-6xl h-[90vh] flex flex-col overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>
+              {routeDialogMode === "create" ? "Tạo tuyến đường mới" : "Chỉnh sửa tuyến đường"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-6">
+            <RouteCreator
+              onRouteCreated={handleRouteCreated}
+              initialData={
+                routeDialogMode === "edit" && selectedRoute
+                  ? {
+                      name: selectedRoute.name,
+                      description: selectedRoute.description,
+                      assigned_collector_id: selectedRoute.assigned_collector_id || "",
+                      estimated_duration: selectedRoute.estimated_duration,
+                      status: selectedRoute.status,
+                      pickup_points: selectedRoute.trackPoints.map(point => ({
+                        address: point.address || "",
+                        lat: point.lat,
+                        lng: point.lng,
+                      })),
+                    }
+                  : undefined
+              }
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Legacy Route Creator Modal (for schedules) */}
       {showRouteCreator && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
-            {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b flex-shrink-0">
-              <h2 className="text-xl font-semibold">Tạo tuyến đường mới</h2>
+              <h2 className="text-xl font-semibold">Tạo lịch trình mới</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -237,8 +319,6 @@ export default function AdminSchedulesPage() {
                 ✕
               </Button>
             </div>
-
-            {/* Modal Content - Scrollable */}
             <div className="flex-1 overflow-y-auto p-6">
               <RouteCreator onRouteCreated={handleRouteCreated} />
             </div>

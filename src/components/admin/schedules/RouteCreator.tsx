@@ -13,13 +13,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCollectorsList } from "@/hooks/use-collectors-api";
+import api from "@/lib/api";
 import leafletService, {
   type LatLng,
   type RouteResult,
 } from "@/lib/leaflet-service";
 import { CreateRouteRequest, RouteData, RouteStatus } from "@/types/route";
+import { CreateSimpleRouteRequest, SimpleRoute } from "@/types/simple-route";
 import dynamic from "next/dynamic";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { toast } from "sonner";
 
 // Utility function for debouncing
@@ -48,8 +50,8 @@ const SimpleLeafletMap = dynamic(
 );
 
 interface RouteCreatorProps {
-  onRouteCreated?: (route: RouteData) => void;
-  initialData?: Partial<CreateRouteRequest>;
+  onRouteCreated?: (route: SimpleRoute) => void;
+  initialData?: Partial<CreateSimpleRouteRequest>;
 }
 
 interface RoutePoint {
@@ -72,7 +74,7 @@ export function RouteCreator({
     error: collectorsError,
   } = useCollectorsList();
 
-  const [formData, setFormData] = useState<CreateRouteRequest>({
+  const [formData, setFormData] = useState<CreateSimpleRouteRequest>({
     name: "",
     description: "",
     assigned_collector_id: "",
@@ -91,6 +93,7 @@ export function RouteCreator({
     leafletService.getDefaultCenter()
   );
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const isCreatingRef = useRef(false); // Additional protection against double-calls
 
   // Optimize re-rendering with useMemo for map points (exclude address to prevent routing recalculation)
   const mapPoints = React.useMemo(() => {
@@ -167,33 +170,6 @@ export function RouteCreator({
     );
     debouncedRouteCalculation(routePoints);
   }, [routeCoordinates, debouncedRouteCalculation]);
-
-  const generateRoute = async () => {
-    try {
-      const validPoints = routePoints.filter((p) => p.lat && p.lng);
-      if (validPoints.length < 2) return;
-
-      const points = validPoints.map((p) => ({ lat: p.lat!, lng: p.lng! }));
-      const routeData = await leafletService.calculateRoute(points);
-
-      setRouteResult(routeData);
-
-      // Update form data with route info
-      setFormData((prev: CreateRouteRequest) => ({
-        ...prev,
-        estimated_duration: routeData.duration,
-        pickup_points: validPoints.map((p) => ({
-          address: p.address,
-          lat: p.lat!,
-          lng: p.lng!,
-          user_id: p.user_id,
-        })),
-      }));
-    } catch (error) {
-      console.error("Failed to generate route:", error);
-      toast.error("Không thể tạo lộ trình");
-    }
-  };
 
   const addAddress = async () => {
     if (!newAddress.trim()) {
@@ -281,13 +257,6 @@ export function RouteCreator({
     setRoutePoints((prev) => prev.filter((p) => p.id !== pointId));
   };
 
-  const reorderPoints = (fromIndex: number, toIndex: number) => {
-    const newPoints = [...routePoints];
-    const [removed] = newPoints.splice(fromIndex, 1);
-    newPoints.splice(toIndex, 0, removed);
-    setRoutePoints(newPoints);
-  };
-
   const optimizeRoute = async () => {
     if (routePoints.length < 3) {
       toast.error("Cần ít nhất 3 điểm để tối ưu hóa");
@@ -312,9 +281,14 @@ export function RouteCreator({
     }
   };
 
-  const createRoute = async () => {
+  const createRoute = React.useCallback(async () => {
+    // Double protection against multiple calls
+    if (isCreating || isCreatingRef.current) {
+      console.log("Route creation already in progress, skipping...");
+      return;
+    }
+
     console.log("Creating route with data:", formData);
-    console.log("Route points:", routePoints);
 
     if (
       !formData.name ||
@@ -327,33 +301,30 @@ export function RouteCreator({
       return;
     }
 
+    // Set both state and ref
     setIsCreating(true);
+    isCreatingRef.current = true;
+
     try {
       const routeData = {
         ...formData,
-        pickup_points: routePoints.map((p) => ({
-          address: p.address,
-          lat: p.lat!,
-          lng: p.lng!,
-          user_id: p.user_id || null,
-        })),
-        route_path: routeResult?.coordinates || [],
+        pickup_points: routePoints
+          .filter((p) => p.lat && p.lng) // Only include valid points
+          .map((p) => ({
+            address: p.address,
+            lat: p.lat!,
+            lng: p.lng!,
+            user_id: p.user_id,
+          })),
         total_distance_km: routeResult ? routeResult.distance / 1000 : 0,
       };
 
       console.log("Sending route data to API:", routeData);
 
-      const response = await fetch("/api/admin/routes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(routeData),
-      });
+      const response = await api.post("/admin/routes", routeData);
+      const newRoute = response.data;
 
-      if (!response.ok) {
-        throw new Error("Failed to create route");
-      }
-
-      const newRoute = await response.json();
+      console.log("Route created successfully:", newRoute);
       toast.success("Đã tạo lộ trình thành công");
 
       if (onRouteCreated) {
@@ -376,9 +347,17 @@ export function RouteCreator({
       console.error("Error creating route:", error);
       toast.error("Không thể tạo lộ trình");
     } finally {
+      // Reset both state and ref
       setIsCreating(false);
+      isCreatingRef.current = false;
     }
-  };
+  }, [isCreating, formData, routePoints, routeResult, onRouteCreated]);
+
+  // Debounced create route function
+  const debouncedCreateRoute = React.useCallback(
+    debounce(createRoute, 1000), // 1 second debounce
+    [createRoute]
+  );
 
   const handleRouteUpdate = (route: RouteResult) => {
     setRouteResult(route);
@@ -390,109 +369,9 @@ export function RouteCreator({
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Tạo Lộ Trình Thu Gom (Leaflet + OSRM)</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="route-name">Tên lộ trình</Label>
-              <Input
-                id="route-name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev: CreateRouteRequest) => ({
-                    ...prev,
-                    name: e.target.value,
-                  }))
-                }
-                placeholder="Lộ trình khu vực A"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="collector">Người thu gom</Label>
-              <Select
-                value={formData.assigned_collector_id}
-                onValueChange={(value) =>
-                  setFormData((prev: CreateRouteRequest) => ({
-                    ...prev,
-                    assigned_collector_id: value,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn người thu gom" />
-                </SelectTrigger>
-                <SelectContent>
-                  {collectors.map((collector) => (
-                    <SelectItem key={collector.id} value={collector.id}>
-                      {collector.name} - {collector.phone}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="schedule-time">Thời gian bắt đầu</Label>
-              <Input
-                id="schedule-time"
-                type="datetime-local"
-                value={formData.schedule_time}
-                onChange={(e) =>
-                  setFormData((prev: CreateRouteRequest) => ({
-                    ...prev,
-                    schedule_time: e.target.value,
-                  }))
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="duration">Thời gian dự kiến (phút)</Label>
-              <Input
-                id="duration"
-                type="number"
-                value={formData.estimated_duration}
-                onChange={(e) =>
-                  setFormData((prev: CreateRouteRequest) => ({
-                    ...prev,
-                    estimated_duration: parseInt(e.target.value),
-                  }))
-                }
-                min="30"
-                step="15"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="description">Mô tả</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev: CreateRouteRequest) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              placeholder="Mô tả lộ trình..."
-              rows={3}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Route Points */}
       <Card>
-        <CardHeader>
-          <CardTitle>Điểm Thu Gom</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-4">
           {/* Interactive Map for Point Selection */}
           <div>
             <div className="flex justify-between items-center mb-2">
@@ -553,27 +432,6 @@ export function RouteCreator({
               <Button onClick={addAddress} disabled={!newAddress.trim()}>
                 Thêm địa chỉ
               </Button>
-            </div>
-
-            {/* Quick Add Sample Points */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-sm text-gray-500">Điểm mẫu:</span>
-              {[
-                { name: "Bến Thành", lat: 10.7722, lng: 106.6986 },
-                { name: "Nhà Thờ Đức Bà", lat: 10.7798, lng: 106.699 },
-                { name: "Chợ Bình Tây", lat: 10.7558, lng: 106.652 },
-                { name: "Thống Nhất", lat: 10.7881, lng: 106.7017 },
-              ].map((point, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleMapClick(point.lat, point.lng)}
-                  className="text-xs"
-                >
-                  {point.name}
-                </Button>
-              ))}
             </div>
           </div>
 
@@ -651,7 +509,7 @@ export function RouteCreator({
       {/* Actions */}
       <div className="flex justify-end gap-2">
         <Button
-          onClick={createRoute}
+          onClick={createRoute} // Use direct function, not debounced
           disabled={
             isCreating ||
             !formData.name ||
@@ -659,6 +517,8 @@ export function RouteCreator({
             routePoints.length < 2
           }
           className="min-w-[120px]"
+          type="button" // Prevent form submission
+          data-testid="create-route-button"
         >
           {isCreating ? "Đang tạo..." : "Tạo lộ trình"}
         </Button>
