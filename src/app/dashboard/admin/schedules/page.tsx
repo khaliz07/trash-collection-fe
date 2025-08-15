@@ -4,9 +4,15 @@ import { RouteCreator } from "@/components/admin/schedules/RouteCreator";
 import { ScheduleDialog } from "@/components/admin/schedules/ScheduleDialog";
 import ScheduleTable from "@/components/admin/schedules/ScheduleTable";
 import type { Schedule } from "@/components/admin/schedules/types";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SimpleRoute } from "@/types/simple-route";
 import { Plus } from "lucide-react";
@@ -23,7 +29,9 @@ export default function AdminSchedulesPage() {
   const [routes, setRoutes] = useState<SimpleRoute[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<SimpleRoute | null>(null);
   const [showRouteDialog, setShowRouteDialog] = useState(false);
-  const [routeDialogMode, setRouteDialogMode] = useState<"create" | "edit">("create");
+  const [routeDialogMode, setRouteDialogMode] = useState<"create" | "edit">(
+    "create"
+  );
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -150,6 +158,19 @@ export default function AdminSchedulesPage() {
     }
   };
 
+  const handleRouteDeleted = async (routeId: string) => {
+    try {
+      // Route đã được xóa thành công từ RouteCreator
+      // Refresh danh sách và đóng dialog
+      await fetchRoutes();
+      setShowRouteDialog(false);
+      setSelectedRoute(null);
+    } catch (error) {
+      console.error("Error refreshing routes after delete:", error);
+      toast.error("Không thể refresh danh sách tuyến đường");
+    }
+  };
+
   // Component RouteTable
   const RouteTable = () => {
     return (
@@ -171,7 +192,9 @@ export default function AdminSchedulesPage() {
                   <th className="text-left p-3 font-medium">Tên tuyến đường</th>
                   <th className="text-left p-3 font-medium">Mô tả</th>
                   <th className="text-left p-3 font-medium">Trạng thái</th>
-                  <th className="text-left p-3 font-medium">Người thu gom</th>
+                  <th className="text-left p-3 font-medium">
+                    Thời gian dự kiến (phút)
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -184,19 +207,25 @@ export default function AdminSchedulesPage() {
                     <td className="p-3">{route.name}</td>
                     <td className="p-3">{route.description || "—"}</td>
                     <td className="p-3">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
+                      <Badge
+                        variant={
                           route.status === "ACTIVE"
-                            ? "bg-green-100 text-green-800"
+                            ? "success"
                             : route.status === "DRAFT"
-                            ? "bg-gray-100 text-gray-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                            ? "warning"
+                            : "error"
+                        }
                       >
-                        {route.status}
-                      </span>
+                        {route.status === "ACTIVE"
+                          ? "Hoạt động"
+                          : route.status === "DRAFT"
+                          ? "Tạm khóa"
+                          : route.status}
+                      </Badge>
                     </td>
-                    <td className="p-3">{route.collector?.name || "Chưa gán"}</td>
+                    <td className="p-3 text-center">
+                      {route.estimated_duration}
+                    </td>
                   </tr>
                 ))}
                 {routes.length === 0 && (
@@ -278,21 +307,29 @@ export default function AdminSchedulesPage() {
         <DialogContent className="max-w-6xl h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>
-              {routeDialogMode === "create" ? "Tạo tuyến đường mới" : "Chỉnh sửa tuyến đường"}
+              {routeDialogMode === "create"
+                ? "Tạo tuyến đường mới"
+                : "Chỉnh sửa tuyến đường"}
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-6">
             <RouteCreator
+              mode={routeDialogMode}
+              routeId={
+                routeDialogMode === "edit" && selectedRoute
+                  ? selectedRoute.id
+                  : undefined
+              }
               onRouteCreated={handleRouteCreated}
+              onRouteDeleted={handleRouteDeleted}
               initialData={
                 routeDialogMode === "edit" && selectedRoute
                   ? {
                       name: selectedRoute.name,
                       description: selectedRoute.description,
-                      assigned_collector_id: selectedRoute.assigned_collector_id || "",
                       estimated_duration: selectedRoute.estimated_duration,
                       status: selectedRoute.status,
-                      pickup_points: selectedRoute.trackPoints.map(point => ({
+                      pickup_points: selectedRoute.trackPoints.map((point) => ({
                         address: point.address || "",
                         lat: point.lat,
                         lng: point.lng,

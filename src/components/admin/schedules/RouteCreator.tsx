@@ -1,7 +1,7 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,16 +12,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCollectorsList } from "@/hooks/use-collectors-api";
 import api from "@/lib/api";
 import leafletService, {
   type LatLng,
   type RouteResult,
 } from "@/lib/leaflet-service";
-import { CreateRouteRequest, RouteData, RouteStatus } from "@/types/route";
+import { RouteStatus } from "@/types/route";
 import { CreateSimpleRouteRequest, SimpleRoute } from "@/types/simple-route";
 import dynamic from "next/dynamic";
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 // Utility function for debouncing
@@ -51,7 +50,10 @@ const SimpleLeafletMap = dynamic(
 
 interface RouteCreatorProps {
   onRouteCreated?: (route: SimpleRoute) => void;
+  onRouteDeleted?: (routeId: string) => void; // For delete functionality
   initialData?: Partial<CreateSimpleRouteRequest>;
+  mode?: "create" | "edit";
+  routeId?: string; // For edit mode
 }
 
 interface RoutePoint {
@@ -66,18 +68,14 @@ interface RoutePoint {
 
 export function RouteCreator({
   onRouteCreated,
+  onRouteDeleted,
   initialData,
+  mode = "create",
+  routeId,
 }: RouteCreatorProps) {
-  const {
-    collectors,
-    loading: collectorsLoading,
-    error: collectorsError,
-  } = useCollectorsList();
-
   const [formData, setFormData] = useState<CreateSimpleRouteRequest>({
     name: "",
     description: "",
-    assigned_collector_id: "",
     schedule_time: "",
     estimated_duration: 60,
     status: "DRAFT" as RouteStatus,
@@ -94,6 +92,29 @@ export function RouteCreator({
   );
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
   const isCreatingRef = useRef(false); // Additional protection against double-calls
+
+  // Load route points from initialData for edit mode
+  useEffect(() => {
+    if (mode === "edit" && initialData?.pickup_points) {
+      const points: RoutePoint[] = initialData.pickup_points.map(
+        (point, index) => ({
+          id: `point-${index}`,
+          address: point.address,
+          lat: point.lat,
+          lng: point.lng,
+          user_id: point.user_id,
+          isValid: true,
+          type: index === 0 ? "start" : "pickup",
+        })
+      );
+      setRoutePoints(points);
+
+      // Set map center to first point
+      if (points.length > 0 && points[0].lat && points[0].lng) {
+        setMapCenter({ lat: points[0].lat, lng: points[0].lng });
+      }
+    }
+  }, [mode, initialData]);
 
   // Optimize re-rendering with useMemo for map points (exclude address to prevent routing recalculation)
   const mapPoints = React.useMemo(() => {
@@ -134,7 +155,7 @@ export function RouteCreator({
           // Update form data with route info
           setFormData((prev) => ({
             ...prev,
-            estimated_duration: routeData.duration,
+            ...(mode == "create" && { estimated_duration: routeData.duration }),
             pickup_points: validPoints.map((p) => ({
               address: p.address,
               lat: p.lat!,
@@ -290,11 +311,7 @@ export function RouteCreator({
 
     console.log("Creating route with data:", formData);
 
-    if (
-      !formData.name ||
-      !formData.assigned_collector_id ||
-      routePoints.length < 2
-    ) {
+    if (!formData.name || routePoints.length < 2) {
       toast.error(
         "Vui lòng điền đầy đủ thông tin và có ít nhất 2 điểm thu gom"
       );
@@ -335,7 +352,6 @@ export function RouteCreator({
       setFormData({
         name: "",
         description: "",
-        assigned_collector_id: "",
         schedule_time: "",
         estimated_duration: 60,
         status: "DRAFT" as RouteStatus,
@@ -353,6 +369,115 @@ export function RouteCreator({
     }
   }, [isCreating, formData, routePoints, routeResult, onRouteCreated]);
 
+  const updateRoute = React.useCallback(async () => {
+    // Double protection against multiple calls
+    if (isCreating || isCreatingRef.current) {
+      console.log("Route update already in progress, skipping...");
+      return;
+    }
+
+    if (!routeId) {
+      toast.error("Không tìm thấy ID lộ trình để cập nhật");
+      return;
+    }
+
+    console.log("Updating route with ID:", routeId, "data:", formData);
+
+    if (!formData.name || routePoints.length < 2) {
+      toast.error(
+        "Vui lòng điền đầy đủ thông tin và có ít nhất 2 điểm thu gom"
+      );
+      return;
+    }
+
+    // Set both state and ref
+    setIsCreating(true);
+    isCreatingRef.current = true;
+
+    try {
+      const routeData = {
+        ...formData,
+        pickup_points: routePoints
+          .filter((p) => p.lat && p.lng) // Only include valid points
+          .map((p) => ({
+            address: p.address,
+            lat: p.lat!,
+            lng: p.lng!,
+            user_id: p.user_id,
+          })),
+        total_distance_km: routeResult ? routeResult.distance / 1000 : 0,
+      };
+
+      console.log("Sending route update data to API:", routeData);
+
+      const response = await api.put(`/admin/routes/${routeId}`, routeData);
+      const updatedRoute = response.data;
+
+      console.log("Route updated successfully:", updatedRoute);
+      toast.success("Đã cập nhật lộ trình thành công");
+
+      if (onRouteCreated) {
+        onRouteCreated(updatedRoute);
+      }
+    } catch (error) {
+      console.error("Error updating route:", error);
+      toast.error("Không thể cập nhật lộ trình");
+    } finally {
+      // Reset both state and ref
+      setIsCreating(false);
+      isCreatingRef.current = false;
+    }
+  }, [isCreating, formData, routePoints, routeResult, onRouteCreated, routeId]);
+
+  const deleteRoute = React.useCallback(async () => {
+    if (!routeId) {
+      toast.error("Không tìm thấy ID lộ trình để xóa");
+      return;
+    }
+
+    if (!confirm("Bạn có chắc chắn muốn xóa lộ trình này không?")) {
+      return;
+    }
+
+    // Double protection against multiple calls
+    if (isCreating || isCreatingRef.current) {
+      console.log("Route operation already in progress, skipping delete...");
+      return;
+    }
+
+    console.log("Deleting route with ID:", routeId);
+
+    // Set both state and ref
+    setIsCreating(true);
+    isCreatingRef.current = true;
+
+    try {
+      const response = await api.delete(`/admin/routes/${routeId}`);
+
+      console.log("Route deleted successfully");
+      toast.success("Đã xóa lộ trình thành công");
+
+      if (onRouteDeleted) {
+        onRouteDeleted(routeId);
+      }
+    } catch (error) {
+      console.error("Error deleting route:", error);
+      toast.error("Không thể xóa lộ trình");
+    } finally {
+      // Reset both state and ref
+      setIsCreating(false);
+      isCreatingRef.current = false;
+    }
+  }, [isCreating, routeId, onRouteDeleted]);
+
+  const handleSubmit = React.useCallback(async () => {
+    if (mode === "edit") {
+      await updateRoute();
+    } else {
+      await createRoute();
+    }
+  }, [mode, updateRoute, createRoute]);
+
   // Debounced create route function
   const debouncedCreateRoute = React.useCallback(
     debounce(createRoute, 1000), // 1 second debounce
@@ -369,6 +494,81 @@ export function RouteCreator({
 
   return (
     <div className="space-y-6">
+      {/* Route Information Form */}
+      <Card>
+        <CardContent className="space-y-4 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Route Name */}
+            <div className="space-y-2">
+              <Label htmlFor="route-name">Tên tuyến đường *</Label>
+              <Input
+                id="route-name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+                placeholder="Nhập tên tuyến đường..."
+                required
+              />
+            </div>
+
+            {/* Status */}
+            <div className="space-y-2">
+              <Label htmlFor="route-status">Trạng thái *</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value: RouteStatus) =>
+                  setFormData((prev) => ({ ...prev, status: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ACTIVE">Hoạt động</SelectItem>
+                  <SelectItem value="DRAFT">Tạm khóa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Estimated Duration */}
+            <div className="space-y-2">
+              <Label htmlFor="route-duration">Thời gian dự kiến (phút)</Label>
+              <Input
+                id="route-duration"
+                type="number"
+                min="1"
+                value={formData.estimated_duration}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    estimated_duration: parseInt(e.target.value) || 60,
+                  }))
+                }
+                placeholder="60"
+              />
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="route-description">Mô tả</Label>
+            <Textarea
+              id="route-description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              placeholder="Nhập mô tả cho tuyến đường..."
+              rows={3}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Route Points */}
       <Card>
         <CardContent className="space-y-4 pt-4">
@@ -508,19 +708,32 @@ export function RouteCreator({
 
       {/* Actions */}
       <div className="flex justify-end gap-2">
+        {mode === "edit" && (
+          <Button
+            variant="destructive"
+            onClick={deleteRoute}
+            disabled={isCreating}
+            className="min-w-[120px]"
+            type="button"
+            data-testid="delete-route-button"
+          >
+            {isCreating ? "Đang xóa..." : "Xóa"}
+          </Button>
+        )}
         <Button
-          onClick={createRoute} // Use direct function, not debounced
-          disabled={
-            isCreating ||
-            !formData.name ||
-            !formData.assigned_collector_id ||
-            routePoints.length < 2
-          }
+          onClick={handleSubmit}
+          disabled={isCreating || !formData.name || routePoints.length < 2}
           className="min-w-[120px]"
           type="button" // Prevent form submission
-          data-testid="create-route-button"
+          data-testid="submit-route-button"
         >
-          {isCreating ? "Đang tạo..." : "Tạo lộ trình"}
+          {isCreating
+            ? mode === "edit"
+              ? "Đang cập nhật..."
+              : "Đang tạo..."
+            : mode === "edit"
+            ? "Cập nhật"
+            : "Tạo lộ trình"}
         </Button>
       </div>
     </div>

@@ -67,7 +67,6 @@ model User {
   payments               Payment[]
   refreshTokens          RefreshToken[]
   routeAssignments       RouteAssignment[]
-  assignedRoutes         Route[]             @relation("RouteCollector")
   schedules              Schedule[]
   subscriptions          Subscription[]
   assignedUrgentRequests UrgentRequest[]     @relation("CollectorUrgentRequests")
@@ -247,18 +246,16 @@ model Feedback {
 }
 
 model Route {
-  id                    String      @id @default(cuid())
-  name                  String
-  description           String?
-  startTime             Json
-  status                RouteStatus @default(DRAFT)
-  trackPoints           Json
-  estimated_duration    Int
-  total_distance_km     Decimal?    @db.Decimal(8, 3)
-  assigned_collector_id String?
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
-  collector             User?       @relation("RouteCollector", fields: [assigned_collector_id], references: [id])
+  id                 String      @id @default(cuid())
+  name               String
+  description        String?
+  startTime          Json
+  status             RouteStatus @default(DRAFT)
+  trackPoints        Json
+  estimated_duration Int
+  total_distance_km  Decimal?    @db.Decimal(8, 3)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
   @@map("routes")
 }

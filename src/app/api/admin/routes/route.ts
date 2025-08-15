@@ -7,16 +7,6 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     const routes = await prisma.route.findMany({
-      include: {
-        collector: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
-            email: true,
-          },
-        },
-      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -37,16 +27,10 @@ export async function POST(request: NextRequest) {
     console.log("Creating route with data:", body);
 
     // Validate required fields
-    if (
-      !body.name ||
-      !body.assigned_collector_id ||
-      !body.pickup_points ||
-      body.pickup_points.length < 2
-    ) {
+    if (!body.name || !body.pickup_points || body.pickup_points.length < 2) {
       return NextResponse.json(
         {
-          error:
-            "Missing required fields: name, assigned_collector_id, and at least 2 pickup_points",
+          error: "Missing required fields: name, and at least 2 pickup_points",
         },
         { status: 400 }
       );
@@ -85,17 +69,6 @@ export async function POST(request: NextRequest) {
         trackPoints: trackPoints,
         estimated_duration: body.estimated_duration || 60,
         total_distance_km: body.total_distance_km || 0,
-        assigned_collector_id: body.assigned_collector_id,
-      },
-      include: {
-        collector: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
-            email: true,
-          },
-        },
       },
     });
 

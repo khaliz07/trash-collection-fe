@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const route = await prisma.collectionRoute.findUnique({
+    const route = await prisma.route.findUnique({
       where: { id: params.id },
     });
 
@@ -27,23 +27,57 @@ export async function GET(
   }
 }
 
-// PATCH /api/admin/routes/[id] - Update route
-export async function PATCH(
+// PUT /api/admin/routes/[id] - Update route
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const body = await request.json();
-    console.log("Updating route with data:", body);
+    console.log("Updating route with ID:", params.id, "data:", body);
 
-    // For now, return success without actually updating database
-    // since we're using mock data
-    const updatedRoute = {
-      id: params.id,
-      ...body,
-      updatedAt: new Date(),
-    };
+    // Validate required fields
+    if (!body.name || !body.pickup_points || body.pickup_points.length < 2) {
+      return NextResponse.json(
+        {
+          error: "Missing required fields: name, and at least 2 pickup_points",
+        },
+        { status: 400 }
+      );
+    }
 
+    // Check if route exists
+    const existingRoute = await prisma.route.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!existingRoute) {
+      return NextResponse.json({ error: "Route not found" }, { status: 404 });
+    }
+
+    // Convert pickup points to track points format
+    const trackPoints = body.pickup_points.map((point: any) => ({
+      lat: point.lat,
+      lng: point.lng,
+      address: point.address,
+      user_id: point.user_id || null,
+    }));
+
+    // Update route in database
+    const updatedRoute = await prisma.route.update({
+      where: { id: params.id },
+      data: {
+        name: body.name,
+        description: body.description,
+        startTime: body.schedule_time || body.startTime,
+        estimated_duration: body.estimated_duration,
+        status: body.status,
+        total_distance_km: body.total_distance_km,
+        trackPoints: trackPoints,
+      },
+    });
+
+    console.log("Route updated successfully:", updatedRoute);
     return NextResponse.json(updatedRoute);
   } catch (error) {
     console.error("Error updating route:", error);
@@ -60,8 +94,20 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // For now, return success without actually deleting from database
-    // since we're using mock data
+    // Check if route exists
+    const existingRoute = await prisma.route.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!existingRoute) {
+      return NextResponse.json({ error: "Route not found" }, { status: 404 });
+    }
+
+    // Delete the route
+    await prisma.route.delete({
+      where: { id: params.id },
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting route:", error);

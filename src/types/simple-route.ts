@@ -22,23 +22,13 @@ export interface SimpleRoute {
   trackPoints: TrackPoint[]; // Route coordinates
   estimated_duration: number; // minutes
   total_distance_km?: number;
-  assigned_collector_id?: string;
   createdAt: string;
   updatedAt: string;
-
-  // Relations
-  collector?: {
-    id: string;
-    name: string;
-    phone?: string;
-    email: string;
-  };
 }
 
 export interface CreateSimpleRouteRequest {
   name: string;
   description?: string;
-  assigned_collector_id: string;
   schedule_time: string; // Will be converted to startTime array
   estimated_duration: number;
   status: RouteStatus;
