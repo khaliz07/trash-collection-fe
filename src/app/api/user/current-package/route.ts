@@ -83,13 +83,17 @@ export async function GET(request: NextRequest) {
     // Get collections count for this user
     const totalCollections = await prisma.collection.count({
       where: {
-        customerId: userId,
+        schedule: {
+          customerId: userId,
+        },
       },
     });
 
     const completedCollections = await prisma.collection.count({
       where: {
-        customerId: userId,
+        schedule: {
+          customerId: userId,
+        },
         status: "COMPLETED",
       },
     });
@@ -97,7 +101,9 @@ export async function GET(request: NextRequest) {
     // Get next scheduled collection
     const nextCollection = await prisma.collection.findFirst({
       where: {
-        customerId: userId,
+        schedule: {
+          customerId: userId,
+        },
         status: "SCHEDULED",
         scheduledDate: {
           gte: new Date(),
