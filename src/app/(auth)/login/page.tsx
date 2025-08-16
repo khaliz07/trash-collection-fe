@@ -34,7 +34,6 @@ const formSchema = z.object({
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters" }),
-  role: z.enum(["user", "collector", "admin"]),
 });
 
 export default function LoginPage() {
@@ -51,6 +50,10 @@ export default function LoginPage() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     loginMutation.mutate(values);
+  }
+
+  function onError(errors: any) {
+    console.log("Form validation errors:", errors);
   }
 
   return (
@@ -92,7 +95,7 @@ export default function LoginPage() {
                 <TabsContent value="credentials">
                   <Form {...form}>
                     <form
-                      onSubmit={form.handleSubmit(onSubmit)}
+                      onSubmit={form.handleSubmit(onSubmit, onError)}
                       className="space-y-4"
                     >
                       <FormField
