@@ -94,7 +94,7 @@ const navItems: UserNavItems = {
     },
     {
       title: "Urgent Requests",
-      href: "/dashboard/collector/urgent",
+      href: "/dashboard/collector/urgent-requests",
       icon: Clock,
     },
     {
