@@ -1,23 +1,41 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { DivideIcon as LucideIcon, Home, Calendar, CreditCard, Bell, Clock, Settings, LogOut, Users, BarChart, Map, FileText, Star, MessageSquare, Truck, CheckSquare, Package } from "lucide-react"
-import { useTranslation } from 'react-i18next'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DivideIcon as LucideIcon,
+  Home,
+  Calendar,
+  CreditCard,
+  Bell,
+  Clock,
+  Settings,
+  LogOut,
+  Users,
+  BarChart,
+  Map,
+  FileText,
+  Star,
+  MessageSquare,
+  Truck,
+  CheckSquare,
+  Package,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface NavItem {
-  title: string
-  href: string
-  icon: any
+  title: string;
+  href: string;
+  icon: any;
 }
 
 interface UserNavItems {
-  user: NavItem[]
-  collector: NavItem[]
-  admin: NavItem[]
+  user: NavItem[];
+  collector: NavItem[];
+  admin: NavItem[];
 }
 
 const navItems: UserNavItems = {
@@ -64,11 +82,7 @@ const navItems: UserNavItems = {
       href: "/dashboard/collector",
       icon: Home,
     },
-    {
-      title: "Today's Collections",
-      href: "/dashboard/collector/today",
-      icon: Truck,
-    },
+
     {
       title: "Collection Map",
       href: "/dashboard/collector/map",
@@ -147,22 +161,21 @@ const navItems: UserNavItems = {
       icon: Settings,
     },
   ],
-}
+};
 
 interface SidebarNavProps {
-  role: "user" | "collector" | "admin"
+  role: "user" | "collector" | "admin";
 }
 
 export function SidebarNav({ role }: SidebarNavProps) {
-  const { t } = useTranslation('common')
-  const pathname = usePathname()
-  const items = navItems[role]
+  const { t } = useTranslation("common");
+  const pathname = usePathname();
+  const items = navItems[role];
 
   return (
     <ScrollArea className="h-full py-6">
       <div className="flex flex-col h-full justify-between">
         <div className="px-3 py-2">
-
           <div className="space-y-1">
             {items.map((item) => (
               <Link
@@ -181,13 +194,16 @@ export function SidebarNav({ role }: SidebarNavProps) {
         </div>
         <div className="px-3 py-2 mt-auto">
           <Link href="/login">
-            <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-muted-foreground"
+            >
               <LogOut className="h-4 w-4" />
-              {t('logout')}
+              {t("logout")}
             </Button>
           </Link>
         </div>
       </div>
     </ScrollArea>
-  )
+  );
 }
