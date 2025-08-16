@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import { ReactQueryProvider } from '@/components/providers/react-query-provider';
 import { AuthInitializer } from '@/components/auth/auth-initializer';
+import { AuthGuard } from '@/components/auth/auth-guard';
 import { I18nProvider } from '@/components/providers/i18n-provider';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -27,7 +28,9 @@ export default function RootLayout({
           <I18nProvider>
             <ReactQueryProvider>
               <AuthInitializer>
-                {children}
+                <AuthGuard>
+                  {children}
+                </AuthGuard>
                 <Toaster />
                 <SonnerToaster position="top-right" richColors />
               </AuthInitializer>
