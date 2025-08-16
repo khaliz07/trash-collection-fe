@@ -20,13 +20,14 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  ResponsiveTable as Table,
+  ResponsiveTableBody as TableBody,
+  ResponsiveTableCell as TableCell,
+  ResponsiveTableHead as TableHead,
+  ResponsiveTableHeader as TableHeader,
+  ResponsiveTableRow as TableRow,
+} from "@/components/ui/responsive-table";
+import { MobileDashboard, StatsGrid, StatCard } from "@/components/ui/mobile-dashboard";
 import api from "@/lib/api";
 import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -663,70 +664,69 @@ export default function UserPaymentsPage() {
         </CardHeader>
 
         <CardContent>
-          <div className="rounded-md border bg-background overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Gói dịch vụ</TableHead>
-                  <TableHead>Giá</TableHead>
-                  <TableHead>Ngày thanh toán</TableHead>
-                  <TableHead>Hạn sử dụng</TableHead>
-                  <TableHead>Phương thức thanh toán</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {historyLoading ? (
-                  // Loading skeleton
-                  [...Array(3)].map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      </TableCell>
+          <Table showCardViewOn="mobile">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Gói dịch vụ</TableHead>
+                <TableHead>Giá</TableHead>
+                <TableHead>Ngày thanh toán</TableHead>
+                <TableHead>Hạn sử dụng</TableHead>
+                <TableHead>Phương thức thanh toán</TableHead>
+                <TableHead>Trạng thái</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {historyLoading ? (
+                // Loading skeleton
+                [...Array(3)].map((_, index) => (
+                  <TableRow key={index} labels={["Gói dịch vụ", "Giá", "Ngày thanh toán", "Hạn sử dụng", "Phương thức thanh toán", "Trạng thái"]}>
+                    <TableCell label="Gói dịch vụ">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </TableCell>
+                    <TableCell label="Giá">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </TableCell>
+                    <TableCell label="Ngày thanh toán">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </TableCell>
+                    <TableCell label="Hạn sử dụng">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </TableCell>
+                    <TableCell label="Phương thức thanh toán" hideOnMobile>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </TableCell>
+                    <TableCell label="Trạng thái" hideOnMobile>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </TableCell>
                     </TableRow>
                   ))
                 ) : extensionHistory.length > 0 ? (
                   extensionHistory.map((extension) => (
-                    <TableRow key={extension.id}>
-                      <TableCell className="font-medium">
+                    <TableRow key={extension.id} labels={["Gói dịch vụ", "Giá", "Ngày thanh toán", "Hạn sử dụng", "Phương thức thanh toán", "Trạng thái"]} expandable>
+                      <TableCell label="Gói dịch vụ" className="font-medium" priority="high">
                         {extension.packageName}
                       </TableCell>
-                      <TableCell className="font-semibold text-green-600">
+                      <TableCell label="Giá" className="font-semibold text-green-600" priority="high">
                         {extension.price.toLocaleString("vi-VN")}đ
                       </TableCell>
-                      <TableCell>
+                      <TableCell label="Ngày thanh toán" priority="medium">
                         {format(
                           parseISO(extension.paymentDate),
                           "dd/MM/yyyy HH:mm",
                           { locale: vi }
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell label="Hạn sử dụng" priority="medium">
                         {format(parseISO(extension.expiryDate), "dd/MM/yyyy", {
                           locale: vi,
                         })}
                       </TableCell>
-                      <TableCell>
+                      <TableCell label="Phương thức thanh toán" hideOnMobile priority="low">
                         <Badge variant="default">
                           {extension.paymentMethod}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell label="Trạng thái" hideOnMobile priority="low">
                         <Badge
                           variant={
                             extension.status === "completed"
@@ -753,7 +753,6 @@ export default function UserPaymentsPage() {
                 )}
               </TableBody>
             </Table>
-          </div>
         </CardContent>
       </Card>
     </div>

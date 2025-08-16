@@ -48,7 +48,7 @@ function SimpleLeafletMap(props: LeafletMapProps) {
     center,
     points,
     showRoute = false,
-    height = "400px",
+    height = "600px",
     zoom = 13,
     autoFitBounds = false, // Default to false to prevent auto-zoom
     onRouteUpdate,
@@ -661,6 +661,16 @@ function SimpleLeafletMap(props: LeafletMapProps) {
     }
   }, [memoizedCenter]);
 
+  // 🔄 EFFECT: Invalidate map size when height changes
+  useEffect(() => {
+    if (mapRef.current && typeof mapRef.current.invalidateSize === 'function') {
+      setTimeout(() => {
+        mapRef.current.invalidateSize();
+        console.log("✅ Map size invalidated for height:", height);
+      }, 100);
+    }
+  }, [height]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -677,7 +687,7 @@ function SimpleLeafletMap(props: LeafletMapProps) {
     <div
       ref={mapContainerRef}
       style={{ width: "100%", height }}
-      className="rounded-lg overflow-hidden border border-gray-200"
+      className="w-full h-full rounded-lg overflow-hidden border border-gray-200"
     />
   );
 }

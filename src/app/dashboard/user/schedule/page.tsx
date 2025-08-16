@@ -1,16 +1,40 @@
-'use client';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { mockSchedule } from '../mockData';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { useState } from 'react';
-import { Star } from 'lucide-react';
-import { format, parseISO, isSameDay, isAfter, isBefore, addDays } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import * as React from 'react';
-import { Button } from '@/components/ui/button';
+"use client";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  ResponsiveTable as Table,
+  ResponsiveTableHeader as TableHeader,
+  ResponsiveTableBody as TableBody,
+  ResponsiveTableRow as TableRow,
+  ResponsiveTableHead as TableHead,
+  ResponsiveTableCell as TableCell,
+} from "@/components/ui/responsive-table";
+import { Badge } from "@/components/ui/badge";
+import { mockSchedule } from "../mockData";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { Star } from "lucide-react";
+import {
+  format,
+  parseISO,
+  isSameDay,
+  isAfter,
+  isBefore,
+  addDays,
+} from "date-fns";
+import { vi } from "date-fns/locale";
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import {
+  MobileDashboard,
+  CollapsibleSection,
+} from "@/components/ui/mobile-dashboard";
 
 export default function UserSchedulePage() {
   // Highlight days with scheduled collections
@@ -19,7 +43,7 @@ export default function UserSchedulePage() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackTarget, setFeedbackTarget] = useState<string | null>(null);
   const [starValue, setStarValue] = useState(5);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [localSchedule, setLocalSchedule] = useState(mockSchedule);
 
   // Filter schedule for selected day
@@ -29,23 +53,26 @@ export default function UserSchedulePage() {
 
   function getStatusVariant(status: string) {
     switch (status) {
-      case 'collected':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'overdue':
-        return 'error';
+      case "collected":
+        return "success";
+      case "pending":
+        return "warning";
+      case "overdue":
+        return "error";
       default:
-        return 'default';
+        return "default";
     }
   }
 
   // Xử lý mở form đánh giá (có thể là đánh giá mới hoặc cập nhật)
-  function handleOpenFeedback(id: string, existingFeedback?: {stars: number, comment?: string}) {
+  function handleOpenFeedback(
+    id: string,
+    existingFeedback?: { stars: number; comment?: string }
+  ) {
     setFeedbackTarget(id);
     setFeedbackOpen(true);
     setStarValue(existingFeedback?.stars ?? 5);
-    setComment(existingFeedback?.comment ?? '');
+    setComment(existingFeedback?.comment ?? "");
   }
 
   // Xử lý gửi đánh giá
@@ -59,7 +86,7 @@ export default function UserSchedulePage() {
                 stars: starValue,
                 comment,
                 date: new Date().toISOString(),
-                collectorId: 'collector-1',
+                collectorId: "collector-1",
               },
             }
           : item
@@ -86,28 +113,36 @@ export default function UserSchedulePage() {
                 scheduled: scheduledDates.map((d) => parseISO(d)),
               }}
               modifiersClassNames={{
-                scheduled: 'bg-primary/20',
+                scheduled: "bg-primary/20",
               }}
               locale={vi}
             />
             {selected && (
               <div className="mt-4">
                 <h2 className="text-lg font-semibold mb-2">
-                  Lịch thu gom ngày {format(selected, 'dd/MM/yyyy')}
+                  Lịch thu gom ngày {format(selected, "dd/MM/yyyy")}
                 </h2>
                 {daySchedule.length === 0 ? (
-                  <p className="text-muted-foreground">Không có lịch thu gom.</p>
+                  <p className="text-muted-foreground">
+                    Không có lịch thu gom.
+                  </p>
                 ) : (
                   <ul className="space-y-2">
                     {daySchedule.map((item) => (
                       <li key={item.id} className="flex items-center gap-3">
                         <Badge variant={getStatusVariant(item.status)}>
-                          {item.status === 'collected' && 'Đã thu'}
-                          {item.status === 'pending' && 'Chưa thu'}
-                          {item.status === 'overdue' && 'Quá hạn'}
+                          {item.status === "collected" && "Đã thu"}
+                          {item.status === "pending" && "Chưa thu"}
+                          {item.status === "overdue" && "Quá hạn"}
                         </Badge>
-                        <span className="text-sm">{item.type === 'urgent' ? 'Thu gom gấp' : 'Thu gom định kỳ'}</span>
-                        <span className="text-xs text-muted-foreground">{item.address}</span>
+                        <span className="text-sm">
+                          {item.type === "urgent"
+                            ? "Thu gom gấp"
+                            : "Thu gom định kỳ"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {item.address}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -121,7 +156,7 @@ export default function UserSchedulePage() {
             <CardTitle>Lịch sử thu gom</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
+            <Table showCardViewOn="mobile">
               <TableHeader>
                 <TableRow>
                   <TableHead>Ngày</TableHead>
@@ -132,30 +167,67 @@ export default function UserSchedulePage() {
               </TableHeader>
               <TableBody>
                 {mockSchedule.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{format(parseISO(item.date), 'dd/MM/yyyy')}</TableCell>
-                    <TableCell>{item.type === 'urgent' ? 'Gấp' : 'Định kỳ'}</TableCell>
-                    <TableCell>
+                  <TableRow
+                    key={item.id}
+                    labels={["Ngày", "Loại", "Trạng thái", "Đánh giá"]}
+                    expandable
+                  >
+                    <TableCell label="Ngày" priority="high">
+                      {format(parseISO(item.date), "dd/MM/yyyy")}
+                    </TableCell>
+                    <TableCell label="Loại" priority="medium">
+                      {item.type === "urgent" ? "Gấp" : "Định kỳ"}
+                    </TableCell>
+                    <TableCell label="Trạng thái" priority="high">
                       <Badge variant={getStatusVariant(item.status)}>
-                        {item.status === 'collected' && 'Đã thu'}
-                        {item.status === 'pending' && 'Chưa thu'}
-                        {item.status === 'overdue' && 'Quá hạn'}
+                        {item.status === "collected" && "Đã thu"}
+                        {item.status === "pending" && "Chưa thu"}
+                        {item.status === "overdue" && "Quá hạn"}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      {item.status === 'collected' ? (
+                    <TableCell label="Đánh giá" priority="low">
+                      {item.status === "collected" ? (
                         item.feedback ? (
                           <div className="flex items-center gap-2">
-                            {[1,2,3,4,5].map((n) => (
-                              <Star key={n} className={n <= item.feedback!.stars ? 'text-yellow-400 fill-yellow-400 w-4 h-4' : 'text-gray-300 w-4 h-4'} />
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <Star
+                                key={n}
+                                className={
+                                  n <= item.feedback!.stars
+                                    ? "text-yellow-400 fill-yellow-400 w-4 h-4"
+                                    : "text-gray-300 w-4 h-4"
+                                }
+                              />
                             ))}
-                            {isAfter(new Date(), parseISO(item.date)) && isBefore(new Date(), addDays(parseISO(item.date), 7)) && (
-                              <Button size="sm" variant="secondary" onClick={() => handleOpenFeedback(item.id, item.feedback)}>Đánh giá lại</Button>
-                            )}
+                            {isAfter(new Date(), parseISO(item.date)) &&
+                              isBefore(
+                                new Date(),
+                                addDays(parseISO(item.date), 7)
+                              ) && (
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() =>
+                                    handleOpenFeedback(item.id, item.feedback)
+                                  }
+                                >
+                                  Đánh giá lại
+                                </Button>
+                              )}
                           </div>
-                        ) : (isAfter(new Date(), parseISO(item.date)) && isBefore(new Date(), addDays(parseISO(item.date), 7)) ? (
-                          <Button size="sm" variant="secondary" onClick={() => handleOpenFeedback(item.id)}>Đánh giá</Button>
-                        ) : null)
+                        ) : isAfter(new Date(), parseISO(item.date)) &&
+                          isBefore(
+                            new Date(),
+                            addDays(parseISO(item.date), 7)
+                          ) ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleOpenFeedback(item.id)}
+                          >
+                            Đánh giá
+                          </Button>
+                        ) : null
                       ) : null}
                     </TableCell>
                   </TableRow>
@@ -171,18 +243,32 @@ export default function UserSchedulePage() {
             <DialogTitle>Đánh giá lần thu gom</DialogTitle>
           </DialogHeader>
           <div className="flex items-center gap-2 mb-2">
-            {[1,2,3,4,5].map((n) => (
+            {[1, 2, 3, 4, 5].map((n) => (
               <button key={n} type="button" onClick={() => setStarValue(n)}>
-                <Star className={n <= starValue ? 'text-yellow-400 fill-yellow-400 w-6 h-6' : 'text-gray-300 w-6 h-6'} />
+                <Star
+                  className={
+                    n <= starValue
+                      ? "text-yellow-400 fill-yellow-400 w-6 h-6"
+                      : "text-gray-300 w-6 h-6"
+                  }
+                />
               </button>
             ))}
           </div>
-          <textarea className="w-full border rounded p-2 text-sm" rows={3} placeholder="Nhận xét của bạn (không bắt buộc)" value={comment} onChange={e => setComment(e.target.value)} />
+          <textarea
+            className="w-full border rounded p-2 text-sm"
+            rows={3}
+            placeholder="Nhận xét của bạn (không bắt buộc)"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
           <DialogFooter>
-            <Button onClick={handleSubmitFeedback} disabled={starValue < 1}>Gửi đánh giá</Button>
+            <Button onClick={handleSubmitFeedback} disabled={starValue < 1}>
+              Gửi đánh giá
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
-} 
+}
