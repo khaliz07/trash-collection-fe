@@ -293,7 +293,10 @@ export function QRPaymentDialog({
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const progressValue = ((300 - timeLeft) / 300) * 100;
+  const progressValue = Math.min(
+    100,
+    Math.max(0, ((300 - timeLeft) / 300) * 100)
+  );
 
   const handleClose = () => {
     setPaymentData(null);

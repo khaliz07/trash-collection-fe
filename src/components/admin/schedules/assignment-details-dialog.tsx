@@ -1,8 +1,17 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Calendar, Clock, MapPin, User, FileText, Save, X, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  FileText,
+  Save,
+  X,
+  Trash2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -18,30 +27,30 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { toast } from "@/hooks/use-toast"
-import { 
-  RouteAssignment, 
-  AssignmentStatus, 
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "@/hooks/use-toast";
+import {
+  RouteAssignment,
+  AssignmentStatus,
   UpdateRouteAssignmentRequest,
   getAssignmentStatusText,
   getStatusProgress,
-  getStatusBadgeVariant
-} from "@/types/route-assignment"
+  getStatusBadgeVariant,
+} from "@/types/route-assignment";
 
 const updateFormSchema = z.object({
   status: z.nativeEnum(AssignmentStatus),
@@ -51,52 +60,52 @@ const updateFormSchema = z.object({
   completed_at: z.string().optional(),
   actual_distance: z.number().optional(),
   actual_duration: z.number().optional(),
-  notes: z.string().optional()
-})
+  notes: z.string().optional(),
+});
 
 interface Route {
-  id: string
-  name: string
-  description?: string
-  estimated_duration: number
-  total_distance_km?: string | number
+  id: string;
+  name: string;
+  description?: string;
+  estimated_duration: number;
+  total_distance_km?: string | number;
 }
 
 interface Collector {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  licensePlate?: string
-  rating: number
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  licensePlate?: string;
+  rating: number;
 }
 
 interface AssignmentDetailsDialogProps {
-  assignment: RouteAssignment | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  routes: Route[]
-  collectors: Collector[]
-  onAssignmentUpdated: () => void
-  onAssignmentDeleted: () => void
+  assignment: RouteAssignment | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  routes: Route[];
+  collectors: Collector[];
+  onAssignmentUpdated: () => void;
+  onAssignmentDeleted: () => void;
 }
 
-export function AssignmentDetailsDialog({ 
+export function AssignmentDetailsDialog({
   assignment,
-  open, 
+  open,
   onOpenChange,
   routes,
   collectors,
   onAssignmentUpdated,
-  onAssignmentDeleted
+  onAssignmentDeleted,
 }: AssignmentDetailsDialogProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const form = useForm<z.infer<typeof updateFormSchema>>({
     resolver: zodResolver(updateFormSchema),
-  })
+  });
 
   // Reset form when assignment changes
   useEffect(() => {
@@ -110,15 +119,15 @@ export function AssignmentDetailsDialog({
         actual_distance: assignment.actual_distance || undefined,
         actual_duration: assignment.actual_duration || undefined,
         notes: assignment.notes || "",
-      })
-      setIsEditing(false)
+      });
+      setIsEditing(false);
     }
-  }, [assignment, form])
+  }, [assignment, form]);
 
   const onSubmit = async (values: z.infer<typeof updateFormSchema>) => {
-    if (!assignment) return
+    if (!assignment) return;
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       const updateData: UpdateRouteAssignmentRequest & { id: string } = {
         id: assignment.id,
@@ -126,42 +135,45 @@ export function AssignmentDetailsDialog({
         // Convert empty strings to null for optional datetime fields
         started_at: values.started_at || undefined,
         completed_at: values.completed_at || undefined,
-      }
+      };
 
-      const response = await fetch('/api/admin/assignments', {
-        method: 'PUT',
+      const response = await fetch("/api/admin/assignments", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(updateData),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Không thể cập nhật phân công')
+        const error = await response.json();
+        throw new Error(error.error || "Không thể cập nhật phân công");
       }
 
       toast({
         title: "Thành công",
         description: "Phân công đã được cập nhật thành công",
-      })
+      });
 
-      setIsEditing(false)
-      onAssignmentUpdated()
+      setIsEditing(false);
+      onAssignmentUpdated();
     } catch (error) {
-      console.error('Failed to update assignment:', error)
+      console.error("Failed to update assignment:", error);
       toast({
         title: "Lỗi",
-        description: error instanceof Error ? error.message : "Không thể cập nhật phân công",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Không thể cập nhật phân công",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!assignment) return
+    if (!assignment) return;
 
     // Only allow deletion if status is PENDING
     if (assignment.status !== AssignmentStatus.PENDING) {
@@ -169,50 +181,54 @@ export function AssignmentDetailsDialog({
         title: "Không thể xóa",
         description: "Chỉ có thể xóa lịch trình ở trạng thái CHUẨN BỊ",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/admin/assignments?id=${assignment.id}`, {
-        method: 'DELETE',
-      })
+      const response = await fetch(
+        `/api/admin/assignments?id=${assignment.id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Không thể xóa phân công')
+        const error = await response.json();
+        throw new Error(error.message || "Không thể xóa phân công");
       }
 
       toast({
         title: "Thành công",
         description: "Phân công đã được xóa thành công",
-      })
+      });
 
-      onOpenChange(false)
-      onAssignmentDeleted()
+      onOpenChange(false);
+      onAssignmentDeleted();
     } catch (error) {
-      console.error('Failed to delete assignment:', error)
+      console.error("Failed to delete assignment:", error);
       toast({
         title: "Lỗi",
-        description: error instanceof Error ? error.message : "Không thể xóa phân công",
+        description:
+          error instanceof Error ? error.message : "Không thể xóa phân công",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   const formatDateTime = (dateString: string | null | undefined) => {
-    if (!dateString) return "Chưa có"
-    return new Date(dateString).toLocaleString("vi-VN")
-  }
+    if (!dateString) return "Chưa có";
+    return new Date(dateString).toLocaleString("vi-VN");
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN")
-  }
+    return new Date(dateString).toLocaleDateString("vi-VN");
+  };
 
-  if (!assignment) return null
+  if (!assignment) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -231,17 +247,23 @@ export function AssignmentDetailsDialog({
           {/* Assignment Overview */}
           <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
             <div>
-              <h4 className="font-semibold text-sm text-muted-foreground">TUYẾN ĐƯỜNG</h4>
+              <h4 className="font-semibold text-sm text-muted-foreground">
+                TUYẾN ĐƯỜNG
+              </h4>
               <p className="font-medium">{assignment.route.name}</p>
               <p className="text-sm text-muted-foreground">
-                {assignment.route.estimated_duration} phút • {assignment.route.total_distance_km} km
+                {assignment.route.estimated_duration} phút •{" "}
+                {assignment.route.total_distance_km} km
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-sm text-muted-foreground">NHÂN VIÊN THU GOM</h4>
+              <h4 className="font-semibold text-sm text-muted-foreground">
+                NHÂN VIÊN THU GOM
+              </h4>
               <p className="font-medium">{assignment.collector.name}</p>
               <p className="text-sm text-muted-foreground">
-                {assignment.collector.phone} • {assignment.collector.licensePlate || 'Chưa có biển số'}
+                {assignment.collector.phone} •{" "}
+                {assignment.collector.licensePlate || "Chưa có biển số"}
               </p>
             </div>
           </div>
@@ -254,7 +276,10 @@ export function AssignmentDetailsDialog({
                 {getAssignmentStatusText(assignment.status)}
               </Badge>
             </div>
-            <Progress value={getStatusProgress(assignment.status)} className="w-full" />
+            <Progress
+              value={getStatusProgress(assignment.status)}
+              className="w-full"
+            />
           </div>
 
           {/* Schedule Info */}
@@ -264,7 +289,9 @@ export function AssignmentDetailsDialog({
                 <Calendar className="h-4 w-4" />
                 NGÀY THỰC HIỆN
               </div>
-              <p className="font-medium">{formatDate(assignment.assigned_date)}</p>
+              <p className="font-medium">
+                {formatDate(assignment.assigned_date)}
+              </p>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -287,23 +314,39 @@ export function AssignmentDetailsDialog({
             <h4 className="font-semibold">Thông tin thực hiện</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="text-sm text-muted-foreground">Thời gian bắt đầu:</span>
-                <p className="font-medium">{formatDateTime(assignment.started_at)}</p>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">Thời gian hoàn thành:</span>
-                <p className="font-medium">{formatDateTime(assignment.completed_at)}</p>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">Khoảng cách thực tế:</span>
+                <span className="text-sm text-muted-foreground">
+                  Thời gian bắt đầu:
+                </span>
                 <p className="font-medium">
-                  {assignment.actual_distance ? `${assignment.actual_distance} km` : "Chưa có"}
+                  {formatDateTime(assignment.started_at)}
                 </p>
               </div>
               <div>
-                <span className="text-sm text-muted-foreground">Thời gian thực tế:</span>
+                <span className="text-sm text-muted-foreground">
+                  Thời gian hoàn thành:
+                </span>
                 <p className="font-medium">
-                  {assignment.actual_duration ? `${assignment.actual_duration} phút` : "Chưa có"}
+                  {formatDateTime(assignment.completed_at)}
+                </p>
+              </div>
+              <div>
+                <span className="text-sm text-muted-foreground">
+                  Khoảng cách thực tế:
+                </span>
+                <p className="font-medium">
+                  {assignment.actual_distance
+                    ? `${assignment.actual_distance} km`
+                    : "Chưa có"}
+                </p>
+              </div>
+              <div>
+                <span className="text-sm text-muted-foreground">
+                  Thời gian thực tế:
+                </span>
+                <p className="font-medium">
+                  {assignment.actual_duration
+                    ? `${assignment.actual_duration} phút`
+                    : "Chưa có"}
                 </p>
               </div>
             </div>
@@ -320,24 +363,38 @@ export function AssignmentDetailsDialog({
             <div className="border-t pt-6">
               <h4 className="font-semibold mb-4">Cập nhật thông tin</h4>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
                   <FormField
                     control={form.control}
                     name="status"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Trạng thái</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value={AssignmentStatus.PENDING}>Chuẩn bị</SelectItem>
-                            <SelectItem value={AssignmentStatus.IN_PROGRESS}>Đang thực hiện</SelectItem>
-                            <SelectItem value={AssignmentStatus.COMPLETED}>Hoàn thành</SelectItem>
-                            <SelectItem value={AssignmentStatus.CANCELLED}>Đã hủy</SelectItem>
+                            <SelectItem value={AssignmentStatus.PENDING}>
+                              Chuẩn bị
+                            </SelectItem>
+                            <SelectItem value={AssignmentStatus.IN_PROGRESS}>
+                              Đang thực hiện
+                            </SelectItem>
+                            <SelectItem value={AssignmentStatus.COMPLETED}>
+                              Hoàn thành
+                            </SelectItem>
+                            <SelectItem value={AssignmentStatus.CANCELLED}>
+                              Đã hủy
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -413,11 +470,17 @@ export function AssignmentDetailsDialog({
                         <FormItem>
                           <FormLabel>Khoảng cách thực tế (km)</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="number" 
+                            <Input
+                              type="number"
                               step="0.1"
                               {...field}
-                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value
+                                    ? parseFloat(e.target.value)
+                                    : undefined
+                                )
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -432,10 +495,16 @@ export function AssignmentDetailsDialog({
                         <FormItem>
                           <FormLabel>Thời gian thực tế (phút)</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               type="number"
                               {...field}
-                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value
+                                    ? parseInt(e.target.value)
+                                    : undefined
+                                )
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -467,7 +536,11 @@ export function AssignmentDetailsDialog({
                       <Save className="h-4 w-4 mr-2" />
                       {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
                     </Button>
-                    <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsEditing(false)}
+                    >
                       <X className="h-4 w-4 mr-2" />
                       Hủy
                     </Button>
@@ -484,7 +557,9 @@ export function AssignmentDetailsDialog({
               <Button
                 variant="destructive"
                 onClick={handleDelete}
-                disabled={assignment.status !== AssignmentStatus.PENDING || isDeleting}
+                disabled={
+                  assignment.status !== AssignmentStatus.PENDING || isDeleting
+                }
                 className="mr-auto"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -493,9 +568,7 @@ export function AssignmentDetailsDialog({
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Đóng
               </Button>
-              <Button onClick={() => setIsEditing(true)}>
-                Chỉnh sửa
-              </Button>
+              <Button onClick={() => setIsEditing(true)}>Chỉnh sửa</Button>
             </div>
           ) : (
             <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -505,5 +578,5 @@ export function AssignmentDetailsDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

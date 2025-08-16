@@ -399,7 +399,8 @@ export default function UserPaymentsPage() {
                               {currentPackage.collectionsTotal || 0} lần thu gom
                             </span>
                             <span>
-                              {currentPackage.collectionsTotal
+                              {currentPackage.collectionsTotal &&
+                              currentPackage.collectionsTotal > 0
                                 ? Math.round(
                                     ((currentPackage.collectionsUsed || 0) /
                                       currentPackage.collectionsTotal) *
@@ -410,13 +411,18 @@ export default function UserPaymentsPage() {
                             </span>
                           </div>
                           <Progress
-                            value={
-                              currentPackage.collectionsTotal
-                                ? ((currentPackage.collectionsUsed || 0) /
-                                    currentPackage.collectionsTotal) *
-                                  100
-                                : 0
-                            }
+                            value={Math.min(
+                              100,
+                              Math.max(
+                                0,
+                                currentPackage.collectionsTotal &&
+                                  currentPackage.collectionsTotal > 0
+                                  ? ((currentPackage.collectionsUsed || 0) /
+                                      currentPackage.collectionsTotal) *
+                                      100
+                                  : 0
+                              )
+                            )}
                             className="h-2"
                           />
                         </div>
