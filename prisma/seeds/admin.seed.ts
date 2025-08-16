@@ -1,9 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
-
-async function createAdmin() {
+export async function seedAdmin(prisma: PrismaClient) {
   try {
     console.log("🔧 Creating admin user...");
 
@@ -34,11 +32,10 @@ async function createAdmin() {
     console.log("Email:", admin.email);
     console.log("Role:", admin.role);
     console.log("ID:", admin.id);
+
+    return admin;
   } catch (error) {
     console.error("❌ Error creating admin user:", error);
-  } finally {
-    await prisma.$disconnect();
+    throw error;
   }
 }
-
-createAdmin();

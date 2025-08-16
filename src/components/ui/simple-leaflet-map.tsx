@@ -48,7 +48,7 @@ function SimpleLeafletMap(props: LeafletMapProps) {
     center,
     points,
     showRoute = false,
-    height = "600px",
+    height = "400px",
     zoom = 13,
     autoFitBounds = false, // Default to false to prevent auto-zoom
     onRouteUpdate,
@@ -230,7 +230,11 @@ function SimpleLeafletMap(props: LeafletMapProps) {
 
     // Add new markers
     points.forEach((point: any, index: number) => {
-      if (!point || typeof point.lat !== 'number' || typeof point.lng !== 'number') {
+      if (
+        !point ||
+        typeof point.lat !== "number" ||
+        typeof point.lng !== "number"
+      ) {
         console.warn("⚠️ Invalid point data:", point);
         return;
       }
@@ -274,9 +278,7 @@ function SimpleLeafletMap(props: LeafletMapProps) {
         );
 
         if (stableOnMarkerClick.current) {
-          marker.on("click", () =>
-            stableOnMarkerClick.current!(point.id)
-          );
+          marker.on("click", () => stableOnMarkerClick.current!(point.id));
         }
       } catch (error) {
         console.error("Error creating marker:", error);
@@ -638,7 +640,12 @@ function SimpleLeafletMap(props: LeafletMapProps) {
 
   // 📍 EFFECT 4: Update map center when center prop changes
   useEffect(() => {
-    if (mapRef.current && typeof center === "object" && center.lat && center.lng) {
+    if (
+      mapRef.current &&
+      typeof center === "object" &&
+      center.lat &&
+      center.lng
+    ) {
       // Only update view if center actually changed significantly (>100m difference)
       const currentCenter = mapRef.current.getCenter();
       const distance = mapRef.current.distance(
@@ -663,7 +670,7 @@ function SimpleLeafletMap(props: LeafletMapProps) {
 
   // 🔄 EFFECT: Invalidate map size when height changes
   useEffect(() => {
-    if (mapRef.current && typeof mapRef.current.invalidateSize === 'function') {
+    if (mapRef.current && typeof mapRef.current.invalidateSize === "function") {
       setTimeout(() => {
         mapRef.current.invalidateSize();
         console.log("✅ Map size invalidated for height:", height);

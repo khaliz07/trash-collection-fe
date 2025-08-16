@@ -322,7 +322,7 @@ export default function ResponsiveDemo() {
       {/* Responsive Map */}
       <CollapsibleSection title="Bản đồ responsive">
         <ResponsiveMapContainer
-          height="500px"
+          height="400px"
           showControls
           allowFullscreen
           showLocationButton

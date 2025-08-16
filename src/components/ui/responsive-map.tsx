@@ -76,22 +76,22 @@ const ResponsiveMapContainer = React.forwardRef<
     // Handle escape key to exit fullscreen
     React.useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && isFullscreen) {
+        if (e.key === "Escape" && isFullscreen) {
           setIsFullscreen(false);
         }
       };
 
       if (isFullscreen) {
-        document.addEventListener('keydown', handleEscape);
+        document.addEventListener("keydown", handleEscape);
         // Prevent body scroll when in fullscreen
-        document.body.style.overflow = 'hidden';
+        document.body.style.overflow = "hidden";
       } else {
-        document.body.style.overflow = 'unset';
+        document.body.style.overflow = "unset";
       }
 
       return () => {
-        document.removeEventListener('keydown', handleEscape);
-        document.body.style.overflow = 'unset';
+        document.removeEventListener("keydown", handleEscape);
+        document.body.style.overflow = "unset";
       };
     }, [isFullscreen]);
 
@@ -99,8 +99,8 @@ const ResponsiveMapContainer = React.forwardRef<
       <div
         className={cn(
           "relative w-full overflow-hidden",
-          isFullscreen 
-            ? "w-full h-full rounded-lg border border-border/50" 
+          isFullscreen
+            ? "w-full h-full rounded-lg border border-border/50"
             : "rounded-lg border",
           className
         )}

@@ -1,101 +1,33 @@
 import { PrismaClient } from "@prisma/client";
+import { seedAdmin } from "./seeds/admin.seed";
+import { seedPackages } from "./seeds/packages.seed";
+import { seedCollectors } from "./seeds/collectors.seed";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Starting database seed...");
 
-  // Create sample user
-  const user = await prisma.user.upsert({
+  // Seed initial data
+  await seedAdmin(prisma);
+  await seedPackages(prisma);
+  await seedCollectors(prisma);
+
+  // Create sample user for development
+  console.log("👤 Creating sample user...");
+  await prisma.user.upsert({
     where: { id: "user-1" },
     update: {},
     create: {
       id: "user-1",
       email: "user@example.com",
-      password: "hashedpassword",
+      password: "hashedpassword", // Note: In a real app, hash this password
       name: "Nguyễn Văn A",
       phone: "0901234567",
       role: "USER",
       address: "Phường Linh Trung, Quận Thủ Đức, TP. HCM",
     },
   });
-
-  // Create sample subscription
-  const subscription = await prisma.subscription.upsert({
-    where: { id: "sub-1" },
-    update: {},
-    create: {
-      id: "sub-1",
-      userId: user.id,
-      packageId: "pkg-monthly", // Link to the monthly package
-      queuePosition: 0,
-      status: "ACTIVE",
-      startMonth: "2025-08",
-      endMonth: "2025-09",
-      activatedAt: new Date(),
-    },
-  });
-
-  // Create sample payments (extension history)
-  const payments = [
-    {
-      id: "pay-1",
-      userId: user.id,
-      packageId: "pkg-monthly",
-      subscriptionId: subscription.id,
-      amount: 80000,
-      status: "COMPLETED" as const,
-      paymentMethod: "E_WALLET" as const,
-      paidAt: new Date("2025-08-01T10:30:00.000Z"),
-      createdAt: new Date("2025-08-01T10:30:00.000Z"),
-    },
-    {
-      id: "pay-2",
-      userId: user.id,
-      packageId: "pkg-quarterly",
-      subscriptionId: subscription.id,
-      amount: 228000, // 3 months with discount
-      status: "COMPLETED" as const,
-      paymentMethod: "BANK_TRANSFER" as const,
-      paidAt: new Date("2025-05-01T14:20:00.000Z"),
-      createdAt: new Date("2025-05-01T14:20:00.000Z"),
-    },
-    {
-      id: "pay-3",
-      userId: user.id,
-      packageId: "pkg-monthly",
-      subscriptionId: subscription.id,
-      amount: 80000,
-      status: "COMPLETED" as const,
-      paymentMethod: "VNPAY" as const,
-      paidAt: new Date("2025-04-01T09:15:00.000Z"),
-      createdAt: new Date("2025-04-01T09:15:00.000Z"),
-    },
-  ];
-
-  for (const payment of payments) {
-    await prisma.payment.upsert({
-      where: { id: payment.id },
-      update: {},
-      create: payment,
-    });
-  }
-
-  // Create sample collections
-  await prisma.collection.upsert({
-    where: { id: "col-1" },
-    update: {},
-    create: {
-      id: "col-1",
-      status: "SCHEDULED",
-      scheduledDate: new Date("2025-08-08T07:00:00.000Z"),
-      pickupAddress: "Phường Linh Trung, Quận Thủ Đức, TP. HCM",
-      latitude: 10.87,
-      longitude: 106.803,
-    },
-  });
-
-  console.log("✅ Database seeded successfully!");
 }
 
 main()

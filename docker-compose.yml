@@ -1,0 +1,100 @@
+services:
+  # PostgreSQL Database with PostGIS
+  postgres:
+    image: postgis/postgis:15-3.3-alpine
+    container_name: trash-collection-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trash_collection
+      POSTGRES_USER: trash_user
+      POSTGRES_PASSWORD: trash_password_2024
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "2345:5432"
+    networks:
+      - trash_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trash_user -d trash_collection"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: trash-collection-app
+    restart: unless-stopped
+    environment:
+      # Database
+      DATABASE_URL: "postgresql://trash_user:trash_password_2024@postgres:5432/trash_collection?schema=public"
+
+      # App Config
+      NODE_ENV: production
+      PORT: 3000
+
+      # JWT Secret
+      JWT_SECRET: "your-super-secret-jwt-key-change-in-production"
+
+      # Next.js
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXTAUTH_SECRET: "your-nextauth-secret-key"
+
+      # External APIs (if any)
+      # GOOGLE_MAPS_API_KEY: "your-google-maps-api-key"
+      # PAYMENT_API_KEY: "your-payment-api-key"
+    ports:
+      - "3000:3000"
+    networks:
+      - trash_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - app_logs:/app/logs
+    command: >
+      sh -c "
+        echo 'Running database migrations...' &&
+        npx prisma migrate deploy &&
+        echo 'Running database seed...' &&
+        npx prisma db seed &&
+        echo 'Starting application...' &&
+        node server.js
+      "
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # Nginx (Optional - for production load balancing)
+  nginx:
+    image: nginx:alpine
+    container_name: trash-collection-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/ssl:/etc/nginx/ssl
+    networks:
+      - trash_network
+    depends_on:
+      - app
+    profiles:
+      - production
+
+networks:
+  trash_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  app_logs:
+    driver: local

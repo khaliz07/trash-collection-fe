@@ -1,8 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
-
-async function createPackages() {
+export async function seedPackages(prisma: PrismaClient) {
   console.log("Creating packages...");
 
   const packages = [
@@ -68,12 +66,3 @@ async function createPackages() {
 
   console.log("✅ Packages created successfully!");
 }
-
-createPackages()
-  .catch((e) => {
-    console.error("❌ Error creating packages:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });

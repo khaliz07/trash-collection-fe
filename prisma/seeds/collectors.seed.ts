@@ -1,9 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
-
-async function createAdditionalCollectors() {
+export async function seedCollectors(prisma: PrismaClient) {
   try {
     console.log("🔍 Checking existing collectors...");
 
@@ -91,9 +89,6 @@ async function createAdditionalCollectors() {
     console.log(`\n🎉 Total collectors in database: ${finalCount}`);
   } catch (error) {
     console.error("❌ Error creating collectors:", error);
-  } finally {
-    await prisma.$disconnect();
+    throw error;
   }
 }
-
-createAdditionalCollectors();

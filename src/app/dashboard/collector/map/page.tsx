@@ -285,7 +285,7 @@ export default function CollectorMapPage() {
 
       {/* Map */}
       <ResponsiveMapContainer
-        height="600px"
+        height="400px"
         className="min-h-[400px] md:min-h-[600px] max-h-[80vh]"
         showControls
         allowFullscreen
