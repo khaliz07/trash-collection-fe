@@ -140,6 +140,11 @@ const navItems: UserNavItems = {
       icon: Package,
     },
     {
+      title: "Urgent Requests",
+      href: "/dashboard/admin/urgent-requests",
+      icon: AlertTriangle,
+    },
+    {
       title: "Payments",
       href: "/dashboard/admin/payments",
       icon: CreditCard,
