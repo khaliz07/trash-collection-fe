@@ -27,8 +27,13 @@ import {
   User,
   Phone,
 } from "lucide-react";
-import { useUrgentRequests } from "@/hooks/use-urgent-requests";
+import { 
+  useUrgentRequests,
+  useUpdateUrgentRequest,
+  useCancelUrgentRequest,
+} from "@/hooks/use-urgent-requests";
 import { UrgentRequestResponse } from "@/apis/urgent-requests.api";
+import UrgentRequestDetailDialog from "./urgent-request-detail-dialog";
 
 // Helper functions for badges
 const getStatusBadgeVariant = (status: string) => {
@@ -94,6 +99,8 @@ const getUrgencyText = (urgencyLevel: string) => {
 export default function UrgentRequestsList() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [page, setPage] = useState(1);
+  const [selectedRequest, setSelectedRequest] = useState<UrgentRequestResponse | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const limit = 10;
 
   const { data, isLoading, error } = useUrgentRequests({
@@ -101,6 +108,27 @@ export default function UrgentRequestsList() {
     page,
     limit,
   });
+
+  const updateMutation = useUpdateUrgentRequest();
+  const cancelMutation = useCancelUrgentRequest();
+
+  // Handle request card click
+  const handleRequestClick = (request: UrgentRequestResponse) => {
+    setSelectedRequest(request);
+    setIsDetailDialogOpen(true);
+  };
+
+  // Handle update request
+  const handleUpdateRequest = async (requestId: string, updateData: any) => {
+    await updateMutation.mutateAsync({ id: requestId, data: updateData });
+    setIsDetailDialogOpen(false);
+  };
+
+  // Handle cancel request
+  const handleCancelRequest = async (requestId: string) => {
+    await cancelMutation.mutateAsync(requestId);
+    setIsDetailDialogOpen(false);
+  };
 
   if (isLoading) {
     return (
@@ -162,7 +190,11 @@ export default function UrgentRequestsList() {
       ) : (
         <div className="space-y-4">
           {urgentRequests.map((request: UrgentRequestResponse) => (
-            <Card key={request.id}>
+            <Card 
+              key={request.id} 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleRequestClick(request)}
+            >
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -286,6 +318,18 @@ export default function UrgentRequestsList() {
           </Button>
         </div>
       )}
+
+      {/* Detail Dialog */}
+      <UrgentRequestDetailDialog
+        isOpen={isDetailDialogOpen}
+        onClose={() => {
+          setIsDetailDialogOpen(false);
+          setSelectedRequest(null);
+        }}
+        request={selectedRequest}
+        onUpdate={handleUpdateRequest}
+        onCancel={handleCancelRequest}
+      />
     </div>
   );
 }

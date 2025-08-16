@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPin, Navigation } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { reverseGeocode } from "@/lib/geocoding";
 
 // Dynamic import to avoid SSR issues
 const SimpleLeafletMap = dynamic(
@@ -66,7 +67,7 @@ export default function LocationPicker({
   }, []);
 
   // Get current location using geolocation API
-  const getCurrentLocation = useCallback(() => {
+  const getCurrentLocation = useCallback(async () => {
     if (!navigator.geolocation) {
       alert("Trình duyệt không hỗ trợ định vị.");
       return;
@@ -75,13 +76,28 @@ export default function LocationPicker({
     setIsLoadingCurrentLocation(true);
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
-        setSelectedLocation((prev) => ({
-          ...prev,
-          lat: latitude,
-          lng: longitude,
-        }));
+        
+        try {
+          // Get address from coordinates using reverse geocoding
+          const address = await reverseGeocode(latitude, longitude);
+          
+          setSelectedLocation({
+            address,
+            lat: latitude,
+            lng: longitude,
+          });
+        } catch (error) {
+          console.error('Error getting address:', error);
+          // Still set coordinates even if address lookup fails
+          setSelectedLocation((prev) => ({
+            ...prev,
+            lat: latitude,
+            lng: longitude,
+          }));
+        }
+        
         setIsLoadingCurrentLocation(false);
       },
       (error) => {
@@ -174,16 +190,20 @@ export default function LocationPicker({
           </div>
 
           {/* Coordinates Display */}
-          <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-            <div>
-              <Label>Vĩ độ (Latitude)</Label>
-              <div className="font-mono">{selectedLocation.lat.toFixed(6)}</div>
+          {selectedLocation.lat && selectedLocation.lng && 
+           typeof selectedLocation.lat === 'number' && 
+           typeof selectedLocation.lng === 'number' && (
+            <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+              <div>
+                <Label>Vĩ độ (Latitude)</Label>
+                <div className="font-mono">{selectedLocation.lat.toFixed(6)}</div>
+              </div>
+              <div>
+                <Label>Kinh độ (Longitude)</Label>
+                <div className="font-mono">{selectedLocation.lng.toFixed(6)}</div>
+              </div>
             </div>
-            <div>
-              <Label>Kinh độ (Longitude)</Label>
-              <div className="font-mono">{selectedLocation.lng.toFixed(6)}</div>
-            </div>
-          </div>
+          )}
 
           {/* Map */}
           <div className="space-y-2">

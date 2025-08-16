@@ -9,6 +9,15 @@ export interface CreateUrgentRequestData {
   pickup_lng?: number;
 }
 
+export interface UpdateUrgentRequestData {
+  requested_date?: string;
+  urgency_level?: "MEDIUM" | "HIGH" | "CRITICAL";
+  waste_description?: string;
+  pickup_address?: string;
+  pickup_lat?: number;
+  pickup_lng?: number;
+}
+
 export interface UrgentRequestResponse {
   id: string;
   user_id: string;
@@ -87,5 +96,22 @@ export const getUrgentRequest = async (
   id: string
 ): Promise<UrgentRequestResponse> => {
   const response = await api.get(`/urgent-requests/${id}`);
+  return response.data;
+};
+
+// Update urgent request
+export const updateUrgentRequest = async (
+  id: string,
+  data: UpdateUrgentRequestData
+): Promise<UrgentRequestResponse> => {
+  const response = await api.patch(`/urgent-requests/${id}`, data);
+  return response.data;
+};
+
+// Cancel urgent request (soft delete)
+export const cancelUrgentRequest = async (
+  id: string
+): Promise<UrgentRequestResponse> => {
+  const response = await api.delete(`/urgent-requests/${id}`);
   return response.data;
 };
