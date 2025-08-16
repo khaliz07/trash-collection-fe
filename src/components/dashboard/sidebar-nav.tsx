@@ -19,6 +19,7 @@ import {
   Settings,
   Truck,
   Users,
+  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -51,7 +52,7 @@ const navItems: UserNavItems = {
     {
       title: "Request Collection",
       href: "/dashboard/user/request",
-      icon: Clock,
+      icon: AlertTriangle,
     },
     {
       title: "Payments",

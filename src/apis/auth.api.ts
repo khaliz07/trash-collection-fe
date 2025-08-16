@@ -33,4 +33,13 @@ export const authAPI = {
     const response = await api.get("/auth/me");
     return response.data;
   },
+
+  updateLocation: async (data: {
+    address: string;
+    latitude: number;
+    longitude: number;
+  }) => {
+    const response = await api.patch("/auth/me/location", data);
+    return response.data;
+  },
 };

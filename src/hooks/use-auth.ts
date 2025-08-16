@@ -9,6 +9,8 @@ interface User {
   role: "USER" | "COLLECTOR" | "ADMIN";
   phone?: string;
   address?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface AuthState {
@@ -17,6 +19,7 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
   initializeAuth: () => void;
 }
 
@@ -37,6 +40,9 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         Cookies.remove("auth-token");
         set({ user: null, token: null, isAuthenticated: false });
+      },
+      updateUser: (user: User) => {
+        set({ user });
       },
       initializeAuth: () => {
         const cookieToken = Cookies.get("auth-token");
@@ -65,8 +71,15 @@ export const useAuthStore = create<AuthState>()(
 
 // Hook to check if user is authenticated
 export const useAuth = () => {
-  const { user, token, isAuthenticated, login, logout, initializeAuth } =
-    useAuthStore();
+  const {
+    user,
+    token,
+    isAuthenticated,
+    login,
+    logout,
+    updateUser,
+    initializeAuth,
+  } = useAuthStore();
 
   return {
     user,
@@ -74,6 +87,7 @@ export const useAuth = () => {
     isAuthenticated,
     login,
     logout,
+    updateUser,
     initializeAuth,
   };
 };

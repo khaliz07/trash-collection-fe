@@ -3,6 +3,7 @@ import { authAPI } from "@/apis/auth.api";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 // Login mutation
 export const useLogin = () => {
@@ -84,5 +85,42 @@ export const useMe = () => {
     queryFn: authAPI.me,
     enabled: !!token,
     retry: false,
+  });
+};
+
+// Update user location mutation
+export const useUpdateUserLocation = () => {
+  const queryClient = useQueryClient();
+  const { updateUser } = useAuth();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (data: {
+      address: string;
+      latitude: number;
+      longitude: number;
+    }) => authAPI.updateLocation(data),
+    onSuccess: (response) => {
+      // Update user in auth state
+      updateUser(response.data);
+
+      // Invalidate queries that depend on user data
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+
+      toast({
+        title: "Cập nhật thành công",
+        description: "Vị trí của bạn đã được cập nhật.",
+      });
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error?.response?.data?.error || "Có lỗi xảy ra khi cập nhật vị trí";
+
+      toast({
+        title: "Lỗi",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
   });
 };

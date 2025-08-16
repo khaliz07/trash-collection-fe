@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
         role: true,
         phone: true,
         address: true,
+        latitude: true,
+        longitude: true,
       }
     })
 
