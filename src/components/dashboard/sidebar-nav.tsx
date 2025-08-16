@@ -1,29 +1,27 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/hooks/use-auth";
+import { cn } from "@/lib/utils";
 import {
-  DivideIcon as LucideIcon,
-  Home,
-  Calendar,
-  CreditCard,
-  Bell,
-  Clock,
-  Settings,
-  LogOut,
-  Users,
   BarChart,
-  Map,
-  FileText,
-  Star,
-  MessageSquare,
-  Truck,
+  Bell,
+  Calendar,
   CheckSquare,
+  Clock,
+  CreditCard,
+  Home,
+  LogOut,
+  Map,
+  MessageSquare,
   Package,
+  Settings,
+  Truck,
+  Users,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
 interface NavItem {
@@ -171,6 +169,7 @@ export function SidebarNav({ role }: SidebarNavProps) {
   const { t } = useTranslation("common");
   const pathname = usePathname();
   const items = navItems[role];
+  const { logout } = useAuth();
 
   return (
     <ScrollArea className="h-full py-6">
@@ -197,6 +196,7 @@ export function SidebarNav({ role }: SidebarNavProps) {
             <Button
               variant="ghost"
               className="w-full justify-start gap-3 text-muted-foreground"
+              onClick={logout}
             >
               <LogOut className="h-4 w-4" />
               {t("logout")}
