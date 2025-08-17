@@ -42,6 +42,7 @@ export interface RouteAssignment {
     estimated_duration: number;
     total_distance_km?: string;
     trackPoints: any[];
+    address?: any; // Administrative address information
   };
   collector: {
     id: string;

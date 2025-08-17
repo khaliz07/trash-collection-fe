@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AddressService } from "@/lib/address-service";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -336,14 +337,35 @@ export function CollectorAssignmentDetailDialog({
                 </p>
               </div>
             )}
+
+            {assignment.route.address && (
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  Khu vực hoạt động
+                </Label>
+                <div className="mt-1 text-sm flex items-center gap-1">
+                  <span className="font-medium">
+                    {assignment.route.address.district?.name || "—"}
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span>{assignment.route.address.province?.name || "—"}</span>
+                  {assignment.route.address.ward && (
+                    <>
+                      <span className="text-gray-400">•</span>
+                      <span>{assignment.route.address.ward.name}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Status Update Section */}
           <Card>
-            <CardContent className="pt-6">
+            <CardHeader>Cập nhật trạng thái</CardHeader>
+            <CardContent>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="status-select">Cập nhật trạng thái</Label>
                   <Select
                     value={status}
                     onValueChange={(value) =>
@@ -394,12 +416,9 @@ export function CollectorAssignmentDetailDialog({
           {/* Map Section */}
           {mapData && (
             <Card>
+              <CardHeader>Bản đồ lộ trình</CardHeader>
               <CardContent className="space-y-4 pt-4">
                 <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium">Bản đồ lộ trình</h4>
-                  </div>
-
                   <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="text-sm text-blue-800">
                       <strong>Thông tin:</strong>

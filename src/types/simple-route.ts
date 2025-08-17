@@ -2,6 +2,8 @@
  * Simple Route types for new Route table
  */
 
+import { AdministrativeAddress } from "./address";
+
 export interface TrackPoint {
   lat: number;
   lng: number;
@@ -22,6 +24,7 @@ export interface SimpleRoute {
   trackPoints: TrackPoint[]; // Route coordinates
   estimated_duration: number; // minutes
   total_distance_km?: number;
+  address?: AdministrativeAddress; // Administrative address information
   createdAt: string;
   updatedAt: string;
 }
@@ -40,6 +43,7 @@ export interface CreateSimpleRouteRequest {
   }>;
   trackPoints?: TrackPoint[]; // Optional, will be generated from pickup_points
   total_distance_km?: number;
+  address?: AdministrativeAddress; // Administrative address information
 }
 
 export enum RouteStatus {

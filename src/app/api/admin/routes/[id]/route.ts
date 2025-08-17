@@ -74,6 +74,7 @@ export async function PUT(
         status: body.status,
         total_distance_km: body.total_distance_km,
         trackPoints: trackPoints,
+        address: body.address || null, // Administrative address information
       },
     });
 

@@ -2,10 +2,9 @@
 
 import { RouteCreator } from "@/components/admin/schedules/RouteCreator";
 import { ScheduleDialog } from "@/components/admin/schedules/ScheduleDialog";
-import ScheduleTable from "@/components/admin/schedules/ScheduleTable";
-import { CreateAssignmentDialog } from "@/components/admin/schedules/create-assignment-dialog";
 import { AssignmentDetailsDialog } from "@/components/admin/schedules/assignment-details-dialog";
 import { AssignmentFilterBar } from "@/components/admin/schedules/assignment-filter-bar";
+import { CreateAssignmentDialog } from "@/components/admin/schedules/create-assignment-dialog";
 import type { Schedule } from "@/components/admin/schedules/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,9 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SimpleRoute } from "@/types/simple-route";
+import { AddressService } from "@/lib/address-service";
 import { RouteAssignment } from "@/types/route-assignment";
+import { SimpleRoute } from "@/types/simple-route";
 import { Plus } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -304,6 +304,7 @@ export default function AdminSchedulesPage() {
                 <tr className="border-b">
                   <th className="text-left p-3 font-medium">Tên tuyến đường</th>
                   <th className="text-left p-3 font-medium">Mô tả</th>
+                  <th className="text-left p-3 font-medium">Khu vực</th>
                   <th className="text-left p-3 font-medium">Trạng thái</th>
                   <th className="text-left p-3 font-medium">
                     Thời gian dự kiến (phút)
@@ -319,6 +320,32 @@ export default function AdminSchedulesPage() {
                   >
                     <td className="p-3">{route.name}</td>
                     <td className="p-3">{route.description || "—"}</td>
+                    <td className="p-3">
+                      {route.address ? (
+                        <div className="text-sm">
+                          <div className="font-medium">
+                            {
+                              AddressService.formatShortAddress(
+                                route.address.province,
+                                route.address.district,
+                                route.address.ward
+                              ).main
+                            }
+                          </div>
+                          <div className="text-gray-500">
+                            {
+                              AddressService.formatShortAddress(
+                                route.address.province,
+                                route.address.district,
+                                route.address.ward
+                              ).sub
+                            }
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic">Chưa chọn</span>
+                      )}
+                    </td>
                     <td className="p-3">
                       <Badge
                         variant={
@@ -343,7 +370,7 @@ export default function AdminSchedulesPage() {
                 ))}
                 {routes.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center text-gray-500">
+                    <td colSpan={5} className="p-8 text-center text-gray-500">
                       Chưa có tuyến đường nào
                     </td>
                   </tr>
@@ -561,6 +588,7 @@ export default function AdminSchedulesPage() {
                       description: selectedRoute.description,
                       estimated_duration: selectedRoute.estimated_duration,
                       status: selectedRoute.status,
+                      address: selectedRoute.address, // Include administrative address
                       pickup_points: selectedRoute.trackPoints.map((point) => ({
                         address: point.address || "",
                         lat: point.lat,

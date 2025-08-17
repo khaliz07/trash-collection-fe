@@ -254,6 +254,7 @@ model Route {
   trackPoints        Json
   estimated_duration Int
   total_distance_km  Decimal?          @db.Decimal(8, 3)
+  address            Json?             // Store province, district, ward info
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
   assignments        RouteAssignment[]

@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { AddressSelector } from "@/components/ui/address-selector";
 import api from "@/lib/api";
 import leafletService, {
   type LatLng,
@@ -19,6 +20,7 @@ import leafletService, {
 } from "@/lib/leaflet-service";
 import { RouteStatus } from "@/types/route";
 import { CreateSimpleRouteRequest, SimpleRoute } from "@/types/simple-route";
+import { AdministrativeAddress } from "@/types/address";
 import dynamic from "next/dynamic";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -91,6 +93,8 @@ export function RouteCreator({
     leafletService.getDefaultCenter()
   );
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const [addressErrors, setAddressErrors] = useState<string[]>([]);
+  const [isAddressValid, setIsAddressValid] = useState(true);
   const isCreatingRef = useRef(false); // Additional protection against double-calls
 
   // Load route points from initialData for edit mode
@@ -302,6 +306,19 @@ export function RouteCreator({
     }
   };
 
+  // Address selection handlers
+  const handleAddressChange = (address: AdministrativeAddress) => {
+    setFormData(prev => ({
+      ...prev,
+      address: address
+    }));
+  };
+
+  const handleAddressValidationChange = (isValid: boolean, errors: string[]) => {
+    setIsAddressValid(isValid);
+    setAddressErrors(errors);
+  };
+
   const createRoute = React.useCallback(async () => {
     // Double protection against multiple calls
     if (isCreating || isCreatingRef.current) {
@@ -315,6 +332,12 @@ export function RouteCreator({
       toast.error(
         "Vui lòng điền đầy đủ thông tin và có ít nhất 2 điểm thu gom"
       );
+      return;
+    }
+
+    // Address validation is now enabled for create route
+    if (!isAddressValid || addressErrors.length > 0) {
+      toast.error("Vui lòng kiểm tra và chọn địa chỉ hành chính hợp lệ");
       return;
     }
 
@@ -387,6 +410,12 @@ export function RouteCreator({
       toast.error(
         "Vui lòng điền đầy đủ thông tin và có ít nhất 2 điểm thu gom"
       );
+      return;
+    }
+
+    // Address validation is now enabled for update route
+    if (!isAddressValid || addressErrors.length > 0) {
+      toast.error("Vui lòng kiểm tra và chọn địa chỉ hành chính hợp lệ");
       return;
     }
 
@@ -564,6 +593,27 @@ export function RouteCreator({
               }
               placeholder="Nhập mô tả cho tuyến đường..."
               rows={3}
+            />
+          </div>
+
+          {/* Address Selection */}
+          <div className="space-y-2">
+            <Label className="text-base font-medium">Địa chỉ hành chính</Label>
+            <p className="text-sm text-gray-600 mb-4">
+              Chọn tỉnh/thành phố, quận/huyện và phường/xã để xác định khu vực hoạt động của tuyến đường
+            </p>
+            <AddressSelector
+              value={{
+                province_code: formData.address?.province?.code,
+                district_code: formData.address?.district?.code,
+                ward_code: formData.address?.ward?.code,
+                street_address: formData.address?.street_address,
+              }}
+              onChange={handleAddressChange}
+              onValidationChange={handleAddressValidationChange}
+              required={true}
+              showStreetAddress={false}
+              className="bg-gray-50 p-4 rounded-lg border"
             />
           </div>
         </CardContent>

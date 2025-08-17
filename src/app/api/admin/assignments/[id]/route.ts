@@ -20,6 +20,7 @@ export async function GET(
             estimated_duration: true,
             total_distance_km: true,
             trackPoints: true,
+            address: true, // Include administrative address
           },
         },
         collector: {
@@ -37,7 +38,10 @@ export async function GET(
     });
 
     if (!assignment) {
-      return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Assignment not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ assignment });
@@ -65,7 +69,10 @@ export async function PUT(
     });
 
     if (!existingAssignment) {
-      return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Assignment not found" },
+        { status: 404 }
+      );
     }
 
     // If updating route_id, verify route exists
@@ -75,10 +82,7 @@ export async function PUT(
       });
 
       if (!route) {
-        return NextResponse.json(
-          { error: "Route not found" },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Route not found" }, { status: 400 });
       }
     }
 
@@ -102,18 +106,26 @@ export async function PUT(
       data: {
         ...(body.route_id && { route_id: body.route_id }),
         ...(body.collector_id && { collector_id: body.collector_id }),
-        ...(body.assigned_date && { assigned_date: new Date(body.assigned_date) }),
+        ...(body.assigned_date && {
+          assigned_date: new Date(body.assigned_date),
+        }),
         ...(body.status && { status: body.status }),
-        ...(body.time_window_start && { time_window_start: body.time_window_start }),
+        ...(body.time_window_start && {
+          time_window_start: body.time_window_start,
+        }),
         ...(body.time_window_end && { time_window_end: body.time_window_end }),
-        ...(body.started_at !== undefined && { 
-          started_at: body.started_at ? new Date(body.started_at) : null 
+        ...(body.started_at !== undefined && {
+          started_at: body.started_at ? new Date(body.started_at) : null,
         }),
-        ...(body.completed_at !== undefined && { 
-          completed_at: body.completed_at ? new Date(body.completed_at) : null 
+        ...(body.completed_at !== undefined && {
+          completed_at: body.completed_at ? new Date(body.completed_at) : null,
         }),
-        ...(body.actual_distance !== undefined && { actual_distance: body.actual_distance }),
-        ...(body.actual_duration !== undefined && { actual_duration: body.actual_duration }),
+        ...(body.actual_distance !== undefined && {
+          actual_distance: body.actual_distance,
+        }),
+        ...(body.actual_duration !== undefined && {
+          actual_duration: body.actual_duration,
+        }),
         ...(body.notes !== undefined && { notes: body.notes }),
       },
       include: {
@@ -164,7 +176,10 @@ export async function DELETE(
     });
 
     if (!existingAssignment) {
-      return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Assignment not found" },
+        { status: 404 }
+      );
     }
 
     // Delete the assignment

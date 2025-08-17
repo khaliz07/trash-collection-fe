@@ -69,6 +69,7 @@ export async function GET(request: NextRequest) {
             estimated_duration: true,
             total_distance_km: true,
             trackPoints: true,
+            address: true, // Include administrative address
           },
         },
         collector: {
