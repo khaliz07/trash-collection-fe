@@ -306,6 +306,7 @@ model RouteAssignment {
   actual_distance   Decimal?         @db.Decimal(8, 3)
   actual_duration   Int?
   notes             String?
+  trash_weight      Json?            // Store array of weight entries
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   collector         User             @relation(fields: [collector_id], references: [id], onDelete: Cascade)

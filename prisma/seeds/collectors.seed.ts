@@ -51,7 +51,7 @@ export async function seedCollectors(prisma: PrismaClient) {
       },
     ];
 
-    const hashedPassword = await bcrypt.hash("123456", 12);
+    const hashedPassword = await bcrypt.hash("password123", 12);
 
     console.log("\n🚀 Creating new collectors...");
 

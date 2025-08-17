@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { TrashWeightEntry } from "@/types/route-assignment";
 
 // Collector API functions
 export const collectorAPI = {
@@ -18,6 +19,7 @@ export const collectorAPI = {
     notes?: string;
     actual_distance?: number;
     actual_duration?: number;
+    trash_weight?: TrashWeightEntry[];
   }) => {
     const response = await api.patch("/collector/assignments", data);
     return response.data;

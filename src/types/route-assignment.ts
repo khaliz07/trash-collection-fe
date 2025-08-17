@@ -3,10 +3,18 @@
  */
 
 export enum AssignmentStatus {
-  PENDING = 'PENDING',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
+  PENDING = "PENDING",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
+
+export interface TrashWeightEntry {
+  id: string;
+  weight: number; // in kg
+  timestamp: string;
+  location?: string;
+  notes?: string;
 }
 
 export interface RouteAssignment {
@@ -22,6 +30,7 @@ export interface RouteAssignment {
   actual_distance?: number;
   actual_duration?: number;
   notes?: string;
+  trash_weight?: TrashWeightEntry[]; // Array of weight entries
   createdAt: string;
   updatedAt: string;
 
@@ -64,6 +73,7 @@ export interface UpdateRouteAssignmentRequest {
   actual_distance?: number;
   actual_duration?: number;
   notes?: string;
+  trash_weight?: TrashWeightEntry[]; // Array of weight entries
 }
 
 // Response types
@@ -112,7 +122,9 @@ export function getStatusProgress(status: AssignmentStatus): number {
 }
 
 // Helper function to get status badge variant
-export function getStatusBadgeVariant(status: AssignmentStatus): 'default' | 'success' | 'error' | 'warning' | 'info' | 'primary' {
+export function getStatusBadgeVariant(
+  status: AssignmentStatus
+): "default" | "success" | "error" | "warning" | "info" | "primary" {
   switch (status) {
     case AssignmentStatus.PENDING:
       return "warning";

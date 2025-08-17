@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -20,11 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RouteAssignment, AssignmentStatus } from "@/types/route-assignment";
+import {
+  RouteAssignment,
+  AssignmentStatus,
+  TrashWeightEntry,
+} from "@/types/route-assignment";
 import { Progress } from "@/components/ui/progress";
 import { collectorAPI } from "@/apis/collector.api";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
+import { Plus, Trash2, Scale } from "lucide-react";
 
 // Dynamic import to prevent SSR issues
 const SimpleLeafletMap = dynamic(
@@ -59,20 +65,30 @@ export function CollectorAssignmentDetailDialog({
     AssignmentStatus.PENDING
   );
   const [notes, setNotes] = useState("");
+  const [trashWeightEntries, setTrashWeightEntries] = useState<
+    TrashWeightEntry[]
+  >([]);
+  const [newWeight, setNewWeight] = useState("");
+  const [newWeightNotes, setNewWeightNotes] = useState("");
 
   // Mutation for updating assignment with React Query
   const updateAssignmentMutation = useMutation({
     mutationFn: collectorAPI.updateAssignment,
     onSuccess: (data) => {
-      toast.success("Cập nhật trạng thái thành công");
+      toast.success("Cập nhật thành công");
       if (onUpdate) {
         onUpdate(data.assignment);
       }
-      onClose();
+      // Update local state with the new assignment data
+      if (data.assignment) {
+        setStatus(data.assignment.status);
+        setNotes(data.assignment.notes || "");
+        setTrashWeightEntries(data.assignment.trash_weight || []);
+      }
     },
     onError: (error) => {
       console.error("Error updating assignment:", error);
-      toast.error("Không thể cập nhật trạng thái");
+      toast.error("Không thể cập nhật");
     },
   });
 
@@ -80,6 +96,7 @@ export function CollectorAssignmentDetailDialog({
     if (assignment) {
       setNotes(assignment.notes || "");
       setStatus(assignment.status);
+      setTrashWeightEntries(assignment.trash_weight || []);
     }
   }, [assignment]);
 
@@ -174,6 +191,59 @@ export function CollectorAssignmentDetailDialog({
       status,
       notes,
     });
+  };
+
+  const addWeightEntry = () => {
+    console.log("Adding weight entry, newWeight:", newWeight);
+    if (!newWeight || parseFloat(newWeight) <= 0) {
+      toast.error("Vui lòng nhập khối lượng hợp lệ");
+      return;
+    }
+
+    const newEntry: TrashWeightEntry = {
+      id: Date.now().toString(),
+      weight: parseFloat(newWeight),
+      timestamp: new Date().toISOString(),
+      notes: newWeightNotes.trim() || undefined,
+    };
+
+    console.log("New entry:", newEntry);
+    const updatedEntries = [...trashWeightEntries, newEntry];
+    setTrashWeightEntries(updatedEntries);
+
+    // Immediately save to database
+    if (assignment) {
+      updateAssignmentMutation.mutate({
+        assignmentId: assignment.id,
+        status: assignment.status,
+        notes: assignment.notes,
+        trash_weight: updatedEntries,
+      });
+    }
+
+    setNewWeight("");
+    setNewWeightNotes("");
+  };
+
+  const removeWeightEntry = (entryId: string) => {
+    const updatedEntries = trashWeightEntries.filter(
+      (entry) => entry.id !== entryId
+    );
+    setTrashWeightEntries(updatedEntries);
+
+    // Immediately save to database
+    if (assignment) {
+      updateAssignmentMutation.mutate({
+        assignmentId: assignment.id,
+        status: assignment.status,
+        notes: assignment.notes,
+        trash_weight: updatedEntries,
+      });
+    }
+  };
+
+  const getTotalWeight = () => {
+    return trashWeightEntries.reduce((total, entry) => total + entry.weight, 0);
   };
 
   if (!assignment) return null;
@@ -393,6 +463,109 @@ export function CollectorAssignmentDetailDialog({
               </CardContent>
             </Card>
           )}
+
+          {/* Trash Weight Section */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Scale className="h-5 w-5" />
+                  <h4 className="font-medium">Cập nhật khối lượng rác</h4>
+                  {trashWeightEntries.length > 0 && (
+                    <Badge variant="default">
+                      Tổng: {getTotalWeight().toFixed(1)} kg
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Existing entries */}
+                {trashWeightEntries.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      Các lần cân đã ghi nhận:
+                    </Label>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {trashWeightEntries.map((entry, index) => (
+                        <div
+                          key={entry.id}
+                          className="flex items-center justify-between p-2 border rounded-lg bg-gray-50"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {entry.weight} kg
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(entry.timestamp).toLocaleString(
+                                  "vi-VN"
+                                )}
+                              </span>
+                            </div>
+                            {entry.notes && (
+                              <p className="text-xs text-gray-600 mt-1">
+                                {entry.notes}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeWeightEntry(entry.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Add new entry */}
+                <div className="space-y-3 border-t pt-4">
+                  <Label className="text-sm font-medium">
+                    Thêm khối lượng rác mới:
+                  </Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-1">
+                      <Input
+                        type="number"
+                        value={newWeight}
+                        onChange={(e) => setNewWeight(e.target.value)}
+                        placeholder="0.0"
+                        step="0.1"
+                        min="0"
+                      />
+                      <Label className="text-xs text-gray-500">kg</Label>
+                    </div>
+                    <div className="col-span-2">
+                      <Input
+                        value={newWeightNotes}
+                        onChange={(e) => setNewWeightNotes(e.target.value)}
+                        placeholder="Ghi chú (tùy chọn)"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={addWeightEntry}
+                    disabled={
+                      !newWeight ||
+                      parseFloat(newWeight) <= 0 ||
+                      updateAssignmentMutation.isPending
+                    }
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {updateAssignmentMutation.isPending
+                      ? "Đang lưu..."
+                      : "Thêm & Lưu"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>

@@ -132,19 +132,35 @@ export default function CollectorMapPage() {
       ? Math.round((completedAssignments / totalAssignments) * 100)
       : 0;
 
-  // Mock location data for demonstration
-  const mockLocations = assignments.map((assignment: any, index: number) => ({
+  // Route location data for display
+  const routeLocations = assignments.map((assignment: any, index: number) => ({
     id: assignment.id,
-    name: `Điểm ${index + 1}`,
-    address: assignment.collection_point?.address || "Địa chỉ không xác định",
+    name: assignment.route?.name || `Tuyến đường ${index + 1}`,
+    address: assignment.route?.description || "Không có mô tả",
     status:
-      assignment.status === "completed"
+      assignment.status === "COMPLETED"
         ? "completed"
-        : assignment.status === "pending"
+        : assignment.status === "IN_PROGRESS"
+        ? "in-progress"
+        : assignment.status === "PENDING"
         ? "pending"
         : "skipped",
-    distance: `${(Math.random() * 5 + 0.5).toFixed(1)}km`,
-    time: `${Math.floor(Math.random() * 30 + 5)} phút`,
+    statusText:
+      assignment.status === "COMPLETED"
+        ? "Hoàn thành"
+        : assignment.status === "IN_PROGRESS"
+        ? "Đang thực hiện"
+        : assignment.status === "PENDING"
+        ? "Chờ bắt đầu"
+        : "Đã bỏ qua",
+    distance: assignment.route?.total_distance_km
+      ? `${assignment.route.total_distance_km}km`
+      : `${assignment.actual_distance || "N/A"}km`,
+    time: assignment.route?.estimated_duration
+      ? `Dự kiến: ${Math.round(assignment.route.estimated_duration / 60)} phút`
+      : `${assignment.time_window_start || "08:00"} - ${
+          assignment.time_window_end || "17:00"
+        }`,
   }));
 
   // Map points from assignments
@@ -185,15 +201,6 @@ export default function CollectorMapPage() {
       icon: <RefreshCw className="h-4 w-4" />,
       onClick: handleRefresh,
       variant: "outline" as const,
-    },
-    {
-      label: "Vị trí của tôi",
-      icon: <Navigation className="h-4 w-4" />,
-      onClick: () => {
-        // TODO: Implement location finding
-        toast.info("Đang tìm vị trí của bạn...");
-      },
-      variant: "default" as const,
     },
   ];
 
@@ -283,8 +290,24 @@ export default function CollectorMapPage() {
       {/* Quick Actions */}
       <QuickActions actions={quickActions} />
 
+      {/* Tuyến đường thu gom trong hôm nay - Moved above map */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Truck className="h-5 w-5" />
+            Tuyến đường thu gom trong hôm nay ({totalAssignments})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <LocationList
+            locations={routeLocations}
+            onLocationSelect={handleLocationSelect}
+          />
+        </CardContent>
+      </Card>
+
       {/* Map */}
-      <ResponsiveMapContainer
+      {/* <ResponsiveMapContainer
         height="400px"
         className="min-h-[400px] md:min-h-[600px] max-h-[80vh]"
         showControls
@@ -310,23 +333,7 @@ export default function CollectorMapPage() {
             console.log("Route updated:", route);
           }}
         />
-      </ResponsiveMapContainer>
-
-      {/* Location List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Danh sách điểm thu gom ({totalAssignments})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <LocationList
-            locations={mockLocations}
-            onLocationSelect={handleLocationSelect}
-          />
-        </CardContent>
-      </Card>
+      </ResponsiveMapContainer> */}
 
       {/* Assignment Detail Dialog */}
       <CollectorAssignmentDetailDialog
@@ -335,6 +342,10 @@ export default function CollectorMapPage() {
         onClose={() => {
           setShowDetailDialog(false);
           setSelectedAssignment(null);
+        }}
+        onUpdate={(updatedAssignment) => {
+          // Refetch data to show updated status
+          refetch();
         }}
       />
     </MobileDashboard>

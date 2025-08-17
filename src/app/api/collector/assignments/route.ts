@@ -118,7 +118,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { assignmentId, status, notes, actual_distance, actual_duration } =
+    const { assignmentId, status, notes, actual_distance, actual_duration, trash_weight } =
       body;
 
     // Validate the assignment belongs to this collector
@@ -138,6 +138,11 @@ export async function PATCH(request: NextRequest) {
       status,
       notes,
     };
+
+    // Add trash_weight if provided
+    if (trash_weight !== undefined) {
+      updateData.trash_weight = trash_weight;
+    }
 
     // Add timestamps based on status
     if (status === AssignmentStatus.IN_PROGRESS && !assignment.started_at) {
