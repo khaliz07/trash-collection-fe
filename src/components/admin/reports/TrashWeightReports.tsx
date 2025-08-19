@@ -45,8 +45,10 @@ interface TrashWeightResponse {
 }
 
 interface AdministrativeArea {
-  id: string;
+  code: string;
   name: string;
+  full_name?: string;
+  code_name?: string;
 }
 
 export function TrashWeightReports() {
@@ -69,7 +71,7 @@ export function TrashWeightReports() {
   useEffect(() => {
     const loadProvinces = async () => {
       try {
-        const response = await fetch("/api/administrative/provinces");
+        const response = await fetch("/api/address/provinces");
         const provincesData = await response.json();
         setProvinces(provincesData);
       } catch (error) {
@@ -91,7 +93,7 @@ export function TrashWeightReports() {
 
       try {
         const response = await fetch(
-          `/api/administrative/districts?provinceId=${selectedProvince}`
+          `/api/address/districts/${selectedProvince}`
         );
         const districtsData = await response.json();
         setDistricts(districtsData);
@@ -138,7 +140,7 @@ export function TrashWeightReports() {
 
   // Prepare chart data
   const chartData = useMemo(() => {
-    if (!data.length) return [];
+    if (!data?.length) return [];
 
     // Group data by time period and administrative area
     const groupedByTime: { [timePeriod: string]: { [area: string]: number } } =
@@ -228,7 +230,7 @@ export function TrashWeightReports() {
                 <SelectContent>
                   <SelectItem value="all">Tất cả</SelectItem>
                   {provinces.map((province) => (
-                    <SelectItem key={province.id} value={province.id}>
+                    <SelectItem key={province.code} value={province.code}>
                       {province.name}
                     </SelectItem>
                   ))}
@@ -250,7 +252,7 @@ export function TrashWeightReports() {
                 <SelectContent>
                   <SelectItem value="all">Tất cả</SelectItem>
                   {districts.map((district) => (
-                    <SelectItem key={district.id} value={district.id}>
+                    <SelectItem key={district.code} value={district.code}>
                       {district.name}
                     </SelectItem>
                   ))}

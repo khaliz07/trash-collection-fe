@@ -33,21 +33,21 @@ export async function GET(request: NextRequest) {
 
     // Build where clause for filtering
     const whereClause: any = {
-      started_at: {
+      trash_weight: {
         not: null,
       },
     };
 
     if (filters.startDate) {
-      whereClause.started_at = {
-        ...whereClause.started_at,
+      whereClause.assigned_date = {
+        ...whereClause.assigned_date,
         gte: new Date(filters.startDate),
       };
     }
 
     if (filters.endDate) {
-      whereClause.started_at = {
-        ...whereClause.started_at,
+      whereClause.assigned_date = {
+        ...whereClause.assigned_date,
         lte: new Date(filters.endDate),
       };
     }
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     const groupedData: { [key: string]: TrashWeightStats } = {};
 
     for (const assignment of assignments) {
-      if (!assignment.started_at || !assignment.route.address) continue;
+      if (!assignment.assigned_date || !assignment.route.address) continue;
 
       // Parse trash weight data
       const trashWeightData = assignment.trash_weight as any;
@@ -92,8 +92,8 @@ export async function GET(request: NextRequest) {
         }, 0);
       }
 
-      // Skip if no weight data
-      if (totalWeight === 0) continue;
+      // // Skip if no weight data
+      // if (totalWeight === 0) continue;
 
       const address = assignment.route.address as any;
 
@@ -120,12 +120,17 @@ export async function GET(request: NextRequest) {
         continue;
       }
 
+      console.log(address, filters.districtId, address.district?.code);
+
       if (filters.districtId && address.district?.code !== filters.districtId) {
         continue;
       }
 
+      console.log("Processing assigned_date:", assignment.id);
+
       // Group by time period
-      const date = new Date(assignment.started_at);
+      const date = new Date(assignment.assigned_date);
+
       let timePeriod = "";
 
       switch (filters.groupTime) {
