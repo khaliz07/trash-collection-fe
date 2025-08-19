@@ -140,35 +140,6 @@ export default function CreateUrgentRequestForm({
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="urgency_level"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mức độ khẩn cấp</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn mức độ khẩn cấp" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="MEDIUM">Bình thường</SelectItem>
-                        <SelectItem value="HIGH">Khẩn cấp</SelectItem>
-                        <SelectItem value="CRITICAL">Rất khẩn cấp</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Chọn mức độ ưu tiên cho yêu cầu thu gom
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="requested_date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">

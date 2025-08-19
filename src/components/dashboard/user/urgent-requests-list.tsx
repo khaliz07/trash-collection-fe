@@ -27,7 +27,7 @@ import {
   User,
   Phone,
 } from "lucide-react";
-import { 
+import {
   useUrgentRequests,
   useUpdateUrgentRequest,
   useCancelUrgentRequest,
@@ -99,7 +99,8 @@ const getUrgencyText = (urgencyLevel: string) => {
 export default function UrgentRequestsList() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [page, setPage] = useState(1);
-  const [selectedRequest, setSelectedRequest] = useState<UrgentRequestResponse | null>(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<UrgentRequestResponse | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const limit = 10;
 
@@ -190,8 +191,8 @@ export default function UrgentRequestsList() {
       ) : (
         <div className="space-y-4">
           {urgentRequests.map((request: UrgentRequestResponse) => (
-            <Card 
-              key={request.id} 
+            <Card
+              key={request.id}
               className="cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => handleRequestClick(request)}
             >
@@ -221,11 +222,6 @@ export default function UrgentRequestsList() {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Badge
-                      variant={getUrgencyBadgeVariant(request.urgency_level)}
-                    >
-                      {getUrgencyText(request.urgency_level)}
-                    </Badge>
                     <Badge variant={getStatusBadgeVariant(request.status)}>
                       {getStatusText(request.status)}
                     </Badge>

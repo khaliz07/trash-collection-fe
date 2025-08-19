@@ -55,7 +55,6 @@ import { UrgentRequestResponse } from "@/apis/urgent-requests.api";
 import LocationPicker from "@/components/ui/location-picker";
 
 const formSchema = z.object({
-  urgency_level: z.enum(["MEDIUM", "HIGH", "CRITICAL"]),
   requested_date: z.date({
     required_error: "Vui lòng chọn ngày thu gom",
   }),
@@ -159,7 +158,6 @@ export default function UrgentRequestDetailDialog({
     resolver: zodResolver(formSchema),
     defaultValues: request
       ? {
-          urgency_level: request.urgency_level,
           requested_date: new Date(request.requested_date),
           waste_description: request.waste_description,
           pickup_address: request.pickup_address,
@@ -173,7 +171,6 @@ export default function UrgentRequestDetailDialog({
   React.useEffect(() => {
     if (request) {
       form.reset({
-        urgency_level: request.urgency_level,
         requested_date: new Date(request.requested_date),
         waste_description: request.waste_description,
         pickup_address: request.pickup_address,
@@ -194,7 +191,6 @@ export default function UrgentRequestDetailDialog({
     setIsUpdating(true);
     try {
       await onUpdate(request.id, {
-        urgency_level: values.urgency_level,
         requested_date: values.requested_date.toISOString(),
         waste_description: values.waste_description,
         pickup_address: values.pickup_address,
@@ -247,9 +243,6 @@ export default function UrgentRequestDetailDialog({
                 Yêu cầu thu gom #{request.id.slice(-8)}
               </span>
               <div className="flex gap-2">
-                <Badge variant={getUrgencyBadgeVariant(request.urgency_level)}>
-                  {getUrgencyText(request.urgency_level)}
-                </Badge>
                 <Badge variant={getStatusBadgeVariant(request.status)}>
                   {getStatusText(request.status)}
                 </Badge>
@@ -352,34 +345,6 @@ export default function UrgentRequestDetailDialog({
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-6"
                 >
-                  <FormField
-                    control={form.control}
-                    name="urgency_level"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Mức độ khẩn cấp</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Chọn mức độ khẩn cấp" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="MEDIUM">Bình thường</SelectItem>
-                            <SelectItem value="HIGH">Khẩn cấp</SelectItem>
-                            <SelectItem value="CRITICAL">
-                              Rất khẩn cấp
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   <FormField
                     control={form.control}
                     name="requested_date"
