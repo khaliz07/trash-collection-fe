@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import { seedAdmin } from "./seeds/admin.seed";
 import { seedPackages } from "./seeds/packages.seed";
 import { seedCollectors } from "./seeds/collectors.seed";
+import { seedHCMAreas } from "./seeds/hcm-areas.seed";
+import { seedHCMRoutes, seedHCMTrashWeightData } from "./seeds/hcm-routes.seed";
 
 const prisma = new PrismaClient();
 
@@ -12,6 +14,11 @@ async function main() {
   await seedAdmin(prisma);
   await seedPackages(prisma);
   await seedCollectors(prisma);
+
+  // Seed HCM test data
+  await seedHCMAreas(prisma);
+  await seedHCMRoutes(prisma);
+  await seedHCMTrashWeightData(prisma);
 
   // Create sample user for development
   console.log("👤 Creating sample user...");
