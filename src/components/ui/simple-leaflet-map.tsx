@@ -26,6 +26,10 @@ export interface LeafletMapProps {
   onRouteUpdate?: (route: RouteResult) => void;
   onMarkerClick?: (pointId: string) => void;
   onMapClick?: (lat: number, lng: number) => void;
+  onMapRightClick?: (lat: number, lng: number, event: React.MouseEvent) => void;
+  onPointRightClick?: (pointIndex: number, event: React.MouseEvent) => void;
+  editingPointIndex?: number | null;
+  isEditingPointPosition?: boolean;
 }
 
 let leafletInstance: any = null;
@@ -54,6 +58,10 @@ function SimpleLeafletMap(props: LeafletMapProps) {
     onRouteUpdate,
     onMarkerClick,
     onMapClick,
+    onMapRightClick,
+    onPointRightClick,
+    editingPointIndex,
+    isEditingPointPosition,
   } = props;
 
   // Memoize points to prevent unnecessary re-renders
@@ -64,12 +72,16 @@ function SimpleLeafletMap(props: LeafletMapProps) {
   const stableOnRouteUpdate = useRef(onRouteUpdate);
   const stableOnMapClick = useRef(onMapClick);
   const stableOnMarkerClick = useRef(onMarkerClick);
+  const stableOnMapRightClick = useRef(onMapRightClick);
+  const stableOnPointRightClick = useRef(onPointRightClick);
 
   // Update refs when props change
   useEffect(() => {
     stableOnRouteUpdate.current = onRouteUpdate;
     stableOnMapClick.current = onMapClick;
     stableOnMarkerClick.current = onMarkerClick;
+    stableOnMapRightClick.current = onMapRightClick;
+    stableOnPointRightClick.current = onPointRightClick;
   });
 
   // Complete cleanup function
@@ -179,6 +191,26 @@ function SimpleLeafletMap(props: LeafletMapProps) {
           });
         }
 
+        // Add map right-click handler
+        if (stableOnMapRightClick.current) {
+          map.on("contextmenu", (e: any) => {
+            e.originalEvent.preventDefault(); // Prevent browser context menu
+            // Create a synthetic React event
+            const syntheticEvent = {
+              ...e.originalEvent,
+              preventDefault: () => e.originalEvent.preventDefault(),
+              stopPropagation: () => e.originalEvent.stopPropagation(),
+              clientX: e.originalEvent.clientX,
+              clientY: e.originalEvent.clientY,
+            } as React.MouseEvent;
+            stableOnMapRightClick.current!(
+              e.latlng.lat,
+              e.latlng.lng,
+              syntheticEvent
+            );
+          });
+        }
+
         console.log("✅ Map initialized successfully");
       } catch (error) {
         console.error("Failed to initialize map:", error);
@@ -248,8 +280,12 @@ function SimpleLeafletMap(props: LeafletMapProps) {
           : "waypoint");
       const color = getIconColor(type);
 
+      // Check if this point is being edited
+      const isBeingEdited = editingPointIndex === index;
+      const opacity = isBeingEdited ? 0.4 : 1;
+
       const customIcon = leafletInstance.divIcon({
-        html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: white;">${
+        html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: white; opacity: ${opacity};">${
           type === "start"
             ? "S"
             : type === "end"
@@ -279,6 +315,21 @@ function SimpleLeafletMap(props: LeafletMapProps) {
 
         if (stableOnMarkerClick.current) {
           marker.on("click", () => stableOnMarkerClick.current!(point.id));
+        }
+
+        // Add right-click handler for markers
+        if (stableOnPointRightClick.current) {
+          marker.on("contextmenu", (e: any) => {
+            e.originalEvent.preventDefault();
+            const syntheticEvent = {
+              ...e.originalEvent,
+              preventDefault: () => e.originalEvent.preventDefault(),
+              stopPropagation: () => e.originalEvent.stopPropagation(),
+              clientX: e.originalEvent.clientX,
+              clientY: e.originalEvent.clientY,
+            } as React.MouseEvent;
+            stableOnPointRightClick.current!(index, syntheticEvent);
+          });
         }
       } catch (error) {
         console.error("Error creating marker:", error);
@@ -693,7 +744,11 @@ function SimpleLeafletMap(props: LeafletMapProps) {
   return (
     <div
       ref={mapContainerRef}
-      style={{ width: "100%", height }}
+      style={{
+        width: "100%",
+        height,
+        cursor: isEditingPointPosition ? "crosshair" : "default",
+      }}
       className="w-full h-full rounded-lg overflow-hidden border border-gray-200"
     />
   );

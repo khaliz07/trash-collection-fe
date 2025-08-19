@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AddressSelector } from "@/components/ui/address-selector";
+import { AddressAutoComplete } from "@/components/ui/address-autocomplete";
 import api from "@/lib/api";
 import leafletService, {
   type LatLng,
@@ -21,6 +22,7 @@ import leafletService, {
 import { RouteStatus } from "@/types/route";
 import { CreateSimpleRouteRequest, SimpleRoute } from "@/types/simple-route";
 import { AdministrativeAddress } from "@/types/address";
+import { AddressService } from "@/lib/address-service";
 import dynamic from "next/dynamic";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -75,6 +77,13 @@ export function RouteCreator({
   mode = "create",
   routeId,
 }: RouteCreatorProps) {
+  console.log("🚀 RouteCreator component initialized with:", {
+    mode,
+    routeId,
+    hasInitialData: !!initialData,
+    initialPickupPoints: initialData?.pickup_points?.length || 0,
+    initialAddress: initialData?.address,
+  });
   const [formData, setFormData] = useState<CreateSimpleRouteRequest>({
     name: "",
     description: "",
@@ -89,36 +98,70 @@ export function RouteCreator({
   const [newAddress, setNewAddress] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
-  const [mapCenter, setMapCenter] = useState<LatLng>(
+  const [mapCenter, setMapCenterState] = useState<LatLng>(
     leafletService.getDefaultCenter()
   );
+
+  // Wrapper for setMapCenter with logging
+  const setMapCenter = (center: LatLng) => {
+    console.log("📍 setMapCenter called:", {
+      newCenter: center,
+      caller: new Error().stack?.split("\n")[2]?.trim(), // Get caller info
+    });
+    setMapCenterState(center);
+  };
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
   const [addressErrors, setAddressErrors] = useState<string[]>([]);
   const [isAddressValid, setIsAddressValid] = useState(true);
   const isCreatingRef = useRef(false); // Additional protection against double-calls
 
+  const [isAddingPoint, setIsAddingPoint] = useState(false);
+  const [isChangingAddress, setIsChangingAddress] = useState(false);
+  const [hasInitialRouteLoaded, setHasInitialRouteLoaded] = useState(
+    // Initialize as true if we're in edit mode with existing route data
+    mode === "edit" && !!initialData?.pickup_points?.length
+  );
+
+  // Context menu and point editing states
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    lat: number;
+    lng: number;
+    pointIndex?: number;
+  } | null>(null);
+  const [editingPointIndex, setEditingPointIndex] = useState<number | null>(null);
+  const [isEditingPointPosition, setIsEditingPointPosition] = useState(false);
+
   // Load route points from initialData for edit mode
   useEffect(() => {
-    if (mode === "edit" && initialData?.pickup_points) {
-      const points: RoutePoint[] = initialData.pickup_points.map(
-        (point, index) => ({
-          id: `point-${index}`,
-          address: point.address,
-          lat: point.lat,
-          lng: point.lng,
-          user_id: point.user_id,
-          isValid: true,
-          type: index === 0 ? "start" : "pickup",
-        })
-      );
+    if (initialData?.pickup_points && mode === "edit") {
+      console.log("📥 Loading initial route data for edit mode");
+
+      // Set flag FIRST to prevent admin area focus
+      setHasInitialRouteLoaded(true);
+
+      const points = initialData.pickup_points.map((point, index) => ({
+        id: `${point.lat}-${point.lng}-${index}`,
+        address: point.address || `Điểm ${index + 1}`,
+        lat: point.lat,
+        lng: point.lng,
+        isValid: true,
+        type: (index === 0 ? "start" : "pickup") as "start" | "pickup",
+      }));
       setRoutePoints(points);
 
-      // Set map center to first point
-      if (points.length > 0 && points[0].lat && points[0].lng) {
-        setMapCenter({ lat: points[0].lat, lng: points[0].lng });
+      // Set map center to first point if available, but autoFitBounds will override this
+      if (points.length > 0) {
+        setMapCenter({ lat: points[0].lat!, lng: points[0].lng! });
       }
+
+      console.log("✅ Initial route loaded, points count:", points.length);
+    } else if (mode === "create") {
+      // In create mode, allow admin area focus
+      setHasInitialRouteLoaded(false);
     }
-  }, [mode, initialData]);
+  }, [initialData?.pickup_points, mode]);
 
   // Optimize re-rendering with useMemo for map points (exclude address to prevent routing recalculation)
   const mapPoints = React.useMemo(() => {
@@ -135,6 +178,148 @@ export function RouteCreator({
           : ("pickup" as const),
     }));
   }, [routePoints.map((p) => `${p.id}-${p.lat}-${p.lng}`).join("|")]);
+
+  // Determine if we should auto-fit bounds to show entire route
+  const shouldAutoFitBounds = useMemo(() => {
+    const result =
+      mapPoints.length >= 2 && !isAddingPoint && !isChangingAddress;
+    console.log("🔍 shouldAutoFitBounds calculation:", {
+      mapPointsLength: mapPoints.length,
+      isAddingPoint,
+      isChangingAddress,
+      shouldAutoFit: result,
+      mapPoints: mapPoints.map((p) => ({
+        id: p.id,
+        lat: p.lat,
+        lng: p.lng,
+        address: p.address,
+      })),
+    });
+    return result;
+  }, [mapPoints.length, isAddingPoint, isChangingAddress]);
+
+  // Handle initial map focus when component first loads or when address changes
+  useEffect(() => {
+    console.log("🗺️ Map focus useEffect triggered", {
+      mapPointsCount: mapPoints.length,
+      hasAddress: !!formData.address,
+      province: formData.address?.province?.name,
+      district: formData.address?.district?.name,
+      ward: formData.address?.ward?.name,
+      isAddingPoint,
+      isChangingAddress,
+      mode,
+      hasInitialRouteLoaded,
+      shouldAutoFitBounds:
+        mapPoints.length >= 2 && !isAddingPoint && !isChangingAddress,
+    });
+
+    // Skip if currently adding a point or changing address to avoid conflicts
+    if (isAddingPoint || isChangingAddress) {
+      console.log(
+        "⏸️ Skipping map focus - currently adding point or changing address"
+      );
+      return;
+    }
+
+    // Priority 1: If we have multiple route points, DON'T interfere with autoFitBounds
+    // This is the key fix - we should not focus on administrative area if route points exist
+    if (mapPoints.length >= 2) {
+      console.log(
+        "🎯 Route points detected, letting autoFitBounds handle focus - NOT focusing on admin area",
+        {
+          mapPointsCount: mapPoints.length,
+          shouldAutoFitBounds:
+            mapPoints.length >= 2 && !isAddingPoint && !isChangingAddress,
+        }
+      );
+      return; // Do NOT focus on administrative area
+    }
+
+    // Priority 2: Focus on administrative address ONLY if:
+    // - We have no route points or just 1 point
+    // - AND we're in create mode
+    // - AND we haven't loaded an initial route (edit mode protection)
+    const shouldFocusOnAdminArea =
+      mapPoints.length < 2 &&
+      formData.address &&
+      (formData.address.province ||
+        formData.address.district ||
+        formData.address.ward) &&
+      mode === "create" && // Only in create mode
+      !hasInitialRouteLoaded; // Extra protection
+
+    console.log("🔍 shouldFocusOnAdminArea evaluation:", {
+      mapPointsLessThan2: mapPoints.length < 2,
+      hasFormDataAddress: !!formData.address,
+      hasProvinceOrDistrictOrWard: !!(
+        formData.address?.province ||
+        formData.address?.district ||
+        formData.address?.ward
+      ),
+      isCreateMode: mode === "create",
+      hasNotInitialRouteLoaded: !hasInitialRouteLoaded,
+      finalResult: shouldFocusOnAdminArea,
+    });
+
+    if (shouldFocusOnAdminArea) {
+      console.log(
+        "📍 WILL FOCUS on administrative area (create mode, conditions met)"
+      );
+      const focusOnAdministrativeArea = async () => {
+        try {
+          const fullAddress = AddressService.formatFullAddress(
+            formData.address?.province,
+            formData.address?.district,
+            formData.address?.ward
+          );
+
+          if (fullAddress) {
+            console.log("🔍 Geocoding administrative area:", fullAddress);
+            const coordinates = await leafletService.geocodeAddress(
+              fullAddress
+            );
+            console.log("✅ Setting map center to:", coordinates);
+            setMapCenter(coordinates);
+          }
+        } catch (error) {
+          console.warn("❌ Could not focus on administrative area:", error);
+        }
+      };
+
+      focusOnAdministrativeArea();
+    } else {
+      console.log(
+        "❌ Not focusing on administrative area - conditions not met"
+      );
+    }
+  }, [
+    // Key dependencies that should trigger map focus
+    mapPoints.length,
+    formData.address?.province?.code,
+    formData.address?.district?.code,
+    formData.address?.ward?.code,
+    isAddingPoint,
+    isChangingAddress,
+    mode,
+    hasInitialRouteLoaded, // Add this to prevent admin area focus after route loads
+  ]);
+
+  // Debug: Log SimpleLeafletMap props
+  useEffect(() => {
+    console.log("🗺️ SimpleLeafletMap props updated:", {
+      mapCenter,
+      mapPointsCount: mapPoints.length,
+      showRoute: mapPoints.length >= 2,
+      shouldAutoFitBounds,
+      mapPoints: mapPoints.map((p) => ({
+        id: p.id,
+        lat: p.lat,
+        lng: p.lng,
+        address: p.address,
+      })),
+    });
+  }, [mapCenter, mapPoints.length, shouldAutoFitBounds]);
 
   // Debounced route calculation to avoid too many API calls
   const debouncedRouteCalculation = React.useCallback(
@@ -202,6 +387,7 @@ export function RouteCreator({
       return;
     }
 
+    setIsAddingPoint(true);
     try {
       console.log("Adding address:", newAddress);
 
@@ -234,11 +420,153 @@ export function RouteCreator({
     } catch (error) {
       console.error("Error adding address:", error);
       toast.error("Không thể tìm thấy địa chỉ. Vui lòng kiểm tra lại.");
+    } finally {
+      // Reset adding state after a short delay
+      setTimeout(() => setIsAddingPoint(false), 1000);
+    }
+  };
+
+  // Handle address selection from AutoComplete
+  const handleAutoCompleteAddressSelect = async (
+    address: string,
+    lat?: number,
+    lng?: number
+  ) => {
+    setIsAddingPoint(true);
+    try {
+      console.log("Adding address from autocomplete:", address, lat, lng);
+
+      let coordinates: { lat: number; lng: number };
+
+      if (lat !== undefined && lng !== undefined) {
+        // Use provided coordinates from autocomplete
+        coordinates = { lat, lng };
+      } else {
+        // Fallback to geocoding if no coordinates provided
+        coordinates = await leafletService.geocodeAddress(address);
+      }
+
+      const newPoint: RoutePoint = {
+        id: Date.now().toString(),
+        address: address,
+        lat: coordinates.lat,
+        lng: coordinates.lng,
+        isValid: true,
+        type: routePoints.length === 0 ? "start" : "pickup",
+      };
+
+      setRoutePoints((prev) => {
+        const updated = [...prev, newPoint];
+        console.log("Updated route points:", updated);
+        return updated;
+      });
+      setNewAddress("");
+
+      // Update map center to the first point
+      if (routePoints.length === 0) {
+        setMapCenter(coordinates);
+      }
+
+      toast.success(`Đã thêm điểm thu gom: ${address}`);
+    } catch (error) {
+      console.error("Error adding address from autocomplete:", error);
+      toast.error("Không thể thêm địa chỉ. Vui lòng thử lại.");
+    } finally {
+      // Reset adding state after a short delay to allow map to update
+      setTimeout(() => setIsAddingPoint(false), 1000);
+    }
+  };
+
+  // Context menu handlers
+  const handleMapRightClick = (lat: number, lng: number, event: React.MouseEvent) => {
+    event.preventDefault();
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      lat,
+      lng
+    });
+  };
+
+  const handlePointRightClick = (pointIndex: number, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const point = routePoints[pointIndex];
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      lat: point.lat || 0,
+      lng: point.lng || 0,
+      pointIndex
+    });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  const handleAddPointFromMenu = async () => {
+    if (!contextMenu) return;
+    
+    // Use existing handleMapClick logic
+    await handleMapClick(contextMenu.lat, contextMenu.lng);
+    closeContextMenu();
+  };
+
+  const handleDeletePoint = () => {
+    if (!contextMenu || contextMenu.pointIndex === undefined) return;
+    
+    const newPoints = routePoints.filter((_, index) => index !== contextMenu.pointIndex);
+    setRoutePoints(newPoints);
+    closeContextMenu();
+  };
+
+  const handleStartEditPosition = () => {
+    if (!contextMenu || contextMenu.pointIndex === undefined) return;
+    
+    setEditingPointIndex(contextMenu.pointIndex);
+    setIsEditingPointPosition(true);
+    closeContextMenu();
+  };
+
+  const handleEditPositionClick = async (lat: number, lng: number) => {
+    if (editingPointIndex === null) return;
+
+    // Update point position
+    const updatedPoints = routePoints.map((point, index) => 
+      index === editingPointIndex 
+        ? { ...point, lat, lng, address: `Điểm ${index + 1} (đã cập nhật)` }
+        : point
+    );
+    
+    setRoutePoints(updatedPoints);
+    setEditingPointIndex(null);
+    setIsEditingPointPosition(false);
+
+    // Reverse geocode to get proper address
+    try {
+      const address = await leafletService.reverseGeocode(lat, lng);
+      const finalPoints = updatedPoints.map((point, index) => 
+        index === editingPointIndex 
+          ? { ...point, address: address || `Điểm ${index + 1}` }
+          : point
+      );
+      setRoutePoints(finalPoints);
+    } catch (error) {
+      console.warn("Could not get address for updated point:", error);
     }
   };
 
   // Handle map click to add points - INSTANT UI UPDATE
   const handleMapClick = async (lat: number, lng: number) => {
+    // If we're editing a point position, handle that instead
+    if (isEditingPointPosition) {
+      await handleEditPositionClick(lat, lng);
+      return;
+    }
+
+    setIsAddingPoint(true);
+
     // 1. Immediately add point to UI for instant feedback
     const tempId = Date.now().toString();
     const tempPoint: RoutePoint = {
@@ -274,6 +602,9 @@ export function RouteCreator({
       } catch (error) {
         console.warn("Could not get address, using coordinates");
         toast.success(`Đã thêm điểm: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      } finally {
+        // Reset adding state after background work is done
+        setTimeout(() => setIsAddingPoint(false), 500);
       }
     }, 500); // 500ms delay to debounce reverse geocoding
   };
@@ -307,14 +638,75 @@ export function RouteCreator({
   };
 
   // Address selection handlers
-  const handleAddressChange = (address: AdministrativeAddress) => {
-    setFormData(prev => ({
-      ...prev,
-      address: address
-    }));
-  };
+  const handleAddressChange = async (
+    address: AdministrativeAddress,
+    isUserInteraction = false
+  ) => {
+    console.log("🏠 Address changed:", address, { isUserInteraction });
 
-  const handleAddressValidationChange = (isValid: boolean, errors: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: address,
+    }));
+
+    // Chỉ focus vào administrative area nếu:
+    // 1. Đang ở create mode, HOẶC
+    // 2. User chủ động thay đổi (không phải auto-initialization)
+    // 3. Edit mode nhưng chưa có initial route data
+    const hasRouteData =
+      mode === "edit" && (hasInitialRouteLoaded || mapPoints.length >= 2);
+    const shouldFocusOnAddress =
+      mode === "create" || isUserInteraction || !hasRouteData;
+
+    console.log("🔍 Should focus on admin address?", {
+      mode,
+      mapPointsLength: mapPoints.length,
+      hasInitialRouteLoaded,
+      hasRouteData,
+      isUserInteraction,
+      shouldFocus: shouldFocusOnAddress,
+    });
+
+    if (!shouldFocusOnAddress) {
+      console.log("⏸️ Skipping admin area focus - route data already exists");
+      return;
+    }
+
+    // Set flag để tránh conflict với autoFitBounds
+    setIsChangingAddress(true);
+
+    try {
+      // Build full address string from administrative data
+      const fullAddress = AddressService.formatFullAddress(
+        address.province,
+        address.district,
+        address.ward
+      );
+
+      if (fullAddress) {
+        console.log("🎯 Address changed, forcing map focus to:", fullAddress);
+
+        // Geocode the administrative address to get coordinates
+        const coordinates = await leafletService.geocodeAddress(fullAddress);
+        console.log("✅ New coordinates:", coordinates);
+
+        // Update map center to focus on the selected area
+        setMapCenter(coordinates);
+      }
+    } catch (error) {
+      console.warn("❌ Could not auto-focus map to selected area:", error);
+      // Don't show error toast as this is a nice-to-have feature
+    } finally {
+      // Reset changing address state after a delay
+      setTimeout(() => {
+        setIsChangingAddress(false);
+      }, 1500);
+    }
+  };
+  const handleAddressValidationChange = (
+    isValid: boolean,
+    errors: string[]
+  ) => {
     setIsAddressValid(isValid);
     setAddressErrors(errors);
   };
@@ -559,24 +951,6 @@ export function RouteCreator({
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Estimated Duration */}
-            <div className="space-y-2">
-              <Label htmlFor="route-duration">Thời gian dự kiến (phút)</Label>
-              <Input
-                id="route-duration"
-                type="number"
-                min="1"
-                value={formData.estimated_duration}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    estimated_duration: parseInt(e.target.value) || 60,
-                  }))
-                }
-                placeholder="60"
-              />
-            </div>
           </div>
 
           {/* Description */}
@@ -600,7 +974,8 @@ export function RouteCreator({
           <div className="space-y-2">
             <Label className="text-base font-medium">Địa chỉ hành chính</Label>
             <p className="text-sm text-gray-600 mb-4">
-              Chọn tỉnh/thành phố, quận/huyện và phường/xã để xác định khu vực hoạt động của tuyến đường
+              Chọn tỉnh/thành phố, quận/huyện và phường/xã để xác định khu vực
+              hoạt động của tuyến đường
             </p>
             <AddressSelector
               value={{
@@ -609,7 +984,7 @@ export function RouteCreator({
                 ward_code: formData.address?.ward?.code,
                 street_address: formData.address?.street_address,
               }}
-              onChange={handleAddressChange}
+              onChange={(address) => handleAddressChange(address, true)}
               onValidationChange={handleAddressValidationChange}
               required={true}
               showStreetAddress={false}
@@ -643,46 +1018,38 @@ export function RouteCreator({
               </div>
             </div>
 
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-sm text-blue-800">
-                <strong>Hướng dẫn:</strong>
-                <ul className="mt-1 space-y-1 text-xs">
-                  <li>• Click trên bản đồ để thêm điểm thu gom</li>
-                  <li>• Điểm đầu tiên (xanh) sẽ là điểm bắt đầu</li>
-                  <li>• Điểm cuối cùng (đỏ) sẽ là điểm kết thúc</li>
-                  <li>• Cần ít nhất 2 điểm để tạo lộ trình</li>
-                </ul>
-              </div>
-            </div>
-
             <SimpleLeafletMap
               center={mapCenter}
               points={mapPoints}
               showRoute={mapPoints.length >= 2}
-              autoFitBounds={false} // Disable auto-zoom to prevent re-render loops
+              autoFitBounds={shouldAutoFitBounds} // Auto-fit when we have route points
               onRouteUpdate={handleRouteUpdate}
               onMapClick={handleMapClick}
+              onMapRightClick={handleMapRightClick}
+              onPointRightClick={handlePointRightClick}
+              editingPointIndex={editingPointIndex}
+              isEditingPointPosition={isEditingPointPosition}
               height="500px"
               zoom={13}
             />
           </div>
 
-          {/* Manual Address Input (Optional) */}
+          {/* Smart Address Input with AutoComplete */}
           <div className="space-y-2">
             <h4 className="font-medium">
               Hoặc thêm địa chỉ thủ công (tùy chọn)
             </h4>
-            <div className="flex gap-2">
-              <Input
-                value={newAddress}
-                onChange={(e) => setNewAddress(e.target.value)}
-                placeholder="Nhập địa chỉ cụ thể nếu cần..."
-                onKeyPress={(e) => e.key === "Enter" && addAddress()}
-              />
-              <Button onClick={addAddress} disabled={!newAddress.trim()}>
-                Thêm địa chỉ
-              </Button>
-            </div>
+            <p className="text-sm text-gray-600">
+              Tìm kiếm và chọn địa chỉ cụ thể trong khu vực đã chọn
+            </p>
+            <AddressAutoComplete
+              value={newAddress}
+              onChange={setNewAddress}
+              onAddressSelect={handleAutoCompleteAddressSelect}
+              administrativeArea={formData.address}
+              placeholder="Nhập tên đường, địa điểm cụ thể..."
+              className="w-full"
+            />
           </div>
 
           {/* Current Points */}
@@ -786,6 +1153,71 @@ export function RouteCreator({
             : "Tạo lộ trình"}
         </Button>
       </div>
+      
+      {/* Context Menu */}
+      {contextMenu && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={closeContextMenu}
+          />
+          <div
+            className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[180px]"
+            style={{
+              left: contextMenu.x,
+              top: contextMenu.y,
+            }}
+          >
+            {contextMenu.pointIndex === undefined ? (
+              // Right-click on empty map area
+              <button
+                className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+                onClick={handleAddPointFromMenu}
+              >
+                <span className="text-green-600">+</span>
+                Thêm điểm tại vị trí này
+              </button>
+            ) : (
+              // Right-click on existing point
+              <>
+                <button
+                  className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+                  onClick={handleStartEditPosition}
+                >
+                  <span className="text-blue-600">📍</span>
+                  Thay đổi vị trí
+                </button>
+                <button
+                  className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-red-600"
+                  onClick={handleDeletePoint}
+                >
+                  <span>🗑️</span>
+                  Xóa điểm này
+                </button>
+              </>
+            )}
+          </div>
+        </>
+      )}
+      
+      {/* Editing point position overlay */}
+      {isEditingPointPosition && editingPointIndex !== null && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 shadow-lg">
+          <div className="flex items-center gap-2 text-blue-800">
+            <span className="animate-pulse">📍</span>
+            <span>Click vào bản đồ để đặt vị trí mới cho điểm {editingPointIndex + 1}</span>
+            <button
+              onClick={() => {
+                setIsEditingPointPosition(false);
+                setEditingPointIndex(null);
+              }}
+              className="ml-2 text-blue-600 hover:text-blue-800"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
