@@ -3,6 +3,7 @@ import { seedAdmin } from "./seeds/admin.seed";
 import { seedPackages } from "./seeds/packages.seed";
 import { seedCollectors } from "./seeds/collectors.seed";
 import { seedUsers } from "./seeds/users.seed";
+import { seedPayments } from "./seeds/payments.seed";
 import { seedHCMAreas } from "./seeds/hcm-areas.seed";
 import { seedHCMRoutes, seedHCMTrashWeightData } from "./seeds/hcm-routes.seed";
 import seedSupportSystem from "./seeds/support.seed";
@@ -17,6 +18,7 @@ async function main() {
   await seedPackages(prisma);
   await seedCollectors(prisma);
   await seedUsers(prisma);
+  await seedPayments();
 
   // Seed HCM test data
   await seedHCMAreas(prisma);
