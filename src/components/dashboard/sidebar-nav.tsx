@@ -156,7 +156,7 @@ const navItems: UserNavItems = {
     },
     {
       title: "Feedback",
-      href: "/dashboard/admin/feedback",
+      href: "/dashboard/admin/support",
       icon: MessageSquare,
     },
     {

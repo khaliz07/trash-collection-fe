@@ -1,11 +1,7 @@
-"use client"
+"use client";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,14 +10,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import Link from "next/link"
-import { Settings, User, CreditCard, LogOut } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+import { Settings, User, CreditCard, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface UserNavProps {
-  name: string
-  email: string
+  name: string;
+  email: string;
 }
 
 export function UserNav({ name, email }: UserNavProps) {
@@ -30,9 +26,9 @@ export function UserNav({ name, email }: UserNavProps) {
     .map((part) => part[0])
     .join("")
     .toUpperCase()
-    .substring(0, 2)
+    .substring(0, 2);
 
-    const { logout } = useAuth()
+  const { logout } = useAuth();
 
   return (
     <DropdownMenu>
@@ -58,19 +54,13 @@ export function UserNav({ name, email }: UserNavProps) {
           <Link href="/dashboard/user/profile">
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </DropdownMenuItem>
-          </Link>
-          <Link href="/dashboard/user/payments">
-            <DropdownMenuItem>
-              <CreditCard className="mr-2 h-4 w-4" />
-              <span>Billing</span>
+              <span>Hồ sơ</span>
             </DropdownMenuItem>
           </Link>
           <Link href="/dashboard/user/settings">
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
+              <span>Cài đặt</span>
             </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>
@@ -78,10 +68,10 @@ export function UserNav({ name, email }: UserNavProps) {
         <Link href="/login">
           <DropdownMenuItem onClick={logout}>
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
+            <span>Đăng xuất</span>
           </DropdownMenuItem>
         </Link>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

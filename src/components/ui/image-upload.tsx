@@ -4,7 +4,11 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, Upload, Image as ImageIcon } from "lucide-react";
-import { convertFileToBase64, isValidImageFile, compressImage } from "@/lib/image-utils";
+import {
+  convertFileToBase64,
+  isValidImageFile,
+  compressImage,
+} from "@/lib/image-utils";
 import { toast } from "sonner";
 
 interface ImageUploadProps {
@@ -20,12 +24,14 @@ export function ImageUpload({
   onImagesChange,
   maxImages = 5,
   maxSize = 5,
-  className
+  className,
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
@@ -43,20 +49,22 @@ export function ImageUpload({
       for (const file of files) {
         // Validate file
         if (!isValidImageFile(file)) {
-          toast.error(`File ${file.name} không hợp lệ. Chỉ chấp nhận ảnh JPEG, PNG, GIF, WebP dưới ${maxSize}MB`);
+          toast.error(
+            `File ${file.name} không hợp lệ. Chỉ chấp nhận ảnh JPEG, PNG, GIF, WebP dưới ${maxSize}MB`
+          );
           continue;
         }
 
         // Convert to base64
         const base64 = await convertFileToBase64(file);
-        
+
         // Compress image if needed
         const compressedBase64 = await compressImage(base64, 800, 0.8);
         newImages.push(compressedBase64);
       }
 
       onImagesChange([...images, ...newImages]);
-      
+
       if (newImages.length > 0) {
         toast.success(`Đã tải lên ${newImages.length} ảnh`);
       }
@@ -139,7 +147,8 @@ export function ImageUpload({
 
         {/* Helper text */}
         <p className="text-xs text-muted-foreground">
-          Chấp nhận ảnh JPEG, PNG, GIF, WebP. Tối đa {maxImages} ảnh, mỗi ảnh dưới {maxSize}MB.
+          Chấp nhận ảnh JPEG, PNG, GIF, WebP. Tối đa {maxImages} ảnh, mỗi ảnh
+          dưới {maxSize}MB.
         </p>
       </div>
     </div>

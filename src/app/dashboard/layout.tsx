@@ -9,6 +9,7 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { Recycle as Recycling, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function DashboardLayout({
   children,
@@ -20,6 +21,7 @@ export default function DashboardLayout({
   const [role, setRole] = useState<"user" | "collector" | "admin">("user");
   const [title, setTitle] = useState(t("dashboard"));
   const [mounted, setMounted] = useState(false);
+  const { user } = useAuth();
 
   // Set role based on URL path
   useEffect(() => {
@@ -99,7 +101,12 @@ export default function DashboardLayout({
         </div>
 
         <div className="flex flex-col">
-          <DashboardHeader title={title} userInfo={getUserInfo()} />
+          <DashboardHeader
+            title={title}
+            userInfo={
+              user ? { name: user.name, email: user.email } : getUserInfo()
+            }
+          />
           <main className="flex-1 p-2 md:p-6">{children}</main>
         </div>
       </div>

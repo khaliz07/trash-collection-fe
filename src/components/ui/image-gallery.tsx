@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 interface ImageGalleryProps {
@@ -37,7 +42,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
   };
 
   const downloadImage = (base64: string, index: number) => {
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = base64;
     link.download = `image-${index + 1}.jpg`;
     link.click();
@@ -48,7 +53,10 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
       <div className={className}>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {images.map((image, index) => (
-            <Card key={index} className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
+            <Card
+              key={index}
+              className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+            >
               <div className="aspect-square relative">
                 <img
                   src={image}
@@ -67,13 +75,18 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
         <DialogContent className="max-w-4xl max-h-[90vh] p-0">
           <DialogHeader className="p-4 pb-0">
             <DialogTitle className="flex items-center justify-between">
-              <span>Ảnh {selectedIndex !== null ? selectedIndex + 1 : 1} / {images.length}</span>
+              <span>
+                Ảnh {selectedIndex !== null ? selectedIndex + 1 : 1} /{" "}
+                {images.length}
+              </span>
               <div className="flex gap-2">
                 {selectedIndex !== null && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => downloadImage(images[selectedIndex], selectedIndex)}
+                    onClick={() =>
+                      downloadImage(images[selectedIndex], selectedIndex)
+                    }
                   >
                     <Download className="w-4 h-4" />
                   </Button>
@@ -81,7 +94,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
               </div>
             </DialogTitle>
           </DialogHeader>
-          
+
           {selectedIndex !== null && (
             <div className="relative">
               <img
@@ -89,7 +102,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                 alt={`Ảnh ${selectedIndex + 1}`}
                 className="w-full max-h-[70vh] object-contain"
               />
-              
+
               {/* Navigation buttons */}
               {images.length > 1 && (
                 <>

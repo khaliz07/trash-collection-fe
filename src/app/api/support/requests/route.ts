@@ -84,7 +84,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { type, title, description, priority, attachments, images } = validation.data;
+    const { type, title, description, priority, attachments, images } =
+      validation.data;
 
     const supportRequest = await prisma.supportRequest.create({
       data: {

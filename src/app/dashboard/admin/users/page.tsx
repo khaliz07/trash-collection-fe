@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
   Card,
   CardContent,
@@ -21,7 +24,6 @@ import {
   MobileDashboard,
   StatsGrid,
   StatCard,
-  MobileFilters,
 } from "@/components/ui/mobile-dashboard";
 import {
   DropdownMenu,
@@ -29,7 +31,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Search,
   MoreVertical,
@@ -45,83 +65,157 @@ import {
   UserCheck,
   UserPlus,
   Activity,
+  RotateCcw,
 } from "lucide-react";
 import { AddUserDialog } from "@/components/dashboard/add-user-dialog";
 import { useTranslation } from "react-i18next";
+import { usersApi, User } from "@/apis/admin-users.api";
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { t } = useTranslation("common");
-
-  // Mock user data
-  const users = [
-    {
-      id: 1,
-      name: "Nguyễn Văn An",
-      email: "an.nguyen@example.com",
-      phone: "+84 912 345 678",
-      address: "12 Nguyễn Trãi, Quận 1, TP. Hồ Chí Minh",
-      joinDate: "15/04/2025",
-      status: "active",
-      plan: "Monthly",
-    },
-    {
-      id: 2,
-      name: "Trần Thị Bích",
-      email: "bich.tran@example.com",
-      phone: "+84 913 456 789",
-      address: "45 Lê Lợi, Quận Hải Châu, Đà Nẵng",
-      joinDate: "12/04/2025",
-      status: "active",
-      plan: "Yearly",
-    },
-    {
-      id: 3,
-      name: "Lê Quang Dũng",
-      email: "dung.le@example.com",
-      phone: "+84 914 567 890",
-      address: "78 Phan Đình Phùng, Ba Đình, Hà Nội",
-      joinDate: "10/04/2025",
-      status: "suspended",
-      plan: "Monthly",
-    },
-    {
-      id: 4,
-      name: "Phạm Minh Châu",
-      email: "chau.pham@example.com",
-      phone: "+84 915 678 901",
-      address: "23 Trần Hưng Đạo, TP. Nha Trang",
-      joinDate: "08/04/2025",
-      status: "active",
-      plan: "Quarterly",
-    },
-    {
-      id: 5,
-      name: "Võ Thị Hạnh",
-      email: "hanh.vo@example.com",
-      phone: "+84 916 789 012",
-      address: "56 Nguyễn Huệ, TP. Huế",
-      joinDate: "05/04/2025",
-      status: "inactive",
-      plan: "Monthly",
-    },
-  ];
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phone.includes(searchQuery) ||
-      user.address.toLowerCase().includes(searchQuery.toLowerCase())
+  const [statusFilter, setStatusFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [actionLoadingUserId, setActionLoadingUserId] = useState<string | null>(
+    null
   );
+  const { t } = useTranslation("common");
+  const queryClient = useQueryClient();
+
+  // Debounce search query to avoid too many API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
+  // Reset page when search or filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchQuery, statusFilter]);
+
+  // Fetch users data
+  const {
+    data: usersData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: [
+      "admin-users",
+      { page, search: debouncedSearchQuery, status: statusFilter },
+    ],
+    queryFn: () =>
+      usersApi.getUsers({
+        page,
+        limit: 10,
+        search: debouncedSearchQuery,
+        status: statusFilter,
+      }),
+    staleTime: 300000, // 5 minutes
+  });
+
+  // Suspend user mutation
+  const suspendUserMutation = useMutation({
+    mutationFn: (userId: string) => usersApi.suspendUser(userId),
+    onMutate: (userId: string) => {
+      setActionLoadingUserId(userId);
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      setActionLoadingUserId(null);
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Lỗi khi tạm khóa tài khoản"
+      );
+      setActionLoadingUserId(null);
+    },
+  });
+
+  // Activate user mutation
+  const activateUserMutation = useMutation({
+    mutationFn: (userId: string) => usersApi.activateUser(userId),
+    onMutate: (userId: string) => {
+      setActionLoadingUserId(userId);
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      setActionLoadingUserId(null);
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Lỗi khi kích hoạt tài khoản"
+      );
+      setActionLoadingUserId(null);
+    },
+  });
+
+  const users = usersData?.users || [];
+  const pagination = usersData?.pagination;
+
+  // Handle loading and error states
+  if (isLoading) {
+    return (
+      <MobileDashboard>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">
+            {t("admin_users.title", "Quản lý người dùng")}
+          </h2>
+          <p className="text-muted-foreground">
+            {t("admin_users.desc", "Quản lý tài khoản và phân quyền hộ dân")}
+          </p>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center h-32">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                <p className="text-muted-foreground">Đang tải dữ liệu...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </MobileDashboard>
+    );
+  }
+
+  if (error) {
+    return (
+      <MobileDashboard>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">
+            {t("admin_users.title", "Quản lý người dùng")}
+          </h2>
+          <p className="text-muted-foreground">
+            {t("admin_users.desc", "Quản lý tài khoản và phân quyền hộ dân")}
+          </p>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center h-32">
+              <div className="text-center text-destructive">
+                <p className="mb-2">Lỗi khi tải dữ liệu người dùng</p>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    queryClient.invalidateQueries({ queryKey: ["admin-users"] })
+                  }
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Thử lại
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </MobileDashboard>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
+      case "ACTIVE":
         return "text-emerald-600 dark:text-emerald-400";
-      case "suspended":
+      case "SUSPENDED":
         return "text-amber-600 dark:text-amber-400";
-      case "inactive":
+      case "INACTIVE":
         return "text-red-600 dark:text-red-400";
       default:
         return "text-muted-foreground";
@@ -130,11 +224,11 @@ export default function UsersPage() {
 
   const statusLabel = (status: string) => {
     switch (status) {
-      case "active":
+      case "ACTIVE":
         return t("user_status.active", "Đang hoạt động");
-      case "suspended":
+      case "SUSPENDED":
         return t("user_status.suspended", "Tạm khóa");
-      case "inactive":
+      case "INACTIVE":
         return t("user_status.inactive", "Ngừng hoạt động");
       default:
         return t("user_status.unknown", "Không xác định");
@@ -153,19 +247,32 @@ export default function UsersPage() {
         return plan;
     }
   };
+
+  // Handle user action
+  const handleUserAction = async (userId: string, action: string) => {
+    switch (action) {
+      case "suspend":
+        suspendUserMutation.mutate(userId);
+        break;
+      case "activate":
+        activateUserMutation.mutate(userId);
+        break;
+      default:
+        break;
+    }
+  };
+
   // Calculate stats
-  const totalUsers = filteredUsers.length;
-  const activeUsers = filteredUsers.filter(
-    (user: any) => user.status === "active"
-  ).length;
-  const newUsers = filteredUsers.filter((user: any) => {
-    const joinDate = new Date(user.joinDate);
+  const totalUsers = pagination?.total || 0;
+  const activeUsers = users.filter((user) => user.status === "ACTIVE").length;
+  const newUsers = users.filter((user) => {
+    const joinDate = new Date(user.joinDate.split("/").reverse().join("-"));
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     return joinDate >= thirtyDaysAgo;
   }).length;
-  const premiumUsers = filteredUsers.filter(
-    (user: any) => user.plan === "Premium"
+  const premiumUsers = users.filter(
+    (user) => user.planType && user.planType !== "NONE"
   ).length;
 
   return (
@@ -201,7 +308,7 @@ export default function UsersPage() {
           compact
         />
         <StatCard
-          title="Gói Premium"
+          title="Có gói dịch vụ"
           value={premiumUsers}
           icon={<Activity className="h-5 w-5" />}
           compact
@@ -209,24 +316,58 @@ export default function UsersPage() {
       </StatsGrid>
 
       {/* Actions */}
-      <div className="flex justify-end">
+      {/* <div className="flex justify-end">
         <AddUserDialog />
-      </div>
+      </div> */}
 
       {/* Search and Filters */}
-      <MobileFilters
-        searchPlaceholder={t(
-          "admin_users.search_placeholder",
-          "Tìm kiếm người dùng..."
-        )}
-        onSearch={setSearchQuery}
-      >
-        <div className="space-y-4">
-          <Button variant="outline" className="w-full">
-            {t("admin_users.filter", "Lọc theo trạng thái")}
-          </Button>
+      <div className="flex flex-col sm:flex-row gap-4 items-end mb-6">
+        {/* Search */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder={t(
+              "admin_users.search_placeholder",
+              "Tìm kiếm người dùng..."
+            )}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
-      </MobileFilters>
+
+        {/* Status Filter */}
+        <div className="w-full sm:w-48">
+          <Select
+            value={statusFilter || "ALL"}
+            onValueChange={(value) =>
+              setStatusFilter(value === "ALL" ? "" : value)
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Lọc theo trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+              <SelectItem value="ACTIVE">Đang hoạt động</SelectItem>
+              <SelectItem value="SUSPENDED">Tạm khóa</SelectItem>
+              <SelectItem value="INACTIVE">Ngừng hoạt động</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Clear Filter */}
+        {statusFilter && (
+          <Button
+            variant="outline"
+            onClick={() => setStatusFilter("")}
+            className="whitespace-nowrap h-10"
+            title="Xóa bộ lọc trạng thái"
+          >
+            ✕ Xóa bộ lọc
+          </Button>
+        )}
+      </div>
 
       <Card>
         <CardHeader>
@@ -264,7 +405,7 @@ export default function UsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user) => (
+              {users.map((user) => (
                 <TableRow
                   key={user.id}
                   labels={[
@@ -283,7 +424,7 @@ export default function UsersPage() {
                       <div className="font-medium">{user.name}</div>
                       <div className="text-sm text-muted-foreground">
                         {t("admin_users.table.id", "Mã")}:{" "}
-                        {String(user.id).padStart(5, "0")}
+                        {user.id.slice(-8).toUpperCase()}
                       </div>
                     </div>
                   </TableCell>
@@ -327,26 +468,110 @@ export default function UsersPage() {
                   <TableCell label="Hành động" priority="low">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={
+                            suspendUserMutation.isPending ||
+                            activateUserMutation.isPending
+                          }
+                        >
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Shield className="mr-2 h-4 w-4" />
-                          {t("admin_users.action.change_role", "Đổi vai trò")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Ban className="mr-2 h-4 w-4" />
-                          {t(
-                            "admin_users.action.suspend",
-                            "Tạm khóa tài khoản"
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <UserX className="mr-2 h-4 w-4" />
-                          {t("admin_users.action.delete", "Xóa tài khoản")}
-                        </DropdownMenuItem>
+                        {user.status === "ACTIVE" && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                <Ban className="mr-2 h-4 w-4" />
+                                {t(
+                                  "admin_users.action.suspend",
+                                  "Tạm khóa tài khoản"
+                                )}
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Xác nhận tạm khóa tài khoản
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Bạn có chắc chắn muốn tạm khóa tài khoản của{" "}
+                                  <strong>{user.name}</strong>? Người dùng sẽ
+                                  không thể đăng nhập vào hệ thống.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleUserAction(user.id, "suspend")
+                                  }
+                                  className="bg-destructive hover:bg-destructive/90"
+                                  disabled={actionLoadingUserId === user.id}
+                                >
+                                  {actionLoadingUserId === user.id ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                      Đang xử lý...
+                                    </>
+                                  ) : (
+                                    "Tạm khóa"
+                                  )}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+
+                        {user.status === "SUSPENDED" && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                {t(
+                                  "admin_users.action.activate",
+                                  "Kích hoạt lại"
+                                )}
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Xác nhận kích hoạt lại tài khoản
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Bạn có chắc chắn muốn kích hoạt lại tài khoản
+                                  của <strong>{user.name}</strong>? Người dùng
+                                  sẽ có thể đăng nhập trở lại.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleUserAction(user.id, "activate")
+                                  }
+                                  disabled={actionLoadingUserId === user.id}
+                                >
+                                  {actionLoadingUserId === user.id ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                                      Đang xử lý...
+                                    </>
+                                  ) : (
+                                    "Kích hoạt"
+                                  )}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -354,6 +579,38 @@ export default function UsersPage() {
               ))}
             </TableBody>
           </Table>
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                Hiển thị {(pagination.page - 1) * pagination.limit + 1} đến{" "}
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                trong tổng số {pagination.total} người dùng
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(pagination.page - 1)}
+                  disabled={pagination.page <= 1}
+                >
+                  Trước
+                </Button>
+                <div className="text-sm">
+                  Trang {pagination.page} / {pagination.totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(pagination.page + 1)}
+                  disabled={pagination.page >= pagination.totalPages}
+                >
+                  Tiếp
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </MobileDashboard>
