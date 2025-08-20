@@ -26,8 +26,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { amount, description, packageId, packageName, duration, method } =
-      JSON.parse(body.body);
+    const {
+      amount,
+      description,
+      packageId,
+      packageName,
+      duration,
+      method,
+      baseUrl,
+    } = JSON.parse(body.body);
 
     // Use authenticated user ID instead of body userId
     const userId = authenticatedUserId;
@@ -110,7 +117,7 @@ export async function POST(request: NextRequest) {
       amount: payment.amount,
       packageName: packageInfo.name,
       duration: packageInfo.duration,
-      qrUrl: `${getBaseURL(3000)}/api/payments/confirm/${paymentId}`,
+      qrUrl: `${baseUrl || getBaseURL(3000)}/api/payments/confirm/${paymentId}`,
       expiresAt: expiresAt.toISOString(),
     });
   } catch (error) {

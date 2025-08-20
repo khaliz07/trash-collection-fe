@@ -182,6 +182,9 @@ export function QRPaymentDialog({
 
     setIsLoading(true);
     try {
+      // Lấy base URL trực tiếp từ window.location (support ngrok domain)
+      const baseUrl = `${window.location.protocol}//${window.location.host}`;
+
       const response = await api.post("/payments", {
         body: JSON.stringify({
           userId: user.id,
@@ -192,6 +195,7 @@ export function QRPaymentDialog({
           packageName: paymentInfo.packageName,
           duration: paymentInfo.duration,
           method: method,
+          baseUrl: baseUrl, // Gửi domain hiện tại tới backend
         }),
       });
 
