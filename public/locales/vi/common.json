@@ -110,6 +110,7 @@
   "faq": "FAQ",
   "sent_requests": "Yêu cầu đã gửi",
   "search_support_information": "Tra cứu thông tin hỗ trợ (FAQ)",
+  "Packages": "Gói dịch vụ",
   "topic": "Chủ đề",
   "type": "Loại",
   "title": "Tiêu đề",
@@ -153,7 +154,7 @@
   },
   "features": "Tính năng",
   "how_it_works": {
-    "menu_heading":"Quy trình",
+    "menu_heading": "Quy trình",
     "heading": "Cách EcoCollect hoạt động",
     "simple_process": "Quy trình đơn giản",
     "description": "Quy trình đơn giản, minh bạch cho quản lý rác hiện đại.",
@@ -561,4 +562,4 @@
       "add_note": "Tính năng thêm ghi chú sẽ được triển khai ở dialog riêng cho điểm: {{id}}"
     }
   }
-} 
+}

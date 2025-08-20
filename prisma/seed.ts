@@ -4,6 +4,7 @@ import { seedPackages } from "./seeds/packages.seed";
 import { seedCollectors } from "./seeds/collectors.seed";
 import { seedHCMAreas } from "./seeds/hcm-areas.seed";
 import { seedHCMRoutes, seedHCMTrashWeightData } from "./seeds/hcm-routes.seed";
+import seedSupportSystem from "./seeds/support.seed";
 
 const prisma = new PrismaClient();
 
@@ -35,6 +36,9 @@ async function main() {
       address: "Phường Linh Trung, Quận Thủ Đức, TP. HCM",
     },
   });
+
+  // Seed support system
+  await seedSupportSystem();
 }
 
 main()

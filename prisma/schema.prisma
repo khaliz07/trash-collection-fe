@@ -71,6 +71,8 @@ model User {
   subscriptions          Subscription[]
   assignedUrgentRequests UrgentRequest[]     @relation("CollectorUrgentRequests")
   urgentRequests         UrgentRequest[]     @relation("UserUrgentRequests")
+  supportRequests        SupportRequest[]    @relation("UserSupportRequests")
+  handledSupportRequests SupportRequest[]    @relation("AdminSupportRequests")
 
   @@map("users")
 }
@@ -430,6 +432,56 @@ model UrgentRequest {
   @@map("urgent_requests")
 }
 
+model SupportRequest {
+  id          String               @id @default(cuid())
+  userId      String
+  type        SupportRequestType
+  title       String
+  description String
+  status      SupportRequestStatus @default(PENDING)
+  priority    SupportPriority      @default(NORMAL)
+  attachments String[]             @default([])
+  images      String[]             @default([]) // Base64 encoded images
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  resolvedAt  DateTime?
+  handlerId   String?
+  adminNotes  String?
+  adminResponse String? // Admin's response to user
+  adminResponseAt DateTime? // When admin responded
+  user        User                 @relation("UserSupportRequests", fields: [userId], references: [id], onDelete: Cascade)
+  handler     User?                @relation("AdminSupportRequests", fields: [handlerId], references: [id])
+  feedback    SupportFeedback?
+
+  @@map("support_requests")
+}
+
+model SupportFeedback {
+  id               String         @id @default(cuid())
+  supportRequestId String         @unique
+  rating           Int // 1-5 stars
+  comment          String?
+  images           String[]       @default([]) // Base64 encoded images
+  createdAt        DateTime       @default(now())
+  supportRequest   SupportRequest @relation(fields: [supportRequestId], references: [id], onDelete: Cascade)
+
+  @@map("support_feedback")
+}
+
+model FAQ {
+  id          String         @id @default(cuid())
+  question    String
+  answer      String
+  category    FAQCategory
+  isActive    Boolean        @default(true)
+  displayOrder Int           @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  createdBy   String?
+  
+  @@map("faqs")
+}
+
 enum UserRole {
   ADMIN
   USER
@@ -540,4 +592,33 @@ enum UrgentStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+enum SupportRequestType {
+  PAYMENT
+  SCHEDULE
+  ACCOUNT
+  TECHNICAL_ISSUE
+  OTHER
+}
+
+enum SupportRequestStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+enum SupportPriority {
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum FAQCategory {
+  PAYMENT
+  SCHEDULE
+  ACCOUNT
+  TECHNICAL_ISSUE
+  OTHER
 }
